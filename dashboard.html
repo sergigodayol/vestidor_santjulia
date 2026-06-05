@@ -699,9 +699,22 @@
 
                 for (let i = 1; i < dadesLliga.length; i++) {
                     const fila = dadesLliga[i];
-                    if (!fila[idxJugadorL] || fila[idxJugadorL].trim() === "") continue;
+                    
+                    if (!fila[idxJugadorL]) continue;
 
                     const nom = fila[idxJugadorL].trim();
+
+                    // FRENADA D'EMERGÈNCIA: Si detecta l'Amateur B o repeteix capçalera, tanca l'aixeta
+                    if (nom.toUpperCase().includes('AMATEUR B') || nom.toUpperCase() === 'JUGADOR') {
+                        break; 
+                    }
+
+                    // Si trobem una fila buida després d'haver llegit jugadors, parem també
+                    if (nom === "") {
+                        if (jugadorsActius.length > 0) break;
+                        continue;
+                    }
+
                     const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';
                     const gols = fila[idxGolsL] ? fila[idxGolsL].trim() : '0';
                     const tg = fila[idxTGL] ? fila[idxTGL].trim() : '0';

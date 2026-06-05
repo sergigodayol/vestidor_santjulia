@@ -699,20 +699,18 @@
 
                 for (let i = 1; i < dadesLliga.length; i++) {
                     const fila = dadesLliga[i];
-                    
-                    if (!fila[idxJugadorL]) continue;
+                    const nom = fila[idxJugadorL] ? fila[idxJugadorL].trim() : "";
 
-                    const nom = fila[idxJugadorL].trim();
-
-                    // FRENADA D'EMERGÈNCIA: Si detecta l'Amateur B o repeteix capçalera, tanca l'aixeta
+                    // 1. FRENADA 1: Si detecta 'Amateur B' o repeteix la paraula 'JUGADOR'
                     if (nom.toUpperCase().includes('AMATEUR B') || nom.toUpperCase() === 'JUGADOR') {
-                        break; 
+                        if (jugadorsActius.length > 0) break; // Tallem l'aixeta definitivament
+                        continue;
                     }
 
-                    // Si trobem una fila buida després d'haver llegit jugadors, parem també
+                    // 2. FRENADA 2: Si la casella del jugador està buida (l'espai entre equips)
                     if (nom === "") {
-                        if (jugadorsActius.length > 0) break;
-                        continue;
+                        if (jugadorsActius.length > 0) break; // Si ja havíem llegit l'Amateur A, tallem l'aixeta.
+                        continue; // Si són forats a l'inici del document, els saltem.
                     }
 
                     const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';

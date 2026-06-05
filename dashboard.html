@@ -53,7 +53,7 @@
         .sub-btn.active { color: var(--primary); background-color: rgba(59, 130, 246, 0.15); }
 
         nav.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding: 0.7rem 0; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.3); }
-        .nav-btn { background: none; border: none; color: #94a3b8; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 25%; transition: color 0.2s; }
+        .nav-btn { background: none; border: none; color: #94a3b8; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; min-width: 0; transition: color 0.2s; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn svg { width: 22px; height: 22px; fill: currentColor; transition: transform 0.2s; }
         .nav-btn:active svg { transform: scale(0.9); }
@@ -83,7 +83,6 @@
         .multa-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .multa-item:last-child { border-bottom: none; }
         
-        /* 🚨 ESTIL PER AL BOTÓ D'ELIMINAR MULTA */
         .btn-eliminar-multa { background: transparent; border: none; color: var(--danger); font-size: 1rem; cursor: pointer; padding: 2px 8px; margin-left: 10px; border-radius: 4px; transition: background 0.2s; }
         .btn-eliminar-multa:hover { background: rgba(239, 68, 68, 0.15); }
 
@@ -107,7 +106,6 @@
 
     <div class="container">
         
-        <!-- CARTEL COMPLETAR PERFIL -->
         <div id="card-completar-perfil" class="card" style="display:none; border:2px dashed var(--warning); background-color: rgba(245, 158, 11, 0.03);">
             <h3 style="color:var(--warning)">👋 Configura el teu Perfil</h3>
             <p style="color:#94a3b8; font-size:0.9rem; margin-top:-0.5rem;">Per sortir correctament al rànquing oficial del vestidor, escriu el teu Nom i Cognom:</p>
@@ -115,7 +113,6 @@
             <button onclick="guardarNombreMigracion()" style="width:100%; padding:0.7rem; background-color:var(--warning); color:#111827; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Assignar Nom Oficial</button>
         </div>
 
-        <!-- PESTAÑA INICIO -->
         <div id="tab-inicio" class="tab-content active">
             <div class="card" style="border-top: 4px solid var(--primary); background: linear-gradient(180deg, rgba(59, 130, 246, 0.04) 0%, rgba(30, 41, 59, 1) 100%); text-align: center; padding: 1.6rem 1.4rem;">
                 <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Pròxim Partit Oficial</span>
@@ -123,7 +120,6 @@
                 <p id="txt-partido-detalles" style="margin: 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
             </div>
 
-            <!-- PROPERES PASTES -->
             <div class="card" style="border-left: 4px solid var(--warning);">
                 <h3>🎂 Properes Pastes (Aniversaris de l'Equip)</h3>
                 <div id="lista-aniversarios-inicio" style="font-size: 0.95rem;">Carregant el calendari de pastes...</div>
@@ -147,7 +143,6 @@
             </div>
         </div>
 
-        <!-- PESTAÑA QUINIELA -->
         <div id="tab-quiniela" class="tab-content">
             <div class="sub-tabs">
                 <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">🎯 Omplir Jornada</button>
@@ -212,7 +207,6 @@
             </div>
         </div>
 
-        <!-- PESTAÑA MVP -->
         <div id="tab-mvp" class="tab-content">
             <div id="contenedor-votar-mvp" class="card" style="border-left: 4px solid var(--warning);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -236,7 +230,29 @@
             </div>
         </div>
 
-        <!-- PESTAÑA MULTAS -->
+        <div id="tab-stats" class="tab-content">
+            <div class="sub-tabs">
+                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)">🏆 Lliga (T 25-26)</button>
+                <button class="sub-btn" onclick="cambiarSubTabStats('historic', this)">📂 Globals Històrics</button>
+            </div>
+
+            <div id="sub-lliga" class="sub-tab-content-stats">
+                <div class="card">
+                    <h3>📊 Estadístiques Oficials - Temporada 25/26</h3>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Dades generals obtingudes directament del sistema de control de l'equip.</p>
+                    <div id="tabla-stats-lliga" style="overflow-x: auto;">Carregant estadístiques des de Google Sheets...</div>
+                </div>
+            </div>
+
+            <div id="sub-historic" class="sub-tab-content-stats" style="display:none;">
+                <div class="card">
+                    <h3>📜 Històric Acumulat del Vestidor</h3>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Trajectòria global filtrada exclusivament per als membres actius de la plantilla actual.</p>
+                    <div id="tabla-stats-historic" style="overflow-x: auto;">Carregant historial des de Google Sheets...</div>
+                </div>
+            </div>
+        </div>
+
         <div id="tab-multas" class="tab-content">
             <div class="card">
                 <h3>💰 Pot de Multes Pendents</h3>
@@ -248,13 +264,11 @@
             </div>
         </div>
 
-        <!-- 🔒 PESTAÑA DE GESTIÓ EXCLUSIVA -->
         <div id="tab-gestio" class="tab-content">
             <div class="card" style="border: 2px solid var(--danger); background-color: rgba(239, 68, 68, 0.02);">
                 <h3 style="color:var(--danger)">⚙️ Panell de Control Secret (Admin)</h3>
                 <p style="color: #94a3b8; font-size:0.85rem; margin-top:-0.5rem; margin-bottom:1.5rem;">Aquesta pantalla només la pots veure tu, Sergi.</p>
                 
-                <!-- CARTELLERA PARTIT -->
                 <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--primary)">📅 Cartellera: Pròxim Partit</p>
                     <input type="text" id="admin-input-partido-nombre" class="input-admin-multa" placeholder="Rival (Ex: CF Sant Julià - UD Taradell)">
@@ -262,7 +276,6 @@
                     <button onclick="actualizarCartelPartido()" style="width:100%; padding:0.6rem; background-color:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Publicar al Panell d'Inici</button>
                 </div>
 
-                <!-- ADMIN CONTROLLER: AFEGIR ANIVERSARI -->
                 <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--warning)">🎂 Afegir Aniversari / Pastes</p>
                     <input type="text" id="admin-aniversario-nom" class="input-admin-multa" placeholder="Nom complet del jugador">
@@ -270,7 +283,6 @@
                     <button onclick="crearAniversarioManual()" style="width:100%; padding:0.6rem; background-color:var(--warning); color:#111827; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Registrar Aniversari</button>
                 </div>
 
-                <!-- CONTROL CADENAT I JORNADES -->
                 <div class="card" style="background: #111827; border-color: var(--border); text-align: center; margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0;"><strong>🔒 Control d'Admissió Setmanal</strong></p>
                     <div style="margin-bottom:1rem; font-size:0.9rem;">
@@ -285,7 +297,6 @@
                     <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
                 </div>
                 
-                <!-- 🔄 FORMULARI MULTES AMB EL NOU DESPLEGABLE DE JUGADORS REGISTRATS -->
                 <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--danger)">📝 Sancionar Jugador</p>
                     
@@ -299,7 +310,6 @@
                     <p id="msg-admin-multa" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
                 </div>
                 
-                <!-- EVALUAR RESULTATS REALS -->
                 <div class="card" style="background: #111827; border-color: var(--border);">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--text)">⚽ Introduir Resultats Reals - Jornada <span id="txt-jornada-admin-evaluar" style="color:var(--danger)">-</span></p>
                     <div id="lista-admin-partidos">
@@ -326,7 +336,6 @@
 
     </div>
 
-    <!-- NAVEGACIÓN -->
     <nav class="bottom-nav" id="barra-navegacion-principal">
         <button class="nav-btn active" onclick="cambiarPestaña('inicio', this)">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Inici
@@ -336,6 +345,9 @@
         </button>
         <button class="nav-btn" onclick="cambiarPestaña('mvp', this); cargarRankingMVP(); cargarVotMVPExistente();">
             <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> MVP
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('stats', this); cargarEstadisticas();">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg> Stats
         </button>
         <button class="nav-btn" onclick="cambiarPestaña('multas', this)">
             <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 0.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Multes
@@ -371,9 +383,8 @@
             
             if(emailUsuario === 'sergigodayol@gmail.com') {
                 const navBar = document.getElementById('barra-navegacion-principal');
-                document.querySelectorAll('.nav-btn').forEach(btn => btn.style.width = '20%');
                 navBar.innerHTML += `
-                    <button class="nav-btn" style="width: 20%; color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
+                    <button class="nav-btn" style="color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
                         <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor; margin-bottom: 5px;">
                             <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
                         </svg>
@@ -384,13 +395,12 @@
 
             const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
             const selectMvp = document.getElementById('select-nom-mvp');
-            const selectAdminMulta = document.getElementById('select-admin-multa-nom'); // 🔄 Element desplegable de multes
+            const selectAdminMulta = document.getElementById('select-admin-multa-nom');
             
             if(llistaPerfils) { 
                 llistaPerfils.forEach(p => { 
                     dadesPerfilsMapejades[p.id_jugador.trim().toLowerCase()] = p.nom_real; 
                     
-                    // Llista MVP
                     if(selectMvp) {
                         let opcio = document.createElement('option');
                         opcio.value = p.nom_real.trim(); 
@@ -398,7 +408,6 @@
                         selectMvp.appendChild(opcio);
                     }
 
-                    // 🔄 Llista desplegable de Multes a Gestió
                     if(selectAdminMulta) {
                         let opcioMulta = document.createElement('option');
                         opcioMulta.value = p.nom_real.trim();
@@ -416,6 +425,7 @@
             cargarCartelPartido(); 
             await cargarCalendariAniversaris();
             await verificarBoletoExistente();
+            cargarEstadisticas();
         }
 
         async function guardarNombreMigracion() {
@@ -543,9 +553,8 @@
             if(!error) { alert("¡Cartellera publicada!"); location.reload(); }
         }
 
-        // --- 📝 CREAR MULTA DES DEL NOU DESPLEGABLE ---
         async function crearMultaManual() {
-            const nom = document.getElementById('select-admin-multa-nom').value; // Desplegable
+            const nom = document.getElementById('select-admin-multa-nom').value; 
             const motiu = document.getElementById('multa-motiu').value.trim(); 
             const valImport = parseFloat(document.getElementById('multa-import').value); 
             const msgM = document.getElementById('msg-admin-multa');
@@ -565,7 +574,6 @@
             }
         }
 
-        // --- 🚨 ELIMINAR MULTA (BOTÓ EXCLUSIU SERGI) ---
         async function eliminarMultaBase(idMulta, nomJugador) {
             if(confirm(`Estàs segur que vols eliminar la multa d'en ${nomJugador}?`)) {
                 const { error } = await clienteSupabase.from('multas').delete().eq('id', idMulta);
@@ -638,14 +646,157 @@
             let html = ''; misQuinielas.forEach((q) => { html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 5px 0;">Jornada ${q.jornada || 1}</p><p style="margin:0; color:#94a3b8;">[P1: ${q.p1}] [P2: ${q.p2}] [P3: ${q.p3}] [P4: ${q.p4}] [P5: ${q.p5}] <br>[P6: ${q.p6}] [P7: ${q.p7}] [P8: ${q.p8}] [P9: ${q.p9}] [P10: ${q.p10}]</p></div>`; }); historialEl.innerHTML = html;
         }
 
+        // --- 📊 MOTOR SCRIPT: RECOLLIDA DE GOOGLE SHEETS (DADES PUBLICADES EN ENLLAÇ) ---
+        async function cargarEstadisticas() {
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2025-26`;
+            const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
+
+            try {
+                const resLliga = await fetch(urlLliga);
+                const csvLliga = await resLliga.text();
+                const dadesLliga = parsearCSV(csvLliga);
+
+                const resGlobal = await fetch(urlGlobal);
+                const csvGlobal = await resGlobal.text();
+                const dadesGlobal = parsearCSV(csvGlobal);
+
+                if (dadesLliga.length === 0) {
+                    document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">No s\'han pogut obtenir dades de la plantilla de lliga.</p>';
+                    return;
+                }
+
+                // Trobar índexs de columnes de la pestanya 1 (Lliga)
+                const headersLliga = dadesLliga[0].map(h => h.trim().toUpperCase());
+                const idxJugadorL = headersLliga.indexOf('JUGADORS');
+                const idxPartitsL = headersLliga.indexOf('PARTITS JUGATS');
+                const idxGolsL = headersLliga.indexOf('GOLS');
+                const idxTGL = headersLliga.indexOf('TG');
+                const idxTVL = headersLliga.indexOf('TV');
+
+                const jugadorsActius = [];
+                let htmlLliga = `
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
+                                <th style="padding: 10px 8px;">JUGADOR</th>
+                                <th style="padding: 10px 8px; text-align:center;">PJ</th>
+                                <th style="padding: 10px 8px; text-align:center; color:var(--warning);">GOLS</th>
+                                <th style="padding: 10px 8px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 10px 8px; text-align:center; color:var(--danger);">TV</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                for (let i = 1; i < dadesLliga.length; i++) {
+                    const fila = dadesLliga[i];
+                    if (!fila[idxJugadorL] || fila[idxJugadorL].trim() === "") continue;
+
+                    const nom = fila[idxJugadorL].trim();
+                    const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';
+                    const gols = fila[idxGolsL] ? fila[idxGolsL].trim() : '0';
+                    const tg = fila[idxTGL] ? fila[idxTGL].trim() : '0';
+                    const tv = fila[idxTVL] ? fila[idxTVL].trim() : '0';
+
+                    jugadorsActius.push(nom.toLowerCase());
+
+                    htmlLliga += `
+                        <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
+                            <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;">${nom}</td>
+                            <td style="padding: 12px 8px; text-align:center; color:#cbd5e1;">${pj}</td>
+                            <td style="padding: 12px 8px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
+                            <td style="padding: 12px 8px; text-align:center; color:#eab308;">${tg}</td>
+                            <td style="padding: 12px 8px; text-align:center; color:var(--danger);">${tv}</td>
+                        </tr>`;
+                }
+                htmlLliga += `</tbody></table>`;
+                document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
+
+                // Trobar índexs de columnes de la pestanya 2 (Globals Acumulats)
+                const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
+                const idxJugadorG = headersGlobal.indexOf('JUGADORS');
+                const idxPartitsG = headersGlobal.indexOf('PARTITS JUGATS');
+                const idxGolsG = headersGlobal.indexOf('GOLS');
+                const idxTGG = headersGlobal.indexOf('TG');
+                const idxTVG = headersGlobal.indexOf('TV');
+
+                let htmlHistoric = `
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
+                                <th style="padding: 10px 8px;">JUGADOR</th>
+                                <th style="padding: 10px 8px; text-align:center;">PJ TOTALS</th>
+                                <th style="padding: 10px 8px; text-align:center; color:var(--warning);">GOLS TOTALS</th>
+                                <th style="padding: 10px 8px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 10px 8px; text-align:center; color:var(--danger);">TV</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                let hiHaHistoric = false;
+                for (let i = 1; i < dadesGlobal.length; i++) {
+                    const fila = dadesGlobal[i];
+                    if (!fila[idxJugadorG] || fila[idxJugadorG].trim() === "") continue;
+
+                    const nomG = fila[idxJugadorG].trim();
+                    
+                    // Condició de filtratge per llista de jugadors actius
+                    if (jugadorsActius.includes(nomG.toLowerCase())) {
+                        hiHaHistoric = true;
+                        const pjG = fila[idxPartitsG] ? fila[idxPartitsG].trim() : '0';
+                        const golsG = fila[idxGolsG] ? fila[idxGolsG].trim() : '0';
+                        const tgG = fila[idxTGG] ? fila[idxTGG].trim() : '0';
+                        const tvG = fila[idxTVG] ? fila[idxTVG].trim() : '0';
+
+                        htmlHistoric += `
+                            <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
+                                <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;">${nomG}</td>
+                                <td style="padding: 12px 8px; text-align:center; color:#cbd5e1;">${pjG}</td>
+                                <td style="padding: 12px 8px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
+                                <td style="padding: 12px 8px; text-align:center; color:#eab308;">${tgG}</td>
+                                <td style="padding: 12px 8px; text-align:center; color:var(--danger);">${tvG}</td>
+                            </tr>`;
+                    }
+                }
+
+                if (!hiHaHistoric) {
+                    htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han localitzat dades coincidents per als jugadors d'aquesta lliga.</td></tr>`;
+                }
+
+                htmlHistoric += `</tbody></table>`;
+                document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
+
+            } catch (error) {
+                console.error("Error carregant dades des del motor de fulls públics:", error);
+                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger); font-size:0.85rem;">Motiu: Verifica si el fitxer de Google Drive manté activada l\'opció "Publicar a la web" (com a línia CSV).</p>';
+                document.getElementById('tabla-stats-historic').innerHTML = '<p style="color:var(--danger); font-size:0.85rem;">Motiu: Error en la petició de dades en línia.</p>';
+            }
+        }
+
+        function parsearCSV(text) {
+            const lineas = text.split(/\r?\n/);
+            return lineas.map(linea => {
+                const r = []; let dins = false; let val = '';
+                for (let i = 0; i < linea.length; i++) {
+                    let c = linea[i];
+                    if (c === '"') { dins = !dins; } 
+                    else if (c === ',' && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
+                    else { val += c; }
+                }
+                r.push(val.trim().replace(/^"|"$/g, ''));
+                return r;
+            }).filter(l => l.length > 0 && l.some(cel => cel !== ""));
+        }
+
         function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
         function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        function cambiarSubTabStats(subTabId, boton) { document.getElementById('tab-stats').querySelectorAll('.sub-tab-content-stats').forEach(st => st.style.display = 'none'); document.getElementById('tab-stats').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        
         function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
         function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
         async function verificarBoletoExistente() { const msgEl = document.getElementById('msg-quiniela'); const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); if (bEx) { msgEl.style.color = 'var(--warning)'; msgEl.textContent = `Ja tens un bitllet desat.`; msgEl.style.display = 'block'; for(let i=1; i<=10; i++) { const valorAnterior = bEx[`p${i}`]; pronosticosSeleccionados[`p${i}`] = valorAnterior; const fila = document.querySelector(`[data-partido="p${i}"]`); if(fila) { fila.querySelectorAll('.btn-pronostico').forEach(b => { if(b.textContent === valorAnterior) b.classList.add('selected'); else b.classList.remove('selected'); }); } } } else { msgEl.style.display = 'none'; pronosticosSeleccionados = {}; document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); } }
         async function guardarQuiniela() { const msgEl = document.getElementById('msg-quiniela'); if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) return; pronosticosSeleccionados['id_jugador'] = emailUsuario; pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); setTimeout(() => { verificarBoletoExistente(); }, 1000); }
 
-        // --- 💰 RENDERING DE MULTES AMB SEGURETAT D'ELIMINACIÓ ---
         async function cargarMultas() {
             const { data: multas } = await clienteSupabase.from('multas').select('*');
             const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas');
@@ -654,8 +805,6 @@
             let sum = 0; let htmlLista = '';
             multas.forEach(m => {
                 sum += parseFloat(m.import);
-                
-                // 🛡️ REGLA MAESTRA: El botó d'eliminar es renderitza NOMÉS si l'usuari ets tu
                 let botoBorrarExclusiu = (emailUsuario === 'sergigodayol@gmail.com') 
                     ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
                     : '';

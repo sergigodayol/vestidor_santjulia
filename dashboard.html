@@ -73,7 +73,6 @@
         .avatar { width: 32px; height: 32px; border-radius: 50%; background: #475569; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border: 2px solid var(--border); }
         .medalla { font-size: 1.1rem; min-width: 24px; text-align: center; }
         
-        /* 📉 ESTILS DE LES RÀFEGUES DE FORMA */
         .contenedor-rafaga { display: flex; gap: 5px; margin-top: 5px; margin-left: 36px; align-items: center; }
         .circulo-rafaga { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
         .circulo-verd { background-color: var(--success); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
@@ -81,8 +80,13 @@
         .circulo-vermell { background-color: var(--danger); box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
         
         .bote-total { text-align: center; font-size: 2.5rem; font-weight: 900; color: var(--success); margin-top: 0.5rem; letter-spacing: -1px; text-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-        .multa-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .multa-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .multa-item:last-child { border-bottom: none; }
         
+        /* 🚨 ESTIL PER AL BOTÓ D'ELIMINAR MULTA */
+        .btn-eliminar-multa { background: transparent; border: none; color: var(--danger); font-size: 1rem; cursor: pointer; padding: 2px 8px; margin-left: 10px; border-radius: 4px; transition: background 0.2s; }
+        .btn-eliminar-multa:hover { background: rgba(239, 68, 68, 0.15); }
+
         input.input-jornada { background: #111827; border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: 8px; width: 60px; text-align: center; font-size: 1rem; font-weight: bold; }
         input.input-text-mvp, select.select-text-mvp { background: #111827; border: 1px solid var(--border); color: var(--text); padding: 0.75rem; border-radius: 10px; width: 100%; box-sizing: border-box; font-size: 1rem; margin-bottom: 1rem; transition: border-color 0.2s; }
         input.input-text-mvp:focus, select.select-text-mvp:focus { outline: none; border-color: var(--warning); }
@@ -103,7 +107,7 @@
 
     <div class="container">
         
-        <!-- CARTEL COMPLETAR PERFIL (MIGRACIÓ) -->
+        <!-- CARTEL COMPLETAR PERFIL -->
         <div id="card-completar-perfil" class="card" style="display:none; border:2px dashed var(--warning); background-color: rgba(245, 158, 11, 0.03);">
             <h3 style="color:var(--warning)">👋 Configura el teu Perfil</h3>
             <p style="color:#94a3b8; font-size:0.9rem; margin-top:-0.5rem;">Per sortir correctament al rànquing oficial del vestidor, escriu el teu Nom i Cognom:</p>
@@ -119,7 +123,7 @@
                 <p id="txt-partido-detalles" style="margin: 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
             </div>
 
-            <!-- 🎂 PROPERES PASTES (ANIVERSARIS) -->
+            <!-- PROPERES PASTES -->
             <div class="card" style="border-left: 4px solid var(--warning);">
                 <h3>🎂 Properes Pastes (Aniversaris de l'Equip)</h3>
                 <div id="lista-aniversarios-inicio" style="font-size: 0.95rem;">Carregant el calendari de pastes...</div>
@@ -281,10 +285,14 @@
                     <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
                 </div>
                 
-                <!-- FORMULARI MULTES -->
+                <!-- 🔄 FORMULARI MULTES AMB EL NOU DESPLEGABLE DE JUGADORS REGISTRATS -->
                 <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--danger)">📝 Sancionar Jugador</p>
-                    <input type="text" id="multa-nom" class="input-admin-multa" placeholder="Nom del jugador (Ex: Joan)">
+                    
+                    <select id="select-admin-multa-nom" class="input-admin-multa" style="background: #111827; color: white;">
+                        <option value="">-- Selecciona el jugador culpable --</option>
+                    </select>
+
                     <input type="text" id="multa-motiu" class="input-admin-multa" placeholder="Motiu de la multa (Ex: Arribar tard)">
                     <input type="number" id="multa-import" class="input-admin-multa" placeholder="Import en euros (€) (Ex: 5)" min="1">
                     <button onclick="crearMultaManual()" style="width:100%; padding:0.6rem; background-color:var(--danger); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Aplicar Sanció</button>
@@ -348,7 +356,7 @@
         let porraBloqueadaActualmente = false;
         let numeroJornadaGlobal = 1;
         let dadesPerfilsMapejades = {}; 
-        let cacheHistoricaRafagues = {}; // Desa els cercles de colors de cada correu
+        let cacheHistoricaRafagues = {}; 
 
         async function verificarSesion() {
             const { data: { session } } = await clienteSupabase.auth.getSession();
@@ -376,24 +384,32 @@
 
             const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
             const selectMvp = document.getElementById('select-nom-mvp');
+            const selectAdminMulta = document.getElementById('select-admin-multa-nom'); // 🔄 Element desplegable de multes
             
             if(llistaPerfils) { 
                 llistaPerfils.forEach(p => { 
                     dadesPerfilsMapejades[p.id_jugador.trim().toLowerCase()] = p.nom_real; 
+                    
+                    // Llista MVP
                     if(selectMvp) {
                         let opcio = document.createElement('option');
                         opcio.value = p.nom_real.trim(); 
                         opcio.textContent = p.nom_real;
                         selectMvp.appendChild(opcio);
                     }
+
+                    // 🔄 Llista desplegable de Multes a Gestió
+                    if(selectAdminMulta) {
+                        let opcioMulta = document.createElement('option');
+                        opcioMulta.value = p.nom_real.trim();
+                        opcioMulta.textContent = p.nom_real;
+                        selectAdminMulta.appendChild(opcioMulta);
+                    }
                 }); 
             }
 
             await consultarEstadoCerrojo();
-            
-            // 🔥 ENGINE DE RÀFEGUES: Calculem primer tota la forma històrica dels bitllets
             await calcularMotorDeRafagues();
-
             cargarRanking();
             cargarRankingMVP(); 
             cargarMultas();
@@ -409,89 +425,47 @@
             location.reload();
         }
 
-        // --- 📊 MOTOR DE CÀLCUL DE RÀFEGUES AUTOMÀTIQUES ---
         async function calcularMotorDeRafagues() {
             try {
-                // Descarreguem els resultats de la lliga (excloent el cartel)
                 const { data: reals } = await clienteSupabase.from('resultados_reales').select('*').order('jornada', { ascending: false });
                 const { data: quinieles } = await clienteSupabase.from('quinieles').select('*').neq('id_jugador', 'CARTEL');
-
                 if(!reals || reals.length === 0 || !quinieles || quinieles.length === 0) return;
 
-                // Ens quedem només amb les darreres 5 jornades jugades de veritat
                 let jornadesAValidar = reals.slice(0, 5).map(r => r.jornada);
-
-                // Processem jugador per jugador
                 quinieles.forEach(q => {
                     let jor = q.jornada;
-                    // Si aquest bitllet pertany a una de les darreres 5 jornades avaluades
                     if(jornadesAValidar.includes(jor)) {
                         let jorReal = reals.find(r => r.jornada === jor);
                         if(jorReal) {
                             let encerts = 0;
-                            for(let i=1; i<=10; i++) {
-                                if(q[`p${i}`] && q[`p${i}`] === jorReal[`p${i}`]) encerts++;
-                            }
-
-                            // Classifiquem el cercle segons els criteris
-                            let classeCercle = 'circulo-vermell'; // Mal inici / Desastre
-                            if(encerts >= 7) classeCercle = 'circulo-verd'; // On fire
-                            else if(encerts >= 4 && encerts <= 6) classeCercle = 'circulo-grog'; // Regular
-
+                            for(let i=1; i<=10; i++) { if(q[`p${i}`] && q[`p${i}`] === jorReal[`p${i}`]) encerts++; }
+                            let classeCercle = 'circulo-vermell';
+                            if(encerts >= 7) classeCercle = 'circulo-verd';
+                            else if(encerts >= 4 && encerts <= 6) classeCercle = 'circulo-grog';
                             let userKey = q.id_jugador.trim().toLowerCase();
                             if(!cacheHistoricaRafagues[userKey]) cacheHistoricaRafagues[userKey] = {};
-                            
-                            // Guardem el cercle indexat per la jornada exacte
                             cacheHistoricaRafagues[userKey][jor] = `<span class="circulo-rafaga ${classeCercle}" title="Jornada ${jor}: ${encerts} encerts"></span>`;
                         }
                     }
                 });
-
-                // Convertim la cache de jornades en codi HTML net ordenat cronològicament (de més vella a més nova)
                 Object.keys(cacheHistoricaRafagues).forEach(user => {
-                    let blocsJornada = cacheHistoricaRafagues[user];
-                    let codiHTMLCerclets = '';
-                    
-                    // Ordenem les jornades en ordre ascendent (cronològic tradicional de Flashscore)
+                    let blocsJornada = cacheHistoricaRafagues[user]; let codiHTMLCerclets = '';
                     let ordenades = Object.keys(blocsJornada).sort((a,b) => parseInt(a) - parseInt(b));
-                    ordenades.forEach(j => {
-                        codiHTMLCerclets += blocsJornada[j];
-                    });
-                    
-                    // Guardem la cadena de text dels cercles definitiva
+                    ordenades.forEach(j => { codiHTMLCerclets += blocsJornada[j]; });
                     cacheHistoricaRafagues[user] = codiHTMLCerclets;
                 });
-            } catch(e) {
-                console.log("Error al motor de ràfegues: ", e);
-            }
+            } catch(e) { console.log(e); }
         }
 
         function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
             let correuNetejat = pos.id_jugador.trim().toLowerCase();
             let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
             let inicials = nomAMostrar.substring(0, 2).toUpperCase();
-            
             let medallaIcono = `${index + 1}.º`;
             if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
-            
-            // 📊 AGAFEM ELS CERCLES DE LA CACHE (Si no en té cap, es mostra buit)
             let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
-            let mòdulFormatatRafaga = HTMLCercletsForma !== '' 
-                ? `<div class="contenedor-rafaga"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>`
-                : '';
-
-            return `
-                <div class="ranking-item">
-                    <div class="ranking-fila-principal">
-                        <div class="player-info">
-                            <span class="medalla">${medallaIcono}</span>
-                            <div class="avatar" style="background-color: ${index === 0 ? 'rgba(245, 158, 11, 0.2)' : '#334155'}; color: ${index === 0 ? 'var(--warning)' : '#fff'}">${inicials}</div>
-                            <span style="font-weight: 600; color: #f1f5f9;">${nomAMostrar}</span>
-                        </div>
-                        <span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span>
-                    </div>
-                    ${mòdulFormatatRafaga}
-                </div>`;
+            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
+            return `<div class="ranking-item"><div class="ranking-fila-principal"><div class="player-info"><span class="medalla">${medallaIcono}</span><div class="avatar" style="background-color: ${index === 0 ? 'rgba(245, 158, 11, 0.2)' : '#334155'}; color: ${index === 0 ? 'var(--warning)' : '#fff'}">${inicials}</div><span style="font-weight: 600; color: #f1f5f9;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>${mòdulFormatatRafaga}</div>`;
         }
 
         async function cargarRanking() {
@@ -506,26 +480,21 @@
             const { data: llista, error } = await clienteSupabase.from('aniversaris').select('*');
             const divAniversaris = document.getElementById('lista-aniversarios-inicio');
             if(error || !llista || llista.length === 0) { divAniversaris.innerHTML = '<p style="color:#94a3b8; margin:0; font-size:0.9rem;">No hi ha cap aniversari registrat.</p>'; return; }
-
             const avui = new Date(); const anyActual = avui.getFullYear();
             let llistaProcessada = llista.map(aniv => {
                 let parts = aniv.data_naixement.split('-'); let mesAniv = parseInt(parts[1]) - 1; let diaAniv = parseInt(parts[2]);
                 let dataAnivAquestAny = new Date(anyActual, mesAniv, diaAniv);
                 if (dataAnivAquestAny < avui && dataAnivAquestAny.toDateString() !== avui.toDateString()) { dataAnivAquestAny.setFullYear(anyActual + 1); }
-                let diferenciaTemps = dataAnivAquestAny.getTime() - avui.getTime();
-                let diesRestants = Math.ceil(diferenciaTemps / (1000 * 60 * 60 * 24));
+                let diferenciaTemps = dataAnivAquestAny.getTime() - avui.getTime(); let diesRestants = Math.ceil(diferenciaTemps / (1000 * 60 * 60 * 24));
                 if (dataAnivAquestAny.toDateString() === avui.toDateString()) diesRestants = 0;
                 return { nom: aniv.nom_jugador, dia: diaAniv, mes: dataAnivAquestAny.toLocaleString('ca', { month: 'long' }), diesQueden: diesRestants };
             });
-
-            llistaProcessada.sort((a, b) => a.diesQueden - b.diesQueden);
-            let propersTres = llistaProcessada.slice(0, 3);
-            let html = '';
+            llistaProcessada.sort((a, b) => a.diesQueden - b.diesQueden); let propersTres = llistaProcessada.slice(0, 3); let html = '';
             propersTres.forEach(a => {
                 let avisPerill = ''; let estilText = 'color:#94a3b8;';
                 if (a.diesQueden === 0) { avisPerill = ' 🔥 <strong>AVUI PORTA LES PASTES!</strong>'; estilText = 'color:var(--danger); font-weight:bold;'; }
                 else if (a.diesQueden <= 7) { avisPerill = ' ⚠️ <strong>TOCA EL DIVENDRES!</strong>'; estilText = 'color:var(--warning); font-weight:bold;'; }
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom:1px solid var(--border);"><span>🏃‍♂️ <strong>${a.nom}</strong> (${a.dia} de ${a.mes})${avisPerill}</span><span style="${st=>st.style.display='none'}">${a.diesQueden === 0 ? 'Avui' : 'Queden ' + a.diesQueden + ' dies'}</span></div>`;
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom:1px solid var(--border);"><span>🏃‍♂️ <strong>${a.nom}</strong> (${a.dia} de ${a.mes})${avisPerill}</span><span style="${estilText}">${a.diesQueden === 0 ? 'Avui' : 'Queden ' + a.diesQueden + ' dies'}</span></div>`;
             });
             divAniversaris.innerHTML = html;
         }
@@ -574,12 +543,35 @@
             if(!error) { alert("¡Cartellera publicada!"); location.reload(); }
         }
 
+        // --- 📝 CREAR MULTA DES DEL NOU DESPLEGABLE ---
         async function crearMultaManual() {
-            const nom = document.getElementById('multa-nom').value.trim(); const motiu = document.getElementById('multa-motiu').value.trim(); const valImport = parseFloat(document.getElementById('multa-import').value); const msgM = document.getElementById('msg-admin-multa');
-            if(!nom || !motiu || isNaN(valImport) || valImport <= 0) return;
+            const nom = document.getElementById('select-admin-multa-nom').value; // Desplegable
+            const motiu = document.getElementById('multa-motiu').value.trim(); 
+            const valImport = parseFloat(document.getElementById('multa-import').value); 
+            const msgM = document.getElementById('msg-admin-multa');
+
+            if(!nom || !motiu || isNaN(valImport) || valImport <= 0) {
+                msgM.style.color = 'var(--danger)'; msgM.textContent = 'Selecciona un jugador culpable i omple tots els camps.'; msgM.style.display = 'block'; return;
+            }
             msgM.style.color = 'var(--warning)'; msgM.textContent = 'Sancionant...'; msgM.style.display = 'block';
+            
             const { error } = await clienteSupabase.from('multas').insert([{ nom_jugador: nom, motiu: motiu, import: valImport }]);
-            if(!error) { msgM.style.color = 'var(--success)'; msgM.textContent = `¡Sanció aplicada! 💸`; document.getElementById('multa-nom').value = ''; document.getElementById('multa-motiu').value = ''; document.getElementById('multa-import').value = ''; cargarMultas(); setTimeout(() => { msgM.style.display = 'none'; }, 3000); }
+            if(!error) { 
+                msgM.style.color = 'var(--success)'; msgM.textContent = `¡Sanció aplicada! 💸`; 
+                document.getElementById('select-admin-multa-nom').value = ''; 
+                document.getElementById('multa-motiu').value = ''; 
+                document.getElementById('multa-import').value = ''; 
+                cargarMultas(); setTimeout(() => { msgM.style.display = 'none'; }, 3000); 
+            }
+        }
+
+        // --- 🚨 ELIMINAR MULTA (BOTÓ EXCLUSIU SERGI) ---
+        async function eliminarMultaBase(idMulta, nomJugador) {
+            if(confirm(`Estàs segur que vols eliminar la multa d'en ${nomJugador}?`)) {
+                const { error } = await clienteSupabase.from('multas').delete().eq('id', idMulta);
+                if (error) { alert("Error al eliminar: " + error.message); }
+                else { alert("Multa liquidada/eliminada correctament! 👍"); cargarMultas(); }
+            }
         }
 
         async function cargarQuinielasCompanys() {
@@ -600,25 +592,17 @@
             const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
             let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
             if(error || !totsElsVots || totsElsVots.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
-
             let votsPerJornada = {};
-            totsElsVots.forEach(v => {
-                let jor = v.jornada; let nom = v.nominat.trim();
-                if(nom) { if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; }
-            });
-
+            totsElsVots.forEach(v => { let jor = v.jornada; let nom = v.nominat.trim(); if(nom) { if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; } });
             let palmaresTrofeus = {};
             Object.keys(votsPerJornada).forEach(jor => {
                 let votsDeLaSetmana = votsPerJornada[jor]; let maximVots = 0; let guanyadorsSetmana = [];
                 Object.keys(votsDeLaSetmana).forEach(nom => { if (votsDeLaSetmana[nom] > maximVots) { maximVots = votsDeLaSetmana[nom]; guanyadorsSetmana = [nom]; } else if (votsDeLaSetmana[nom] === maximVots) { guanyadorsSetmana.push(nom); } });
                 guanyadorsSetmana.forEach(guanyador => { palmaresTrofeus[guanyador] = (palmaresTrofeus[guanyador] || 0) + 1; });
             });
-
             let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
             if(llistaPalmares.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
-
-            let html = '';
-            llistaPalmares.forEach((mvp, index) => { html += generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); });
+            let html = ''; llistaPalmares.forEach((mvp, index) => { html += generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); });
             if(rankingMvpEl) rankingMvpEl.innerHTML = html; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = html;
         }
 
@@ -626,19 +610,14 @@
             if(numeroJornadaGlobal === 1) return;
             const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
             const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', jornadaAVotar).maybeSingle();
-            if(votFet) {
-                if(selectMvp) selectMvp.value = votFet.nominat;
-                if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a la Jornada ${jornadaAVotar}.`; msgMvp.style.display = 'block'; }
-            } else { if(selectMvp) selectMvp.value = ''; if(msgMvp) msgMvp.style.display = 'none'; }
+            if(votFet) { if(selectMvp) selectMvp.value = votFet.nominat; if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a la Jornada ${jornadaAVotar}.`; msgMvp.style.display = 'block'; } }
         }
 
         async function guardarVotMVP() {
             const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
             const { data: cerrojo = {} } = await clienteSupabase.from('estado_porra').select('*').eq('id', 1).single();
             if(cerrojo && cerrojo.bloqueado) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 El termini de votació de l\'MVP està tancat.'; msgMvp.style.display = 'block'; return; }
-            const seleccionat = selectMvp.value;
-            if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
-
+            const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
             msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
             const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: jornadaAVotar, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
             if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
@@ -649,14 +628,7 @@
             msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
             resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
             const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
-            if(quinielasJornada) {
-                for (let q of quinielasJornada) {
-                    let aciertos = 0; for(let i=1; i<=10; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; }
-                    const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single();
-                    if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); }
-                    else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); }
-                }
-            }
+            if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=10; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
             let seguent = numeroJornadaGlobal + 1; await clienteSupabase.from('estado_porra').update({ open: true, bloqueado: false,  jornada_activa: seguent }).eq('id', 1); location.reload();
         }
 
@@ -669,9 +641,34 @@
         function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
         function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
         function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
+        function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
         async function verificarBoletoExistente() { const msgEl = document.getElementById('msg-quiniela'); const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); if (bEx) { msgEl.style.color = 'var(--warning)'; msgEl.textContent = `Ja tens un bitllet desat.`; msgEl.style.display = 'block'; for(let i=1; i<=10; i++) { const valorAnterior = bEx[`p${i}`]; pronosticosSeleccionados[`p${i}`] = valorAnterior; const fila = document.querySelector(`[data-partido="p${i}"]`); if(fila) { fila.querySelectorAll('.btn-pronostico').forEach(b => { if(b.textContent === valorAnterior) b.classList.add('selected'); else b.classList.remove('selected'); }); } } } else { msgEl.style.display = 'none'; pronosticosSeleccionados = {}; document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); } }
         async function guardarQuiniela() { const msgEl = document.getElementById('msg-quiniela'); if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) return; pronosticosSeleccionados['id_jugador'] = emailUsuario; pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); setTimeout(() => { verificarBoletoExistente(); }, 1000); }
-        async function cargarMultas() { const { data: multas } = await clienteSupabase.from('multas').select('*'); const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas'); if(!multas || multas.length === 0) return; let sum = 0; let htmlLista = ''; multas.forEach(m => { sum += parseFloat(m.import); htmlLista += `<div class="multa-item"><span><strong>${m.nom_jugador}</strong> (${m.motiu})</span><span style="color:var(--danger)">${m.import} €</span></div>`; }); let text = `${sum.toFixed(2)} €`; if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista; }
+
+        // --- 💰 RENDERING DE MULTES AMB SEGURETAT D'ELIMINACIÓ ---
+        async function cargarMultas() {
+            const { data: multas } = await clienteSupabase.from('multas').select('*');
+            const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas');
+            if(!multas || multas.length === 0) { if(boteEl) boteEl.textContent = '0.00 €'; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = '0.00 €'; if(listaEl) listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>'; return; }
+            
+            let sum = 0; let htmlLista = '';
+            multas.forEach(m => {
+                sum += parseFloat(m.import);
+                
+                // 🛡️ REGLA MAESTRA: El botó d'eliminar es renderitza NOMÉS si l'usuari ets tu
+                let botoBorrarExclusiu = (emailUsuario === 'sergigodayol@gmail.com') 
+                    ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
+                    : '';
+
+                htmlLista += `
+                    <div class="multa-item">
+                        <span><strong>${m.nom_jugador}</strong> (${m.motiu}) ${botoBorrarExclusiu}</span>
+                        <span style="color:var(--danger); font-weight:bold;">${m.import} €</span>
+                    </div>`;
+            });
+            let text = `${sum.toFixed(2)} €`;
+            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
+        }
 
         verificarSesion();
     </script>

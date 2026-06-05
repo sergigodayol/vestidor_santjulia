@@ -66,11 +66,19 @@
         .btn-pronostico:hover { border-color: #64748b; color: #fff; }
         .btn-pronostico.selected { background-color: var(--primary); border-color: var(--primary); color: #fff; transform: scale(1.05); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
         
-        .ranking-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        .ranking-item { display: flex; flex-direction: column; padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
         .ranking-item:last-child { border-bottom: none; }
+        .ranking-fila-principal { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .player-info { display: flex; align-items: center; gap: 12px; }
         .avatar { width: 32px; height: 32px; border-radius: 50%; background: #475569; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border: 2px solid var(--border); }
         .medalla { font-size: 1.1rem; min-width: 24px; text-align: center; }
+        
+        /* 📉 ESTILS DE LES RÀFEGUES DE FORMA */
+        .contenedor-rafaga { display: flex; gap: 5px; margin-top: 5px; margin-left: 36px; align-items: center; }
+        .circulo-rafaga { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .circulo-verd { background-color: var(--success); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+        .circulo-grog { background-color: var(--warning); box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+        .circulo-vermell { background-color: var(--danger); box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
         
         .bote-total { text-align: center; font-size: 2.5rem; font-weight: 900; color: var(--success); margin-top: 0.5rem; letter-spacing: -1px; text-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
         .multa-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
@@ -200,7 +208,7 @@
             </div>
         </div>
 
-        <!-- PESTAÑA MVP (MUNTADA AMB EL NOU DESPLEGABLE) -->
+        <!-- PESTAÑA MVP -->
         <div id="tab-mvp" class="tab-content">
             <div id="contenedor-votar-mvp" class="card" style="border-left: 4px solid var(--warning);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -208,7 +216,6 @@
                 </div>
                 <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.2rem; margin-top:-0.5rem;">Selecciona a la llista el company que creus que ha estat el millor del partit passat.</p>
                 
-                <!-- 🔄 CANVI CLAU: SELECT DINÀMIC EN COMPTES DE CAIXA DE TEXT -->
                 <select id="select-nom-mvp" class="select-text-mvp">
                     <option value="">-- Tria un jugador registrat --</option>
                 </select>
@@ -341,6 +348,7 @@
         let porraBloqueadaActualmente = false;
         let numeroJornadaGlobal = 1;
         let dadesPerfilsMapejades = {}; 
+        let cacheHistoricaRafagues = {}; // Desa els cercles de colors de cada correu
 
         async function verificarSesion() {
             const { data: { session } } = await clienteSupabase.auth.getSession();
@@ -359,24 +367,22 @@
                 navBar.innerHTML += `
                     <button class="nav-btn" style="width: 20%; color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
                         <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor; margin-bottom: 5px;">
-                            <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                            <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
                         </svg>
                         Gestió
-                    </button>`;
+                    </button>
+                `;
             }
 
-            // Descarreguem i guardem tots els perfils reals
             const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
             const selectMvp = document.getElementById('select-nom-mvp');
             
             if(llistaPerfils) { 
                 llistaPerfils.forEach(p => { 
                     dadesPerfilsMapejades[p.id_jugador.trim().toLowerCase()] = p.nom_real; 
-                    
-                    // 🔄 INTEGREM LES OPCCIONS AL DESPLEGABLE DE L'MVP
                     if(selectMvp) {
                         let opcio = document.createElement('option');
-                        opcio.value = p.nom_real.trim(); // Guardem directament el nom real netejat
+                        opcio.value = p.nom_real.trim(); 
                         opcio.textContent = p.nom_real;
                         selectMvp.appendChild(opcio);
                     }
@@ -384,6 +390,10 @@
             }
 
             await consultarEstadoCerrojo();
+            
+            // 🔥 ENGINE DE RÀFEGUES: Calculem primer tota la forma històrica dels bitllets
+            await calcularMotorDeRafagues();
+
             cargarRanking();
             cargarRankingMVP(); 
             cargarMultas();
@@ -397,6 +407,99 @@
             if(!nouNom) return;
             await clienteSupabase.from('perfils').insert([{ id_jugador: emailUsuario, nom_real: nouNom }]);
             location.reload();
+        }
+
+        // --- 📊 MOTOR DE CÀLCUL DE RÀFEGUES AUTOMÀTIQUES ---
+        async function calcularMotorDeRafagues() {
+            try {
+                // Descarreguem els resultats de la lliga (excloent el cartel)
+                const { data: reals } = await clienteSupabase.from('resultados_reales').select('*').order('jornada', { ascending: false });
+                const { data: quinieles } = await clienteSupabase.from('quinieles').select('*').neq('id_jugador', 'CARTEL');
+
+                if(!reals || reals.length === 0 || !quinieles || quinieles.length === 0) return;
+
+                // Ens quedem només amb les darreres 5 jornades jugades de veritat
+                let jornadesAValidar = reals.slice(0, 5).map(r => r.jornada);
+
+                // Processem jugador per jugador
+                quinieles.forEach(q => {
+                    let jor = q.jornada;
+                    // Si aquest bitllet pertany a una de les darreres 5 jornades avaluades
+                    if(jornadesAValidar.includes(jor)) {
+                        let jorReal = reals.find(r => r.jornada === jor);
+                        if(jorReal) {
+                            let encerts = 0;
+                            for(let i=1; i<=10; i++) {
+                                if(q[`p${i}`] && q[`p${i}`] === jorReal[`p${i}`]) encerts++;
+                            }
+
+                            // Classifiquem el cercle segons els criteris
+                            let classeCercle = 'circulo-vermell'; // Mal inici / Desastre
+                            if(encerts >= 7) classeCercle = 'circulo-verd'; // On fire
+                            else if(encerts >= 4 && encerts <= 6) classeCercle = 'circulo-grog'; // Regular
+
+                            let userKey = q.id_jugador.trim().toLowerCase();
+                            if(!cacheHistoricaRafagues[userKey]) cacheHistoricaRafagues[userKey] = {};
+                            
+                            // Guardem el cercle indexat per la jornada exacte
+                            cacheHistoricaRafagues[userKey][jor] = `<span class="circulo-rafaga ${classeCercle}" title="Jornada ${jor}: ${encerts} encerts"></span>`;
+                        }
+                    }
+                });
+
+                // Convertim la cache de jornades en codi HTML net ordenat cronològicament (de més vella a més nova)
+                Object.keys(cacheHistoricaRafagues).forEach(user => {
+                    let blocsJornada = cacheHistoricaRafagues[user];
+                    let codiHTMLCerclets = '';
+                    
+                    // Ordenem les jornades en ordre ascendent (cronològic tradicional de Flashscore)
+                    let ordenades = Object.keys(blocsJornada).sort((a,b) => parseInt(a) - parseInt(b));
+                    ordenades.forEach(j => {
+                        codiHTMLCerclets += blocsJornada[j];
+                    });
+                    
+                    // Guardem la cadena de text dels cercles definitiva
+                    cacheHistoricaRafagues[user] = codiHTMLCerclets;
+                });
+            } catch(e) {
+                console.log("Error al motor de ràfegues: ", e);
+            }
+        }
+
+        function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
+            let correuNetejat = pos.id_jugador.trim().toLowerCase();
+            let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
+            let inicials = nomAMostrar.substring(0, 2).toUpperCase();
+            
+            let medallaIcono = `${index + 1}.º`;
+            if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
+            
+            // 📊 AGAFEM ELS CERCLES DE LA CACHE (Si no en té cap, es mostra buit)
+            let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
+            let mòdulFormatatRafaga = HTMLCercletsForma !== '' 
+                ? `<div class="contenedor-rafaga"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>`
+                : '';
+
+            return `
+                <div class="ranking-item">
+                    <div class="ranking-fila-principal">
+                        <div class="player-info">
+                            <span class="medalla">${medallaIcono}</span>
+                            <div class="avatar" style="background-color: ${index === 0 ? 'rgba(245, 158, 11, 0.2)' : '#334155'}; color: ${index === 0 ? 'var(--warning)' : '#fff'}">${inicials}</div>
+                            <span style="font-weight: 600; color: #f1f5f9;">${nomAMostrar}</span>
+                        </div>
+                        <span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span>
+                    </div>
+                    ${mòdulFormatatRafaga}
+                </div>`;
+        }
+
+        async function cargarRanking() {
+            const { data: ranking, error } = await clienteSupabase.from('classificacio_quiniela').select('*').order('puntos_totales', { ascending: false });
+            const rankingEl = document.getElementById('tabla-ranking'); const rankingQuinielaPestanaEl = document.getElementById('tabla-ranking-quiniela-pestana');
+            if (error || !ranking || ranking.length === 0) { return; }
+            let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.id_jugador, valor: pos.puntos_totales }, index, 'pts'); });
+            if(rankingEl) rankingEl.innerHTML = html; if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = html;
         }
 
         async function cargarCalendariAniversaris() {
@@ -422,7 +525,7 @@
                 let avisPerill = ''; let estilText = 'color:#94a3b8;';
                 if (a.diesQueden === 0) { avisPerill = ' 🔥 <strong>AVUI PORTA LES PASTES!</strong>'; estilText = 'color:var(--danger); font-weight:bold;'; }
                 else if (a.diesQueden <= 7) { avisPerill = ' ⚠️ <strong>TOCA EL DIVENDRES!</strong>'; estilText = 'color:var(--warning); font-weight:bold;'; }
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom:1px solid var(--border);"><span>🏃‍♂️ <strong>${a.nom}</strong> (${a.dia} de ${a.mes})${avisPerill}</span><span style="${estilText}">${a.diesQueden === 0 ? 'Avui' : 'Queden ' + a.diesQueden + ' dies'}</span></div>`;
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom:1px solid var(--border);"><span>🏃‍♂️ <strong>${a.nom}</strong> (${a.dia} de ${a.mes})${avisPerill}</span><span style="${st=>st.style.display='none'}">${a.diesQueden === 0 ? 'Avui' : 'Queden ' + a.diesQueden + ' dies'}</span></div>`;
             });
             divAniversaris.innerHTML = html;
         }
@@ -479,23 +582,6 @@
             if(!error) { msgM.style.color = 'var(--success)'; msgM.textContent = `¡Sanció aplicada! 💸`; document.getElementById('multa-nom').value = ''; document.getElementById('multa-motiu').value = ''; document.getElementById('multa-import').value = ''; cargarMultas(); setTimeout(() => { msgM.style.display = 'none'; }, 3000); }
         }
 
-        function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
-            let correuNetejat = pos.id_jugador.trim().toLowerCase();
-            let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
-            let inicials = nomAMostrar.substring(0, 2).toUpperCase();
-            let medallaIcono = `${index + 1}.º`;
-            if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
-            return `<div class="ranking-item"><div class="player-info"><span class="medalla">${medallaIcono}</span><div class="avatar" style="background-color: ${index === 0 ? 'rgba(245, 158, 11, 0.2)' : '#334155'}; color: ${index === 0 ? 'var(--warning)' : '#fff'}">${inicials}</div><span style="font-weight: 600; color: #f1f5f9;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>`;
-        }
-
-        async function cargarRanking() {
-            const { data: ranking, error } = await clienteSupabase.from('classificacio_quiniela').select('*').order('puntos_totales', { ascending: false });
-            const rankingEl = document.getElementById('tabla-ranking'); const rankingQuinielaPestanaEl = document.getElementById('tabla-ranking-quiniela-pestana');
-            if (error || !ranking || ranking.length === 0) { return; }
-            let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.id_jugador, valor: pos.puntos_totales }, index, 'pts'); });
-            if(rankingEl) rankingEl.innerHTML = html; if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = html;
-        }
-
         async function cargarQuinielasCompanys() {
             const listaCompanysEl = document.getElementById('lista-quinielas-companys');
             if (!porraBloqueadaActualmente) { listaCompanysEl.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--warning);"><p style="font-size:2rem; margin:0 0 0.5rem 0;">🔒</p><p style="margin:0; font-size:1rem; font-weight:bold;">Bitllets ocults temporandament</p></div>`; return; }
@@ -509,12 +595,10 @@
             listaCompanysEl.innerHTML = html;
         }
 
-        // --- CARREGAR HISTÒRIC DE GUANYADORS MVP ---
         async function cargarRankingMVP() {
             const { data: totsElsVots, error } = await clienteSupabase.from('vots_mvp').select('*');
             const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
             let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
-            
             if(error || !totsElsVots || totsElsVots.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
 
             let votsPerJornada = {};
@@ -538,36 +622,26 @@
             if(rankingMvpEl) rankingMvpEl.innerHTML = html; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = html;
         }
 
-        // --- CONTROL DE VOT REALITZAT DE L'MVP ---
         async function cargarVotMVPExistente() {
             if(numeroJornadaGlobal === 1) return;
             const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
             const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', jornadaAVotar).maybeSingle();
-            
             if(votFet) {
                 if(selectMvp) selectMvp.value = votFet.nominat;
-                if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a la Jornada ${jornadaAVotar}. Si el canvies, s'actualitzarà.`; msgMvp.style.display = 'block'; }
+                if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a la Jornada ${jornadaAVotar}.`; msgMvp.style.display = 'block'; }
             } else { if(selectMvp) selectMvp.value = ''; if(msgMvp) msgMvp.style.display = 'none'; }
         }
 
-        // --- GUARDAR VOT MVP DES DEL DESPLEGABLE ---
         async function guardarVotMVP() {
             const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
             const { data: cerrojo = {} } = await clienteSupabase.from('estado_porra').select('*').eq('id', 1).single();
-            
             if(cerrojo && cerrojo.bloqueado) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 El termini de votació de l\'MVP està tancat.'; msgMvp.style.display = 'block'; return; }
-            
             const seleccionat = selectMvp.value;
-            if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company de la llista abans d\'enviar.'; msgMvp.style.display = 'block'; return; }
+            if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
 
             msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
-            
-            const { error } = await clienteSupabase
-                .from('vots_mvp')
-                .upsert({ id_jugador: emailUsuario, jornada: jornadaAVotar, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
-            
-            if(error) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Error: ' + error.message; }
-            else { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot per a ${seleccionat} enviat correctament! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
+            const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: jornadaAVotar, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
+            if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
         }
 
         async function guardarResultadosReales() {
@@ -595,6 +669,7 @@
         function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
         function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
         function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
+        async function verificarBoletoExistente() { const msgEl = document.getElementById('msg-quiniela'); const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); if (bEx) { msgEl.style.color = 'var(--warning)'; msgEl.textContent = `Ja tens un bitllet desat.`; msgEl.style.display = 'block'; for(let i=1; i<=10; i++) { const valorAnterior = bEx[`p${i}`]; pronosticosSeleccionados[`p${i}`] = valorAnterior; const fila = document.querySelector(`[data-partido="p${i}"]`); if(fila) { fila.querySelectorAll('.btn-pronostico').forEach(b => { if(b.textContent === valorAnterior) b.classList.add('selected'); else b.classList.remove('selected'); }); } } } else { msgEl.style.display = 'none'; pronosticosSeleccionados = {}; document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); } }
         async function guardarQuiniela() { const msgEl = document.getElementById('msg-quiniela'); if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) return; pronosticosSeleccionados['id_jugador'] = emailUsuario; pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); setTimeout(() => { verificarBoletoExistente(); }, 1000); }
         async function cargarMultas() { const { data: multas } = await clienteSupabase.from('multas').select('*'); const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas'); if(!multas || multas.length === 0) return; let sum = 0; let htmlLista = ''; multas.forEach(m => { sum += parseFloat(m.import); htmlLista += `<div class="multa-item"><span><strong>${m.nom_jugador}</strong> (${m.motiu})</span><span style="color:var(--danger)">${m.import} €</span></div>`; }); let text = `${sum.toFixed(2)} €`; if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista; }
 

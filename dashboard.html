@@ -646,33 +646,42 @@
             let html = ''; misQuinielas.forEach((q) => { html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 5px 0;">Jornada ${q.jornada || 1}</p><p style="margin:0; color:#94a3b8;">[P1: ${q.p1}] [P2: ${q.p2}] [P3: ${q.p3}] [P4: ${q.p4}] [P5: ${q.p5}] <br>[P6: ${q.p6}] [P7: ${q.p7}] [P8: ${q.p8}] [P9: ${q.p9}] [P10: ${q.p10}]</p></div>`; }); historialEl.innerHTML = html;
         }
 
-        // --- 📊 MOTOR SCRIPT: RECOLLIDA DE GOOGLE SHEETS (DADES PUBLICADES EN ENLLAÇ) ---
+        // --- 📊 MOTOR ACTUALITZAT: SENSE FALLADES SILENCIOSES PER SEMICOLONS ---
         async function cargarEstadisticas() {
             const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
             const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2025-26`;
             const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
 
             try {
+                console.log("Iniciant descàrrega de dades estadístiques...");
                 const resLliga = await fetch(urlLliga);
                 const csvLliga = await resLliga.text();
                 const dadesLliga = parsearCSV(csvLliga);
+                console.log("Dades de Lliga parsejades:", dadesLliga);
 
                 const resGlobal = await fetch(urlGlobal);
                 const csvGlobal = await resGlobal.text();
                 const dadesGlobal = parsearCSV(csvGlobal);
+                console.log("Dades Globals parsejades:", dadesGlobal);
 
                 if (dadesLliga.length === 0) {
-                    document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">No s\'han pogut obtenir dades de la plantilla de lliga.</p>';
+                    document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">El full de càrrec ha retornat un fitxer buit.</p>';
                     return;
                 }
 
-                // Trobar índexs de columnes de la pestanya 1 (Lliga)
                 const headersLliga = dadesLliga[0].map(h => h.trim().toUpperCase());
+                console.log("Capçaleres trobades a Lliga:", headersLliga);
+
                 const idxJugadorL = headersLliga.indexOf('JUGADORS');
                 const idxPartitsL = headersLliga.indexOf('PARTITS JUGATS');
                 const idxGolsL = headersLliga.indexOf('GOLS');
                 const idxTGL = headersLliga.indexOf('TG');
                 const idxTVL = headersLliga.indexOf('TV');
+
+                if (idxJugadorL === -1) {
+                    document.getElementById('tabla-stats-lliga').innerHTML = `<p style="color:var(--danger)">Error: No s'ha trobat la columna 'JUGADORS'. Revisa les capçaleres de l'Excel.</p>`;
+                    return;
+                }
 
                 const jugadorsActius = [];
                 let htmlLliga = `
@@ -712,7 +721,7 @@
                 htmlLliga += `</tbody></table>`;
                 document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
 
-                // Trobar índexs de columnes de la pestanya 2 (Globals Acumulats)
+                // Segona Pestanya: Històrics Globals filtrats per membres vius
                 const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
                 const idxJugadorG = headersGlobal.indexOf('JUGADORS');
                 const idxPartitsG = headersGlobal.indexOf('PARTITS JUGATS');
@@ -740,7 +749,6 @@
 
                     const nomG = fila[idxJugadorG].trim();
                     
-                    // Condició de filtratge per llista de jugadors actius
                     if (jugadorsActius.includes(nomG.toLowerCase())) {
                         hiHaHistoric = true;
                         const pjG = fila[idxPartitsG] ? fila[idxPartitsG].trim() : '0';
@@ -760,27 +768,35 @@
                 }
 
                 if (!hiHaHistoric) {
-                    htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han localitzat dades coincidents per als jugadors d'aquesta lliga.</td></tr>`;
+                    htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
                 }
 
                 htmlHistoric += `</tbody></table>`;
                 document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
 
             } catch (error) {
-                console.error("Error carregant dades des del motor de fulls públics:", error);
-                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger); font-size:0.85rem;">Motiu: Verifica si el fitxer de Google Drive manté activada l\'opció "Publicar a la web" (com a línia CSV).</p>';
-                document.getElementById('tabla-stats-historic').innerHTML = '<p style="color:var(--danger); font-size:0.85rem;">Motiu: Error en la petició de dades en línia.</p>';
+                console.error("Error crític carregant fulls:", error);
+                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió de xarxa amb Drive.</p>';
             }
         }
 
+        // Analitzador intel·ligent capaç de canviar automàticament de separador (, o ;)
         function parsearCSV(text) {
-            const lineas = text.split(/\r?\n/);
+            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
+            if (lineas.length === 0) return [];
+            
+            const primeraLinea = lineas[0];
+            const nComes = (primeraLinea.match(/,/g) || []).length;
+            const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
+            const separador = nPuntsComes > nComes ? ';' : ',';
+            console.log(`Separador detectat per a aquest full: [ ${separador} ]`);
+            
             return lineas.map(linea => {
                 const r = []; let dins = false; let val = '';
                 for (let i = 0; i < linea.length; i++) {
                     let c = linea[i];
                     if (c === '"') { dins = !dins; } 
-                    else if (c === ',' && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
+                    else if (c === separador && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
                     else { val += c; }
                 }
                 r.push(val.trim().replace(/^"|"$/g, ''));
@@ -816,7 +832,8 @@
                     </div>`;
             });
             let text = `${sum.toFixed(2)} €`;
-            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
+            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) location.innerHTML = htmlLista;
+            if(listaEl) listaEl.innerHTML = htmlLista;
         }
 
         verificarSesion();

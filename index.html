@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accés Vestidor - CF Sant Julià</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #111827;
+            color: #f9fafb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .login-card {
+            background-color: #1f2937;
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            border: 1px solid #374151;
+        }
+        h2 { margin-top: 0; margin-bottom: 0.5rem; font-size: 1.5rem; }
+        p { color: #9ca3af; font-size: 0.85rem; margin-bottom: 2rem; }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            background-color: #111827;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        input:focus { outline: none; border-color: #3b82f6; }
+        
+        .btn-primario {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: background 0.2s;
+        }
+        .btn-primario:hover { background-color: #2563eb; }
+
+        .btn-secundario {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: transparent;
+            color: #10b981;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-secundario:hover { background-color: rgba(16, 185, 129, 0.1); }
+        
+        #mensaje { margin-top: 1.5rem; font-size: 0.9rem; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>Vestidor Digital</h2>
+        <p>CF Sant Julià - Temporada 26/27</p>
+
+        <!-- CAMPS D'ACCÉS -->
+        <input type="email" id="email" placeholder="Correu electrònic">
+        <input type="password" id="password" placeholder="Contrasenya">
+        
+        <!-- CAMPO NUEVO VISIBLE SÓLO PARA EL REGISTRO -->
+        <div id="seccio-nom-real" style="display: none; border-top: 1px dashed #4b5563; margin-top: 1rem; padding-top: 1rem;">
+            <p style="margin-bottom: 0.5rem; color:#10b981;">⚠️ Requisit nou de la lliga:</p>
+            <input type="text" id="nom_real" placeholder="Nom i Cognom Real (Ex: Sergi Godayol)">
+        </div>
+        
+        <!-- BOTONS D'ACCIÓ -->
+        <button class="btn-primario" id="btn-entrar" onclick="iniciarSesion()">Entrar al Vestidor</button>
+        <button class="btn-secundario" id="btn-registrar-mode" onclick="activarModoRegistro()">Registrar-se com a nou jugador</button>
+
+        <p id="mensaje" style="display:none;"></p>
+    </div>
+
+    <script>
+        const urlSupa = 'https://gfpnyxwjllljjxdcadfy.supabase.co';
+        const keySupa = 'sb_publishable_F2oufPKZ4W3dkTbLGdGZBw_xDQ6UIxQ';
+        
+        const clienteSupabase = window.supabase.createClient(urlSupa, keySupa, {
+            auth: { storage: window.sessionStorage }
+        });
+
+        let modoRegistroActivo = false;
+
+        function activarModoRegistro() {
+            modoRegistroActivo = true;
+            document.getElementById('seccio-nom-real').style.display = 'block';
+            document.getElementById('btn-entrar').textContent = 'Confirmar i Crear Compte';
+            document.getElementById('btn-entrar').setAttribute('onclick', 'registrarse()');
+            document.getElementById('btn-registrar-mode').style.display = 'none';
+        }
+
+        // --- INICIAR SESSIÓ ---
+        async function iniciarSesion() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('mensaje');
+
+            if(!email || !password) {
+                msg.style.color = '#ef4444'; msg.textContent = "Introdueix el teu correu i contrasenya."; msg.style.display = 'block'; return;
+            }
+
+            const { data, error } = await clienteSupabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                msg.style.color = '#ef4444'; msg.textContent = "Error: " + error.message; msg.style.display = 'block';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // --- REGISTRAR-SE AMB NOM REAL ---
+        async function registrarse() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const nomReal = document.getElementById('nom_real').value.trim();
+            const msg = document.getElementById('mensaje');
+
+            if(!email || !password || !nomReal) {
+                msg.style.color = '#ef4444'; msg.textContent = "Omple tots els camps, inclòs el teu Nom i Cognom."; msg.style.display = 'block'; return;
+            }
+            
+            if(password.length < 6) {
+                msg.style.color = '#ef4444'; msg.textContent = "La contrasenya ha de tenir com a mínim 6 caràcters."; msg.style.display = 'block'; return;
+            }
+
+            msg.style.color = '#f59e0b'; msg.textContent = "Creant compte al sistema..."; msg.style.display = 'block';
+
+            // 1. Creem l'usuari a l'autenticació
+            const { data, error } = await clienteSupabase.auth.signUp({ email, password });
+
+            if (error) {
+                msg.style.color = '#ef4444'; msg.textContent = "Error: " + error.message; msg.style.display = 'block';
+            } else {
+                // 2. Insertem el nom real creuat amb el correu electrònic a la nova taula
+                await clienteSupabase.from('perfils').insert([{ id_jugador: email, nom_real: nomReal }]);
+                
+                msg.style.color = '#10b981'; msg.textContent = "¡Compte creat! Inicia sessió ara mateix per comprovar-ho."; msg.style.display = 'block';
+                
+                // Resetegem el formulari a mode login
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>

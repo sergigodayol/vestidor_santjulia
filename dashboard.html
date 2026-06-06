@@ -56,7 +56,6 @@
 
         nav.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding: 0.7rem 0; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.3); }
         
-        /* Ajustos botons inferiors per encabir 6 pestanyes millor */
         .nav-btn { background: none; border: none; color: #94a3b8; font-size: 0.65rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; padding: 0 2px; transition: color 0.2s; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn svg { width: 20px; height: 20px; fill: currentColor; transition: transform 0.2s; }
@@ -96,22 +95,6 @@
         
         .input-admin-multa { background: #111827; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 0.95rem; margin-bottom: 0.8rem; }
         .input-admin-multa:focus { outline: none; border-color: var(--danger); }
-
-        /* Estils per a la taula fixa a mòbils - ACTUALITZAT PER LIMITAR L'AMPLADA */
-        .table-wrapper { overflow-x: auto; position: relative; border-radius: 8px; }
-        .table-sticky th:first-child, .table-sticky td:first-child {
-            position: sticky;
-            left: 0;
-            background-color: var(--surface);
-            z-index: 2;
-            border-right: 1px solid var(--border);
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            max-width: 120px; /* EVITA QUE OCUPI TOTA LA PANTALLA AL MÒBIL */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .table-sticky th:first-child { z-index: 3; }
     </style>
 </head>
 <body>
@@ -147,12 +130,12 @@
 
             <div class="grid-rankings">
                 <div class="card" style="border-left: 4px solid var(--purple);">
-                    <h3>🏆 Quiniela</h3>
+                    <h3>🏆 Top 3 Quiniela</h3>
                     <div id="tabla-ranking">Carregant la classificació...</div>
                 </div>
 
                 <div class="card" style="border-left: 4px solid var(--warning);">
-                    <h3>👑 Rànquing MVP</h3>
+                    <h3>👑 Top 3 MVPs</h3>
                     <div id="tabla-ranking-mvp-inicio">Carregant els MVPs de la temporada...</div>
                 </div>
 
@@ -258,7 +241,7 @@
         <div id="tab-entrenos" class="tab-content">
             <div class="card" style="border-left: 4px solid var(--info);">
                 <h3>🏃‍♂️ Lliga d'Entrenaments (Global)</h3>
-                <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Aquesta és la classificació completa de tots els punts guanyats durant els partits d'entrenament de la temporada.</p>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Classificació global de punts d'entreno.</p>
                 <div id="tabla-ranking-entrenos-full">Carregant el rànquing complet...</div>
             </div>
         </div>
@@ -273,7 +256,7 @@
                 <div class="card">
                     <h3>📊 Estadístiques Oficials - Temporada 25/26</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Dades generals obtingudes directament del sistema de control de l'equip.</p>
-                    <div id="tabla-stats-lliga">Carregant estadístiques des de Google Sheets...</div>
+                    <div id="tabla-stats-lliga" style="overflow-x: auto;">Carregant estadístiques des de Google Sheets...</div>
                 </div>
             </div>
 
@@ -281,7 +264,7 @@
                 <div class="card">
                     <h3>📜 Històric Acumulat del Vestidor</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Trajectòria global filtrada exclusivament per als membres actius de la plantilla actual.</p>
-                    <div id="tabla-stats-historic">Carregant historial des de Google Sheets...</div>
+                    <div id="tabla-stats-historic" style="overflow-x: auto;">Carregant historial des de Google Sheets...</div>
                 </div>
             </div>
         </div>
@@ -534,13 +517,23 @@
 
         async function cargarRanking() {
             const { data: ranking, error } = await clienteSupabase.from('classificacio_quiniela').select('*').order('puntos_totales', { ascending: false });
-            const rankingEl = document.getElementById('tabla-ranking'); const rankingQuinielaPestanaEl = document.getElementById('tabla-ranking-quiniela-pestana');
+            const rankingEl = document.getElementById('tabla-ranking'); 
+            const rankingQuinielaPestanaEl = document.getElementById('tabla-ranking-quiniela-pestana');
             if (error || !ranking || ranking.length === 0) { return; }
-            let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.id_jugador, valor: pos.puntos_totales }, index, 'pts'); });
-            if(rankingEl) rankingEl.innerHTML = html; if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = html;
+            
+            let htmlInicio = '';
+            let htmlFull = '';
+            
+            ranking.forEach((pos, index) => { 
+                let fila = generarFilaRankingHTML({ id_jugador: pos.id_jugador, valor: pos.puntos_totales }, index, 'pts'); 
+                htmlFull += fila;
+                if(index < 3) htmlInicio += fila;
+            });
+            
+            if(rankingEl) rankingEl.innerHTML = htmlInicio; 
+            if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = htmlFull;
         }
 
-        // FUNCIÓ 1: Només el TOP 3 per l'inici
         async function cargarRankingEntrenosInicio() {
             const { data: ranking, error } = await clienteSupabase.from('punts_entreno').select('*').order('puntos_totales', { ascending: false }).limit(3);
             const rankingEl = document.getElementById('tabla-ranking-entrenos-inicio');
@@ -552,7 +545,6 @@
             if(rankingEl) rankingEl.innerHTML = html;
         }
 
-        // FUNCIÓ 2: Tot el Rànquing complet per la pestanya Entrenos
         async function cargarRankingEntrenosFull() {
             const { data: ranking, error } = await clienteSupabase.from('punts_entreno').select('*').order('puntos_totales', { ascending: false });
             const rankingEl = document.getElementById('tabla-ranking-entrenos-full');
@@ -698,21 +690,35 @@
 
         async function cargarRankingMVP() {
             const { data: totsElsVots, error } = await clienteSupabase.from('vots_mvp').select('*');
-            const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
+            const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); 
+            const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
             let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
             if(error || !totsElsVots || totsElsVots.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
+            
             let votsPerJornada = {};
             totsElsVots.forEach(v => { let jor = v.jornada; let nom = v.nominat.trim(); if(nom) { if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; } });
+            
             let palmaresTrofeus = {};
             Object.keys(votsPerJornada).forEach(jor => {
                 let votsDeLaSetmana = votsPerJornada[jor]; let maximVots = 0; let guanyadorsSetmana = [];
                 Object.keys(votsDeLaSetmana).forEach(nom => { if (votsDeLaSetmana[nom] > maximVots) { maximVots = votsDeLaSetmana[nom]; guanyadorsSetmana = [nom]; } else if (votsDeLaSetmana[nom] === maximVots) { guanyadorsSetmana.push(nom); } });
                 guanyadorsSetmana.forEach(guanyador => { palmaresTrofeus[guanyador] = (palmaresTrofeus[guanyador] || 0) + 1; });
             });
+            
             let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
             if(llistaPalmares.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
-            let html = ''; llistaPalmares.forEach((mvp, index) => { html += generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); });
-            if(rankingMvpEl) rankingMvpEl.innerHTML = html; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = html;
+            
+            let htmlInicio = '';
+            let htmlFull = '';
+            
+            llistaPalmares.forEach((mvp, index) => { 
+                let fila = generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); 
+                htmlFull += fila;
+                if(index < 3) htmlInicio += fila;
+            });
+            
+            if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
+            if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
         }
 
         async function cargarVotMVPExistente() {
@@ -780,8 +786,7 @@
 
                 const jugadorsActius = [];
                 let htmlLliga = `
-                    <div class="table-wrapper">
-                    <table class="table-sticky" style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
                                 <th style="padding: 10px 8px;">JUGADOR</th>
@@ -816,14 +821,14 @@
 
                     htmlLliga += `
                         <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                            <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;" title="${nom}">${nom}</td>
+                            <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;">${nom}</td>
                             <td style="padding: 12px 8px; text-align:center; color:#cbd5e1;">${pj}</td>
                             <td style="padding: 12px 8px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
                             <td style="padding: 12px 8px; text-align:center; color:#eab308;">${tg}</td>
                             <td style="padding: 12px 8px; text-align:center; color:var(--danger);">${tv}</td>
                         </tr>`;
                 }
-                htmlLliga += `</tbody></table></div>`;
+                htmlLliga += `</tbody></table>`;
                 document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
 
                 const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
@@ -834,8 +839,7 @@
                 const idxTVG = headersGlobal.indexOf('TV');
 
                 let htmlHistoric = `
-                    <div class="table-wrapper">
-                    <table class="table-sticky" style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
                                 <th style="padding: 10px 8px;">JUGADOR</th>
@@ -863,7 +867,7 @@
 
                         htmlHistoric += `
                             <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                                <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;" title="${nomG}">${nomG}</td>
+                                <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;">${nomG}</td>
                                 <td style="padding: 12px 8px; text-align:center; color:#cbd5e1;">${pjG}</td>
                                 <td style="padding: 12px 8px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
                                 <td style="padding: 12px 8px; text-align:center; color:#eab308;">${tgG}</td>
@@ -876,7 +880,7 @@
                     htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
                 }
 
-                htmlHistoric += `</tbody></table></div>`;
+                htmlHistoric += `</tbody></table>`;
                 document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
 
             } catch (error) {

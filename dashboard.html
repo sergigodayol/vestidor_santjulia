@@ -17,6 +17,8 @@
             --danger: #ef4444;
             --success: #10b981;
             --warning: #f59e0b;
+            --info: #0ea5e9;
+            --purple: #8b5cf6;
         }
         body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
         
@@ -92,6 +94,18 @@
         
         .input-admin-multa { background: #111827; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 0.95rem; margin-bottom: 0.8rem; }
         .input-admin-multa:focus { outline: none; border-color: var(--danger); }
+
+        /* Estils per a la taula fixa a mòbils */
+        .table-wrapper { overflow-x: auto; position: relative; border-radius: 8px; }
+        .table-sticky th:first-child, .table-sticky td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: var(--surface);
+            z-index: 2;
+            border-right: 1px solid var(--border);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .table-sticky th:first-child { z-index: 3; }
     </style>
 </head>
 <body>
@@ -114,32 +128,37 @@
         </div>
 
         <div id="tab-inicio" class="tab-content active">
-            <div class="card" style="border-top: 4px solid var(--primary); background: linear-gradient(180deg, rgba(59, 130, 246, 0.04) 0%, rgba(30, 41, 59, 1) 100%); text-align: center; padding: 1.6rem 1.4rem;">
+            <div class="card" style="border-left: 4px solid var(--primary); text-align: center; padding: 1.6rem 1.4rem;">
                 <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Pròxim Partit Oficial</span>
                 <h2 id="txt-partido-cartel" style="margin: 8px 0; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; color:#fff;">-</h2>
                 <p id="txt-partido-detalles" style="margin: 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
             </div>
 
             <div class="card" style="border-left: 4px solid var(--warning);">
-                <h3>🎂 Properes Pastes (Aniversaris de l'Equip)</h3>
+                <h3>🎂 Properes Pastes</h3>
                 <div id="lista-aniversarios-inicio" style="font-size: 0.95rem;">Carregant el calendari de pastes...</div>
             </div>
 
             <div class="grid-rankings">
-                <div class="card">
-                    <h3>🏆 Classificació de la Quiniela</h3>
+                <div class="card" style="border-left: 4px solid var(--purple);">
+                    <h3>🏆 Quiniela</h3>
                     <div id="tabla-ranking">Carregant la classificació...</div>
                 </div>
 
-                <div class="card">
-                    <h3>👑 Rànquing de Trofeus MVP</h3>
+                <div class="card" style="border-left: 4px solid var(--warning);">
+                    <h3>👑 Rànquing MVP</h3>
                     <div id="tabla-ranking-mvp-inicio">Carregant els MVPs de la temporada...</div>
+                </div>
+
+                <div class="card" style="border-left: 4px solid var(--info);">
+                    <h3 style="color:var(--text);">🏃‍♂️ Punts d'Entreno</h3>
+                    <div id="tabla-ranking-entrenos">Carregant la lliga d'entrenaments...</div>
                 </div>
             </div>
 
-            <div class="card" style="border-left: 4px solid var(--success); margin-top: 1rem; text-align: center;">
-                <h3>💰 Diners recaptats de multes</h3>
-                <div class="bote-total" id="resumen-multas">0.00 €</div>
+            <div class="card" style="border-left: 4px solid var(--danger); margin-top: 1rem; text-align: center;">
+                <h3>💰 Diners recaptats</h3>
+                <div class="bote-total" id="resumen-multas" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
             </div>
         </div>
 
@@ -148,7 +167,7 @@
                 <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">🎯 Omplir Jornada</button>
                 <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking();">📈 Classificació Quiniela</button>
                 <button class="sub-btn" onclick="cambiarSubTab('companys', this); cargarQuinielasCompanys();">👀 Quinieles del Vestidor</button>
-                <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">📂 Les Meves Quinielas</button>
+                <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">📂 Les Meves Quinieles</button>
             </div>
 
             <div id="sub-jornada" class="sub-tab-content">
@@ -178,7 +197,7 @@
                             }
                         </script>
                     </div>
-                    <button id="btn-guardar-porra" onclick="guardarQuiniela()" style="margin-top: 2rem; width: 100%; padding: 0.9rem; background-color: var(--success); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                    <button id="btn-guardar-porra" onclick="guardarQuiniela()" style="margin-top: 2rem; width: 100%; padding: 0.9rem; background-color: var(--success); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
                         Desar la Quiniela
                     </button>
                     <p id="msg-quiniela" style="text-align:center; display:none; margin-top: 1rem; font-weight: bold;"></p>
@@ -240,7 +259,7 @@
                 <div class="card">
                     <h3>📊 Estadístiques Oficials - Temporada 25/26</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Dades generals obtingudes directament del sistema de control de l'equip.</p>
-                    <div id="tabla-stats-lliga" style="overflow-x: auto;">Carregant estadístiques des de Google Sheets...</div>
+                    <div id="tabla-stats-lliga">Carregant estadístiques des de Google Sheets...</div>
                 </div>
             </div>
 
@@ -248,15 +267,15 @@
                 <div class="card">
                     <h3>📜 Històric Acumulat del Vestidor</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Trajectòria global filtrada exclusivament per als membres actius de la plantilla actual.</p>
-                    <div id="tabla-stats-historic" style="overflow-x: auto;">Carregant historial des de Google Sheets...</div>
+                    <div id="tabla-stats-historic">Carregant historial des de Google Sheets...</div>
                 </div>
             </div>
         </div>
 
         <div id="tab-multas" class="tab-content">
-            <div class="card">
+            <div class="card" style="border-left: 4px solid var(--danger);">
                 <h3>💰 Pot de Multes Pendents</h3>
-                <div class="bote-total" id="total-bote">0.00 €</div>
+                <div class="bote-total" id="total-bote" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
             </div>
             <div class="card">
                 <h3>📋 Llista de Sancions</h3>
@@ -269,6 +288,17 @@
                 <h3 style="color:var(--danger)">⚙️ Panell de Control Secret (Admin)</h3>
                 <p style="color: #94a3b8; font-size:0.85rem; margin-top:-0.5rem; margin-bottom:1.5rem;">Aquesta pantalla només la pots veure tu, Sergi.</p>
                 
+                <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
+                    <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--info)">🏃‍♂️ Sumar Punts d'Entreno</p>
+                    
+                    <select id="select-admin-entreno-nom" class="input-admin-multa" style="background: #111827; color: white;">
+                        <option value="">-- Selecciona el jugador (Equip Guanyador) --</option>
+                    </select>
+
+                    <button onclick="sumarPuntEntreno()" style="width:100%; padding:0.6rem; background-color:var(--info); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Afegir +1 Punt</button>
+                    <p id="msg-admin-entreno" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
+                </div>
+
                 <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--primary)">📅 Cartellera: Pròxim Partit</p>
                     <input type="text" id="admin-input-partido-nombre" class="input-admin-multa" placeholder="Rival (Ex: CF Sant Julià - UD Taradell)">
@@ -396,6 +426,7 @@
             const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
             const selectMvp = document.getElementById('select-nom-mvp');
             const selectAdminMulta = document.getElementById('select-admin-multa-nom');
+            const selectAdminEntreno = document.getElementById('select-admin-entreno-nom');
             
             if(llistaPerfils) { 
                 llistaPerfils.forEach(p => { 
@@ -407,12 +438,17 @@
                         opcio.textContent = p.nom_real;
                         selectMvp.appendChild(opcio);
                     }
-
                     if(selectAdminMulta) {
                         let opcioMulta = document.createElement('option');
                         opcioMulta.value = p.nom_real.trim();
                         opcioMulta.textContent = p.nom_real;
                         selectAdminMulta.appendChild(opcioMulta);
+                    }
+                    if(selectAdminEntreno) {
+                        let opcioEntreno = document.createElement('option');
+                        opcioEntreno.value = p.nom_real.trim();
+                        opcioEntreno.textContent = p.nom_real;
+                        selectAdminEntreno.appendChild(opcioEntreno);
                     }
                 }); 
             }
@@ -421,6 +457,7 @@
             await calcularMotorDeRafagues();
             cargarRanking();
             cargarRankingMVP(); 
+            cargarRankingEntrenos();
             cargarMultas();
             cargarCartelPartido(); 
             await cargarCalendariAniversaris();
@@ -484,6 +521,37 @@
             if (error || !ranking || ranking.length === 0) { return; }
             let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.id_jugador, valor: pos.puntos_totales }, index, 'pts'); });
             if(rankingEl) rankingEl.innerHTML = html; if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = html;
+        }
+
+        async function cargarRankingEntrenos() {
+            const { data: ranking, error } = await clienteSupabase.from('punts_entreno').select('*').order('puntos_totales', { ascending: false });
+            const rankingEl = document.getElementById('tabla-ranking-entrenos');
+            if (error || !ranking || ranking.length === 0) { 
+                if(rankingEl) rankingEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha punts d\'entreno registrats.</p>'; 
+                return; 
+            }
+            let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.nom_jugador, valor: pos.puntos_totales }, index, 'pts', 'color:var(--info)'); });
+            if(rankingEl) rankingEl.innerHTML = html;
+        }
+
+        async function sumarPuntEntreno() {
+            const nom = document.getElementById('select-admin-entreno-nom').value;
+            const msgEl = document.getElementById('msg-admin-entreno');
+            if(!nom) { msgEl.style.color='var(--danger)'; msgEl.textContent='Selecciona un jugador.'; msgEl.style.display='block'; return; }
+
+            const { data: filaRank } = await clienteSupabase.from('punts_entreno').select('*').eq('nom_jugador', nom).maybeSingle();
+            let puntsActuals = filaRank ? filaRank.puntos_totales : 0;
+
+            const { error } = await clienteSupabase.from('punts_entreno').upsert({ nom_jugador: nom, puntos_totales: puntsActuals + 1 }, { onConflict: 'nom_jugador' });
+
+            if(!error) {
+                msgEl.style.color = 'var(--success)';
+                msgEl.textContent = 'Punt afegit correctament! ✅';
+                msgEl.style.display = 'block';
+                document.getElementById('select-admin-entreno-nom').value = '';
+                cargarRankingEntrenos();
+                setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
+            }
         }
 
         async function cargarCalendariAniversaris() {
@@ -646,23 +714,19 @@
             let html = ''; misQuinielas.forEach((q) => { html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 5px 0;">Jornada ${q.jornada || 1}</p><p style="margin:0; color:#94a3b8;">[P1: ${q.p1}] [P2: ${q.p2}] [P3: ${q.p3}] [P4: ${q.p4}] [P5: ${q.p5}] <br>[P6: ${q.p6}] [P7: ${q.p7}] [P8: ${q.p8}] [P9: ${q.p9}] [P10: ${q.p10}]</p></div>`; }); historialEl.innerHTML = html;
         }
 
-        // --- 📊 MOTOR ACTUALITZAT: SENSE FALLADES SILENCIOSES PER SEMICOLONS ---
         async function cargarEstadisticas() {
             const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
             const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2025-26`;
             const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
 
             try {
-                console.log("Iniciant descàrrega de dades estadístiques...");
                 const resLliga = await fetch(urlLliga);
                 const csvLliga = await resLliga.text();
                 const dadesLliga = parsearCSV(csvLliga);
-                console.log("Dades de Lliga parsejades:", dadesLliga);
 
                 const resGlobal = await fetch(urlGlobal);
                 const csvGlobal = await resGlobal.text();
                 const dadesGlobal = parsearCSV(csvGlobal);
-                console.log("Dades Globals parsejades:", dadesGlobal);
 
                 if (dadesLliga.length === 0) {
                     document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">El full de càrrec ha retornat un fitxer buit.</p>';
@@ -670,9 +734,7 @@
                 }
 
                 const headersLliga = dadesLliga[0].map(h => h.trim().toUpperCase());
-                console.log("Capçaleres trobades a Lliga:", headersLliga);
-
-             const idxJugadorL = headersLliga.indexOf('JUGADOR');
+                const idxJugadorL = headersLliga.indexOf('JUGADOR');
                 const idxPartitsL = headersLliga.indexOf('PARTITS JUGATS');
                 const idxGolsL = headersLliga.indexOf('GOLS');
                 const idxTGL = headersLliga.indexOf('TG');
@@ -685,7 +747,8 @@
 
                 const jugadorsActius = [];
                 let htmlLliga = `
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                    <div class="table-wrapper">
+                    <table class="table-sticky" style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
                                 <th style="padding: 10px 8px;">JUGADOR</th>
@@ -701,16 +764,14 @@
                     const fila = dadesLliga[i];
                     const nom = fila[idxJugadorL] ? fila[idxJugadorL].trim() : "";
 
-                    // 1. FRENADA 1: Si detecta 'Amateur B' o repeteix la paraula 'JUGADOR'
                     if (nom.toUpperCase().includes('AMATEUR B') || nom.toUpperCase() === 'JUGADOR') {
-                        if (jugadorsActius.length > 0) break; // Tallem l'aixeta definitivament
+                        if (jugadorsActius.length > 0) break; 
                         continue;
                     }
 
-                    // 2. FRENADA 2: Si la casella del jugador està buida (l'espai entre equips)
                     if (nom === "") {
-                        if (jugadorsActius.length > 0) break; // Si ja havíem llegit l'Amateur A, tallem l'aixeta.
-                        continue; // Si són forats a l'inici del document, els saltem.
+                        if (jugadorsActius.length > 0) break; 
+                        continue;
                     }
 
                     const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';
@@ -729,10 +790,9 @@
                             <td style="padding: 12px 8px; text-align:center; color:var(--danger);">${tv}</td>
                         </tr>`;
                 }
-                htmlLliga += `</tbody></table>`;
+                htmlLliga += `</tbody></table></div>`;
                 document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
 
-                // Segona Pestanya: Històrics Globals filtrats per membres vius
                 const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
                 const idxJugadorG = headersGlobal.indexOf('JUGADOR');
                 const idxPartitsG = headersGlobal.indexOf('PARTITS JUGATS');
@@ -741,7 +801,8 @@
                 const idxTVG = headersGlobal.indexOf('TV');
 
                 let htmlHistoric = `
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                    <div class="table-wrapper">
+                    <table class="table-sticky" style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
                                 <th style="padding: 10px 8px;">JUGADOR</th>
@@ -782,16 +843,15 @@
                     htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
                 }
 
-                htmlHistoric += `</tbody></table>`;
+                htmlHistoric += `</tbody></table></div>`;
                 document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
 
             } catch (error) {
-                console.error("Error crític carregant fulls:", error);
-                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió de xarxa amb Drive.</p>';
+                console.error("Error carregant fulls:", error);
+                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió amb Google Drive.</p>';
             }
         }
 
-        // Analitzador intel·ligent capaç de canviar automàticament de separador (, o ;)
         function parsearCSV(text) {
             const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
             if (lineas.length === 0) return [];
@@ -800,7 +860,6 @@
             const nComes = (primeraLinea.match(/,/g) || []).length;
             const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
             const separador = nPuntsComes > nComes ? ';' : ',';
-            console.log(`Separador detectat per a aquest full: [ ${separador} ]`);
             
             return lineas.map(linea => {
                 const r = []; let dins = false; let val = '';
@@ -821,8 +880,66 @@
         
         function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
         function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
-        async function verificarBoletoExistente() { const msgEl = document.getElementById('msg-quiniela'); const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); if (bEx) { msgEl.style.color = 'var(--warning)'; msgEl.textContent = `Ja tens un bitllet desat.`; msgEl.style.display = 'block'; for(let i=1; i<=10; i++) { const valorAnterior = bEx[`p${i}`]; pronosticosSeleccionados[`p${i}`] = valorAnterior; const fila = document.querySelector(`[data-partido="p${i}"]`); if(fila) { fila.querySelectorAll('.btn-pronostico').forEach(b => { if(b.textContent === valorAnterior) b.classList.add('selected'); else b.classList.remove('selected'); }); } } } else { msgEl.style.display = 'none'; pronosticosSeleccionados = {}; document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); } }
-        async function guardarQuiniela() { const msgEl = document.getElementById('msg-quiniela'); if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) return; pronosticosSeleccionados['id_jugador'] = emailUsuario; pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); setTimeout(() => { verificarBoletoExistente(); }, 1000); }
+        
+        async function verificarBoletoExistente() { 
+            const msgEl = document.getElementById('msg-quiniela'); 
+            const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
+            if (bEx) { 
+                msgEl.style.color = 'var(--warning)'; 
+                msgEl.textContent = `Ja tens un bitllet desat. Pots canviar els pronòstics i desar per substituir-lo.`; 
+                msgEl.style.display = 'block'; 
+                for(let i=1; i<=10; i++) { 
+                    const valorAnterior = bEx[`p${i}`]; 
+                    pronosticosSeleccionados[`p${i}`] = valorAnterior; 
+                    const fila = document.querySelector(`[data-partido="p${i}"]`); 
+                    if(fila) { 
+                        fila.querySelectorAll('.btn-pronostico').forEach(b => { 
+                            if(b.textContent === valorAnterior) b.classList.add('selected'); 
+                            else b.classList.remove('selected'); 
+                        }); 
+                    } 
+                } 
+            } else { 
+                msgEl.style.display = 'none'; 
+                pronosticosSeleccionados = {}; 
+                document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
+            } 
+        }
+
+        async function guardarQuiniela() { 
+            const msgEl = document.getElementById('msg-quiniela'); 
+            const btn = document.getElementById('btn-guardar-porra');
+            
+            if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) {
+                msgEl.style.color = 'var(--danger)'; 
+                msgEl.textContent = 'Falten partits per marcar o la jornada està tancada.'; 
+                msgEl.style.display = 'block';
+                return;
+            } 
+
+            btn.innerHTML = '⏳ Desant...';
+            btn.style.opacity = '0.7';
+
+            pronosticosSeleccionados['id_jugador'] = emailUsuario; 
+            pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; 
+            const { error } = await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); 
+            
+            if(!error) {
+                btn.innerHTML = '✅ Guardat correctament!';
+                btn.style.opacity = '1';
+                btn.style.backgroundColor = 'var(--success)';
+                
+                msgEl.style.color = 'var(--success)'; 
+                msgEl.textContent = 'Quiniela desada! (Si fas més canvis, se substituirà).'; 
+                msgEl.style.display = 'block';
+                
+                setTimeout(() => { 
+                    btn.innerHTML = 'Desar la Quiniela';
+                    btn.style.backgroundColor = 'var(--success)';
+                    verificarBoletoExistente(); 
+                }, 3000); 
+            }
+        }
 
         async function cargarMultas() {
             const { data: multas } = await clienteSupabase.from('multas').select('*');
@@ -843,8 +960,7 @@
                     </div>`;
             });
             let text = `${sum.toFixed(2)} €`;
-            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) location.innerHTML = htmlLista;
-            if(listaEl) listaEl.innerHTML = htmlLista;
+            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
         }
 
         verificarSesion();

@@ -282,10 +282,10 @@
 
         <div id="tab-gestio" class="tab-content">
             <div class="card" style="border: 2px solid var(--danger); background-color: rgba(239, 68, 68, 0.02);">
-                <h3 style="color:var(--danger)">⚙️ Panell de Control Secret (Admin)</h3>
-                <p style="color: #94a3b8; font-size:0.85rem; margin-top:-0.5rem; margin-bottom:1.5rem;">Aquesta pantalla només la pots veure tu, Sergi.</p>
+                <h3 id="admin-gestio-titol" style="color:var(--danger)">⚙️ Panell de Control Secret (Admin)</h3>
+                <p id="admin-gestio-desc" style="color: #94a3b8; font-size:0.85rem; margin-top:-0.5rem; margin-bottom:1.5rem;">Aquesta pantalla només la pots veure tu, Sergi.</p>
                 
-                <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
+                <div id="admin-card-entrenos" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--info)">🏃‍♂️ Sumar Punts d'Entreno</p>
                     
                     <select id="select-admin-entreno-nom" class="input-admin-multa" style="background: #111827; color: white;">
@@ -296,21 +296,21 @@
                     <p id="msg-admin-entreno" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
                 </div>
 
-                <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
+                <div id="admin-card-cartellera" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--primary)">📅 Cartellera: Pròxim Partit</p>
                     <input type="text" id="admin-input-partido-nombre" class="input-admin-multa" placeholder="Rival (Ex: CF Sant Julià - UD Taradell)">
                     <input type="text" id="admin-input-partido-detalles" class="input-admin-multa" placeholder="Horari i Lloc (Ex: Dissabte 16:00h | Municipal)">
                     <button onclick="actualizarCartelPartido()" style="width:100%; padding:0.6rem; background-color:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Publicar al Panell d'Inici</button>
                 </div>
 
-                <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
+                <div id="admin-card-aniversaris" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--warning)">🎂 Afegir Aniversari / Pastes</p>
                     <input type="text" id="admin-aniversario-nom" class="input-admin-multa" placeholder="Nom complet del jugador">
                     <input type="date" id="admin-aniversario-data" class="input-admin-multa">
                     <button onclick="crearAniversarioManual()" style="width:100%; padding:0.6rem; background-color:var(--warning); color:#111827; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Registrar Aniversari</button>
                 </div>
 
-                <div class="card" style="background: #111827; border-color: var(--border); text-align: center; margin-bottom: 1.5rem;">
+                <div id="admin-card-lock" class="card" style="background: #111827; border-color: var(--border); text-align: center; margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0;"><strong>🔒 Control d'Admissió Setmanal</strong></p>
                     <div style="margin-bottom:1rem; font-size:0.9rem;">
                         <span>Jornada actual: </span>
@@ -324,7 +324,7 @@
                     <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
                 </div>
                 
-                <div class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
+                <div id="admin-card-multes" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--danger)">📝 Sancionar Jugador</p>
                     
                     <select id="select-admin-multa-nom" class="input-admin-multa" style="background: #111827; color: white;">
@@ -337,7 +337,7 @@
                     <p id="msg-admin-multa" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
                 </div>
                 
-                <div class="card" style="background: #111827; border-color: var(--border);">
+                <div id="admin-card-resultats" class="card" style="background: #111827; border-color: var(--border);">
                     <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--text)">⚽ Introduir Resultats Reals - Jornada <span id="txt-jornada-admin-evaluar" style="color:var(--danger)">-</span></p>
                     <div id="lista-admin-partidos">
                         <script>
@@ -411,16 +411,29 @@
             let nomHeader = perfilPropi ? perfilPropi.nom_real : emailUsuario.split('@')[0];
             document.getElementById('saludo-usuario').textContent = `👋 Hola, ${nomHeader}!`;
             
-            if(emailUsuario === 'sergigodayol@gmail.com') {
+            const isMainAdmin = (emailUsuario === 'sergigodayol@gmail.com');
+            const isEntrenador = (emailUsuario === 'martiolisan@gmail.com' || emailUsuario === 'ericsoleponsa@hotmail.es');
+
+            if(isMainAdmin || isEntrenador) {
                 const navBar = document.getElementById('barra-navegacion-principal');
                 navBar.innerHTML += `
                     <button class="nav-btn" style="color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
                         <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor; margin-bottom: 5px;">
-                            <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                            <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
                         </svg>
                         Gestió
                     </button>
                 `;
+
+                if (isEntrenador && !isMainAdmin) {
+                    document.getElementById('admin-gestio-titol').textContent = "🏃‍♂️ Panell Tècnic";
+                    document.getElementById('admin-gestio-desc').textContent = "Aquesta pantalla és per gestionar en directe els punts dels entrenaments.";
+                    document.getElementById('admin-card-cartellera').style.display = 'none';
+                    document.getElementById('admin-card-aniversaris').style.display = 'none';
+                    document.getElementById('admin-card-lock').style.display = 'none';
+                    document.getElementById('admin-card-multes').style.display = 'none';
+                    document.getElementById('admin-card-resultats').style.display = 'none';
+                }
             }
 
             const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
@@ -786,6 +799,7 @@
 
                 const jugadorsActius = [];
                 let htmlLliga = `
+                    <div style="overflow-x: auto;">
                     <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
@@ -828,7 +842,7 @@
                             <td style="padding: 12px 8px; text-align:center; color:var(--danger);">${tv}</td>
                         </tr>`;
                 }
-                htmlLliga += `</tbody></table>`;
+                htmlLliga += `</tbody></table></div>`;
                 document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
 
                 const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
@@ -839,6 +853,7 @@
                 const idxTVG = headersGlobal.indexOf('TV');
 
                 let htmlHistoric = `
+                    <div style="overflow-x: auto;">
                     <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
@@ -880,7 +895,7 @@
                     htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
                 }
 
-                htmlHistoric += `</tbody></table>`;
+                htmlHistoric += `</tbody></table></div>`;
                 document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
 
             } catch (error) {

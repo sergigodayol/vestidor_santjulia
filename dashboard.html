@@ -248,13 +248,13 @@
 
         <div id="tab-stats" class="tab-content">
             <div class="sub-tabs">
-                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)">🏆 Lliga (T 25-26)</button>
+                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)">🏆 Lliga (T 26-27)</button>
                 <button class="sub-btn" onclick="cambiarSubTabStats('historic', this)">📂 Globals Històrics</button>
             </div>
 
             <div id="sub-lliga" class="sub-tab-content-stats">
                 <div class="card">
-                    <h3>📊 Estadístiques Oficials - Temporada 25/26</h3>
+                    <h3>📊 Estadístiques Oficials - Temporada 26/27</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Dades generals obtingudes directament del sistema de control de l'equip.</p>
                     <div id="tabla-stats-lliga" style="overflow-x: auto;">Carregant estadístiques des de Google Sheets...</div>
                 </div>
@@ -768,7 +768,7 @@
 
         async function cargarEstadisticas() {
             const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
-            const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2025-26`;
+            const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`;
             const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
 
             try {

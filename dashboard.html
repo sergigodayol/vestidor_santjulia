@@ -800,14 +800,14 @@
                 const jugadorsActius = [];
                 let htmlLliga = `
                     <div style="overflow-x: auto;">
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
-                                <th style="padding: 10px 8px;">JUGADOR</th>
-                                <th style="padding: 10px 8px; text-align:center;">PJ</th>
-                                <th style="padding: 10px 8px; text-align:center; color:var(--warning);">GOLS</th>
-                                <th style="padding: 10px 8px; text-align:center; color:#eab308;">TG</th>
-                                <th style="padding: 10px 8px; text-align:center; color:var(--danger);">TV</th>
+                                <th style="padding: 8px 4px;">JUGADOR</th>
+                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
+                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -835,11 +835,11 @@
 
                     htmlLliga += `
                         <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                            <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;">${nom}</td>
-                            <td style="padding: 12px 8px; text-align:center; color:#cbd5e1;">${pj}</td>
-                            <td style="padding: 12px 8px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
-                            <td style="padding: 12px 8px; text-align:center; color:#eab308;">${tg}</td>
-                            <td style="padding: 12px 8px; text-align:center; color:var(--danger);">${tv}</td>
+                            <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nom}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pj}</td>
+                            <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tg}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tv}</td>
                         </tr>`;
                 }
                 htmlLliga += `</tbody></table></div>`;
@@ -854,14 +854,14 @@
 
                 let htmlHistoric = `
                     <div style="overflow-x: auto;">
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 500px;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
-                                <th style="padding: 10px 8px;">JUGADOR</th>
-                                <th style="padding: 10px 8px; text-align:center;">PJ TOTALS</th>
-                                <th style="padding: 10px 8px; text-align:center; color:var(--warning);">GOLS TOTALS</th>
-                                <th style="padding: 10px 8px; text-align:center; color:#eab308;">TG</th>
-                                <th style="padding: 10px 8px; text-align:center; color:var(--danger);">TV</th>
+                                <th style="padding: 8px 4px;">JUGADOR</th>
+                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
+                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -882,11 +882,11 @@
 
                         htmlHistoric += `
                             <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                                <td style="padding: 12px 8px; font-weight:bold; color:#f1f5f9;">${nomG}</td>
-                                <td style="padding: 12px 8px; text-align:center; color:#cbd5e1;">${pjG}</td>
-                                <td style="padding: 12px 8px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
-                                <td style="padding: 12px 8px; text-align:center; color:#eab308;">${tgG}</td>
-                                <td style="padding: 12px 8px; text-align:center; color:var(--danger);">${tvG}</td>
+                                <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nomG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pjG}</td>
+                                <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tgG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tvG}</td>
                             </tr>`;
                     }
                 }

@@ -49,10 +49,11 @@
             .grid-rankings { grid-template-columns: 1fr 1fr; }
         }
 
-        .sub-tabs { display: flex; gap: 8px; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.6rem; overflow-x: auto; white-space: nowrap; }
-        .sub-btn { background: none; border: none; color: #94a3b8; padding: 0.5rem 0.8rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; border-radius: 8px; transition: all 0.2s; flex-shrink: 0; }
+        /* NOU DISSENY GRAELLA PELS SUB-BOTONS */
+        .sub-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+        .sub-btn { background: #111827; border: 1px solid var(--border); color: #94a3b8; padding: 0.7rem 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; border-radius: 8px; transition: all 0.2s; text-align: center; }
         .sub-btn:hover { background-color: rgba(255,255,255,0.05); color: #fff; }
-        .sub-btn.active { color: var(--primary); background-color: rgba(59, 130, 246, 0.15); }
+        .sub-btn.active { color: var(--primary); background-color: rgba(59, 130, 246, 0.15); border-color: var(--primary); }
 
         nav.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding: 0.7rem 0; z-index: 100; box-shadow: 0 -4px 10px rgba(0,0,0,0.3); }
         
@@ -153,10 +154,10 @@
 
         <div id="tab-quiniela" class="tab-content">
             <div class="sub-tabs">
-                <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">🎯 Omplir Jornada</button>
-                <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking();">📈 Classificació Quiniela</button>
-                <button class="sub-btn" onclick="cambiarSubTab('companys', this); cargarQuinielasCompanys();">👀 Quinieles del Vestidor</button>
-                <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">📂 Les Meves Quinieles</button>
+                <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">🎯 Pronòstics</button>
+                <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking();">📈 Rànquing</button>
+                <button class="sub-btn" onclick="cambiarSubTab('companys', this); cargarQuinielasCompanys();">👀 Vestidor</button>
+                <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">📂 Històric</button>
             </div>
 
             <div id="sub-jornada" class="sub-tab-content">
@@ -247,16 +248,16 @@
         </div>
 
         <div id="tab-stats" class="tab-content">
-            <div class="sub-tabs">
-                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)">🏆 Lliga (T 26-27)</button>
-                <button class="sub-btn" onclick="cambiarSubTabStats('historic', this)">📂 Globals Històrics</button>
+            <div class="sub-tabs" style="display: flex;">
+                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)" style="flex-grow: 1;">🏆 Lliga (T 26-27)</button>
+                <button class="sub-btn" onclick="cambiarSubTabStats('historic', this)" style="flex-grow: 1;">📂 Globals Històrics</button>
             </div>
 
             <div id="sub-lliga" class="sub-tab-content-stats">
                 <div class="card">
                     <h3>📊 Estadístiques Oficials - Temporada 26/27</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Dades generals obtingudes directament del sistema de control de l'equip.</p>
-                    <div id="tabla-stats-lliga" style="overflow-x: auto;">Carregant estadístiques des de Google Sheets...</div>
+                    <div id="tabla-stats-lliga">Carregant estadístiques des de Google Sheets...</div>
                 </div>
             </div>
 
@@ -264,7 +265,7 @@
                 <div class="card">
                     <h3>📜 Històric Acumulat del Vestidor</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Trajectòria global filtrada exclusivament per als membres actius de la plantilla actual.</p>
-                    <div id="tabla-stats-historic" style="overflow-x: auto;">Carregant historial des de Google Sheets...</div>
+                    <div id="tabla-stats-historic">Carregant historial des de Google Sheets...</div>
                 </div>
             </div>
         </div>

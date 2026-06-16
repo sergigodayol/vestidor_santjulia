@@ -684,7 +684,7 @@
         async function obtenerStatsRivalHistorial(partidoTexto) {
             if (!partidoTexto) return;
             
-            // Netegem el text per aïllar el nom del rival (eliminem el vostre nom i guions)
+            // Netegem el text per aïllar el nom del rival
             let rivalNet = partidoTexto.replace(/CF Sant Julià/gi, "").replace("-", "").trim().toUpperCase();
             if (!rivalNet || rivalNet === "") return;
 
@@ -697,7 +697,6 @@
                 const dadesRivals = parsearCSV(csv);
                 if (dadesRivals.length === 0) return;
 
-                // Mapejem les columnes del teu resum (Fila 1 de la pestanya)
                 const headers = dadesRivals[0].map(h => h.trim().toUpperCase());
                 const idxRival = headers.indexOf('RESULTATS HISTÒRICS');
                 const idxPJ = headers.indexOf('PARTITS JUGATS');
@@ -707,10 +706,8 @@
                 const idxGF = headers.indexOf('GOLS A FAVOR');
                 const idxGC = headers.indexOf('GOLS EN CONTRA');
 
-                // Busquem la fila del rival a la columna A
                 let filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && fila[idxRival].trim().toUpperCase() === rivalNet);
                 
-                // Si no hi ha coincidència exacta (per algun espai o accent), fem una cerca flexible per inclusió
                 if (!filaRival) {
                     filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && (fila[idxRival].trim().toUpperCase().includes(rivalNet) || rivalNet.includes(fila[idxRival].trim().toUpperCase())));
                 }
@@ -723,14 +720,11 @@
                     const gf = filaRival[idxGF] || '0';
                     const gc = filaRival[idxGC] || '0';
 
-                    // Localitzem la targeta de la cartellera d'Inici
                     const contenedorCartel = document.getElementById('txt-partido-detalles').parentElement;
                     
-                    // Eliminem qualsevol bloc previ per si es recarrega la pàgina
                     const blocAntic = document.getElementById('historial-rival-bloc');
                     if (blocAntic) blocAntic.remove();
 
-                    // Injectem el disseny unificat de l'historial
                     let htmlStatsRival = `
                         <div id="historial-rival-bloc" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); text-align: center;">
                             <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Històric des de 2011 vs ${filaRival[idxRival]}</span>
@@ -743,13 +737,118 @@
                             <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;">
                                 Gols: <span style="color:var(--text); font-weight:bold;">${gf}</span> favor / <span style="color:var(--text); font-weight:bold;">${gc}</span> contra
                             </div>
+                            
+                            <div id="contenidor-detalls-partits" style="margin-top: 15px;">
+                                <button id="btn-veure-detalls" onclick="mostrarDetallPartitsRival('${filaRival[idxRival].replace(/'/g, "\\'")}')" style="width:100%; padding:0.6rem; background-color:rgba(59, 130, 246, 0.1); color:var(--primary); border:1px solid var(--primary); border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
+                                    📊 Consultar estadístiques vs ${filaRival[idxRival]}
+                                </button>
+                            </div>
                         </div>
                     `;
                     contenedorCartel.insertAdjacentHTML('beforeend', htmlStatsRival);
                 }
             } catch (error) {
-                console.error("Error carregant l'historial del rival des de Sheets:", error);
+                console.error("Error carregant l'historial:", error);
             }
+        }
+
+        // NOU MOTOR ESCÀNER D'ARXIUS HISTÒRICS
+        async function mostrarDetallPartitsRival(rivalExacte) {
+            const btn = document.getElementById('btn-veure-detalls');
+            btn.innerHTML = '⏳ Escanejant els arxius (això pot trigar uns segons)...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const temporades = [
+                'T 11-12', 'T 12-13', 'T 13-14', 'T 14-15', 'T 15-16', 
+                'T 16-17', 'T 17-18', 'T 18-19', 'T 19-20', 'T 20-21', 
+                'T 21-22', 'T 22-23', 'T 23-24', 'T 24-25', 'T 25-26', 'T 26-27'
+            ];
+
+            let partitsTrobats = [];
+
+            // Dividim la descàrrega en grups de 4 perquè Google no bloquegi la connexió
+            for (let i = 0; i < temporades.length; i += 4) {
+                const batch = temporades.slice(i, i + 4);
+                const promeses = batch.map(t => 
+                    fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${t}`)
+                    .then(res => res.text())
+                    .then(csv => ({ temp: t, dades: parsearCSV(csv) }))
+                    .catch(err => null)
+                );
+                
+                const resultats = await Promise.all(promeses);
+                
+                resultats.forEach(res => {
+                    if(!res || !res.dades || res.dades.length === 0) return;
+                    
+                    const dades = res.dades;
+                    const headers = dades[0].map(h => h.trim().toUpperCase());
+                    
+                    const idxRival = headers.indexOf('RIVAL');
+                    const idxLV = headers.indexOf('LOCAL/VISITANT') !== -1 ? headers.indexOf('LOCAL/VISITANT') : headers.indexOf('CAL/VISITANT');
+                    const idxRes = headers.indexOf('RESULTAT');
+                    
+                    if (idxRival === -1 || idxRes === -1) return;
+
+                    // Escanegem on tens posats els Gols (G1...), Grogues (TG1...) i Vermelles (TV1...) a l'Excel
+                    const golsIdx = [];
+                    const groguesIdx = [];
+                    const vermellesIdx = [];
+                    
+                    headers.forEach((h, idx) => {
+                        if (/^G\d+$/.test(h)) golsIdx.push(idx);
+                        if (/^TG\d+$/.test(h)) groguesIdx.push(idx);
+                        if (/^TV\d+$/.test(h)) vermellesIdx.push(idx);
+                    });
+
+                    // Busquem els partits que coincideixin amb l'equip
+                    for(let r=1; r<dades.length; r++) {
+                        const row = dades[r];
+                        if (!row[idxRival]) continue;
+                        
+                        if (row[idxRival].trim().toUpperCase() === rivalExacte) {
+                            let golejadors = golsIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
+                            let tg = groguesIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
+                            let tv = vermellesIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
+                            
+                            partitsTrobats.push({
+                                temporada: res.temp,
+                                lv: idxLV !== -1 ? (row[idxLV]||'') : '',
+                                resultat: row[idxRes] || '',
+                                gols: golejadors,
+                                tg: tg,
+                                tv: tv
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Dibuixem la llista de partits a la pantalla
+            let htmlHTML = `<div style="margin-top:15px; text-align:left;">`;
+            if (partitsTrobats.length === 0) {
+                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold;">No s'han pogut recuperar els detalls històrics.</p>`;
+            } else {
+                partitsTrobats.forEach(p => {
+                    htmlHTML += `
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                            <span style="color:var(--primary); font-weight:bold;">${p.temporada}</span>
+                            <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${p.lv}</span>
+                            <span style="color:var(--text); font-weight:900; background:rgba(255,255,255,0.1); padding: 2px 6px; border-radius:4px;">${p.resultat}</span>
+                        </div>
+                        ${p.gols.length > 0 ? `<div style="color:var(--success); margin-bottom:3px;">⚽ <span style="color:#cbd5e1;">${p.gols.join(', ')}</span></div>` : ''}
+                        ${p.tg.length > 0 ? `<div style="color:var(--warning); margin-bottom:3px;">🟨 <span style="color:#cbd5e1;">${p.tg.join(', ')}</span></div>` : ''}
+                        ${p.tv.length > 0 ? `<div style="color:var(--danger);">🟥 <span style="color:#cbd5e1;">${p.tv.join(', ')}</span></div>` : ''}
+                        ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#64748b; font-style:italic;">Sense registres individuals</div>` : ''}
+                    </div>`;
+                });
+            }
+            htmlHTML += `</div>`;
+            
+            document.getElementById('contenidor-detalls-partits').innerHTML = htmlHTML;
         }
 
         async function actualizarCartelPartido() {

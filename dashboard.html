@@ -641,12 +641,10 @@
             const nuevaJor = parseInt(document.getElementById('admin-establecer-jornada-input').value);
             if (isNaN(nuevaJor)) return;
 
-            // Hem eliminat el 'moderno_lock' que donava l'error
             const { error } = await clienteSupabase.from('estado_porra').upsert({ 
                 id: 1, 
                 jornada_activa: nuevaJor,
-                bloqueado: porraBloqueadaActualmente,
-                open: !porraBloqueadaActualmente
+                bloqueado: porraBloqueadaActualmente
             });
             
             if (error) {
@@ -658,10 +656,8 @@
         }
 
         async function cambiarEstadoPorra(nuevoEstado) {
-            // Hem eliminat el 'moderno_lock' que donava l'error
             const { error } = await clienteSupabase.from('estado_porra').upsert({ 
                 id: 1, 
-                open: !nuevoEstado, 
                 bloqueado: nuevoEstado,
                 jornada_activa: numeroJornadaGlobal
             });
@@ -778,13 +774,17 @@
             if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
         }
 
-        async function guardarResultadosReales() {
+       async function guardarResultadosReales() {
             const msgEl = document.getElementById('msg-admin'); if(Object.keys(resultadosRealesAdmin).length < 10) return;
             msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
             resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
             const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
             if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=10; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
-            let seguent = numeroJornadaGlobal + 1; await clienteSupabase.from('estado_porra').update({ open: true, bloqueado: false,  jornada_activa: seguent }).eq('id', 1); location.reload();
+            let seguent = numeroJornadaGlobal + 1; 
+            
+            // Correcció: eliminem la referència a "open" aquí també
+            await clienteSupabase.from('estado_porra').update({ bloqueado: false, jornada_activa: seguent }).eq('id', 1); 
+            location.reload();
         }
 
         async function cargarHistorial() {

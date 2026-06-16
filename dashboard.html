@@ -672,7 +672,84 @@
 
         async function cargarCartelPartido() {
             const { data } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', 'CARTEL').eq('jornada', 99).maybeSingle();
-            if (data) { document.getElementById('txt-partido-cartel').textContent = data.p1 || "CF Sant Julià"; document.getElementById('txt-partido-detalles').textContent = data.p2 || "Consulta l'horari amb el delegat."; }
+            if (data) { 
+                document.getElementById('txt-partido-cartel').textContent = data.p1 || "CF Sant Julià"; 
+                document.getElementById('txt-partido-detalles').textContent = data.p2 || "Consulta l'horari amb el delegat."; 
+                
+                // ⚽ Executem la cerca de l'historial del rival automàticament
+                obtenerStatsRivalHistorial(data.p1);
+            }
+        }
+
+        async function obtenerStatsRivalHistorial(partidoTexto) {
+            if (!partidoTexto) return;
+            
+            // Netegem el text per aïllar el nom del rival (eliminem el vostre nom i guions)
+            let rivalNet = partidoTexto.replace(/CF Sant Julià/gi, "").replace("-", "").trim().toUpperCase();
+            if (!rivalNet || rivalNet === "") return;
+
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const urlRivals = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=RIVALS%20(GLOBALS)`;
+
+            try {
+                const res = await fetch(urlRivals);
+                const csv = await res.text();
+                const dadesRivals = parsearCSV(csv);
+                if (dadesRivals.length === 0) return;
+
+                // Mapejem les columnes del teu resum (Fila 1 de la pestanya)
+                const headers = dadesRivals[0].map(h => h.trim().toUpperCase());
+                const idxRival = headers.indexOf('RESULTATS HISTÒRICS');
+                const idxPJ = headers.indexOf('PARTITS JUGATS');
+                const idxV = headers.indexOf('VICTÒRIES');
+                const idxE = headers.indexOf('EMPATS');
+                const idxD = headers.indexOf('DERROTES');
+                const idxGF = headers.indexOf('GOLS A FAVOR');
+                const idxGC = headers.indexOf('GOLS EN CONTRA');
+
+                // Busquem la fila del rival a la columna A
+                let filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && fila[idxRival].trim().toUpperCase() === rivalNet);
+                
+                // Si no hi ha coincidència exacta (per algun espai o accent), fem una cerca flexible per inclusió
+                if (!filaRival) {
+                    filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && (fila[idxRival].trim().toUpperCase().includes(rivalNet) || rivalNet.includes(fila[idxRival].trim().toUpperCase())));
+                }
+
+                if (filaRival) {
+                    const pj = filaRival[idxPJ] || '0';
+                    const v = filaRival[idxV] || '0';
+                    const e = filaRival[idxE] || '0';
+                    const d = filaRival[idxD] || '0';
+                    const gf = filaRival[idxGF] || '0';
+                    const gc = filaRival[idxGC] || '0';
+
+                    // Localitzem la targeta de la cartellera d'Inici
+                    const contenedorCartel = document.getElementById('txt-partido-detalles').parentElement;
+                    
+                    // Eliminem qualsevol bloc previ per si es recarrega la pàgina
+                    const blocAntic = document.getElementById('historial-rival-bloc');
+                    if (blocAntic) blocAntic.remove();
+
+                    // Injectem el disseny unificat de l'historial
+                    let htmlStatsRival = `
+                        <div id="historial-rival-bloc" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); text-align: center;">
+                            <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Historial Històric vs ${filaRival[idxRival]}</span>
+                            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 0.9rem;">
+                                <div><strong>${pj}</strong> <span style="color:#94a3b8; font-size:0.8rem;">PJ</span></div>
+                                <div style="color:var(--success)"><strong>${v}</strong> <span style="color:#94a3b8; font-size:0.8rem;">V</span></div>
+                                <div style="color:var(--warning)"><strong>${e}</strong> <span style="color:#94a3b8; font-size:0.8rem;">E</span></div>
+                                <div style="color:var(--danger)"><strong>${d}</strong> <span style="color:#94a3b8; font-size:0.8rem;">D</span></div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;">
+                                Gols: <span style="color:var(--text); font-weight:bold;">${gf}</span> favor / <span style="color:var(--text); font-weight:bold;">${gc}</span> contra
+                            </div>
+                        </div>
+                    `;
+                    contenedorCartel.insertAdjacentHTML('beforeend', htmlStatsRival);
+                }
+            } catch (error) {
+                console.error("Error carregant l'historial del rival des de Sheets:", error);
+            }
         }
 
         async function actualizarCartelPartido() {

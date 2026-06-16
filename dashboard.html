@@ -947,32 +947,7 @@
             btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
         }
 
-            // Dibuixem la llista de partits a la pantalla
-            let htmlHTML = `<div style="margin-top:15px; text-align:left;">`;
-            if (partitsTrobats.length === 0) {
-                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold;">No s'han pogut recuperar els detalls històrics.</p>`;
-            } else {
-                partitsTrobats.forEach(p => {
-                    htmlHTML += `
-                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
-                            <span style="color:var(--primary); font-weight:bold;">${p.temporada}</span>
-                            <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${p.lv}</span>
-                            <span style="color:var(--text); font-weight:900; background:rgba(255,255,255,0.1); padding: 2px 6px; border-radius:4px;">${p.resultat}</span>
-                        </div>
-                        ${p.gols.length > 0 ? `<div style="color:var(--success); margin-bottom:3px;">⚽ <span style="color:#cbd5e1;">${p.gols.join(', ')}</span></div>` : ''}
-                        ${p.tg.length > 0 ? `<div style="color:var(--warning); margin-bottom:3px;">🟨 <span style="color:#cbd5e1;">${p.tg.join(', ')}</span></div>` : ''}
-                        ${p.tv.length > 0 ? `<div style="color:var(--danger);">🟥 <span style="color:#cbd5e1;">${p.tv.join(', ')}</span></div>` : ''}
-                        ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#64748b; font-style:italic;">Sense registres individuals</div>` : ''}
-                    </div>`;
-                });
-            }
-            htmlHTML += `</div>`;
-            
-            document.getElementById('contenidor-detalls-partits').innerHTML = htmlHTML;
-        }
-
-        async function actualizarCartelPartido() {
+            async function actualizarCartelPartido() {
             const rival = document.getElementById('admin-input-partido-nombre').value.trim(); const det = document.getElementById('admin-input-partido-detalles').value.trim();
             if (!rival || !det) return;
             const { error } = await clienteSupabase.from('quinieles').upsert({ id_jugador: 'CARTEL', jornada: 99, p1: rival, p2: det }, { onConflict: 'id_jugador,jornada' });

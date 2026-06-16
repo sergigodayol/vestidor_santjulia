@@ -122,14 +122,14 @@
         .nav-btn::after { content: ''; position: absolute; bottom: -8px; width: 4px; height: 4px; background: var(--primary); border-radius: 50%; opacity: 0; transition: opacity 0.3s ease; }
         .nav-btn.active::after { opacity: 1; }
 
-        /* LISTA DE PARTIDOS Y BOTONES DE QUINIELA MODERNOS */
-        .partido-fila { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0; border-bottom: 1px solid var(--border); }
+        /* LISTA DE PARTIDOS Y BOTONES DE QUINIELA MÁS COMPACTOS */
+        .partido-fila { display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
         .partido-fila:last-child { border-bottom: none; }
-        .equipos { font-size: 0.95rem; font-weight: 700; width: 45%; color: #e2e8f0; }
-        .botones-1x2 { display: flex; gap: 8px; }
-        .btn-pronostico { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text-muted); padding: 0.7rem 1.1rem; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.95rem; min-width: 46px; text-align: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .equipos { font-size: 0.88rem; font-weight: 700; width: 45%; color: #e2e8f0; }
+        .botones-1x2 { display: flex; gap: 6px; }
+        .btn-pronostico { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text-muted); padding: 0.45rem 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 0.85rem; min-width: 38px; text-align: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-pronostico:active { transform: scale(0.9); }
-        .btn-pronostico.selected { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: transparent; color: #fff; transform: scale(1.05); box-shadow: 0 6px 15px var(--primary-glow); }
+        .btn-pronostico.selected { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: transparent; color: #fff; transform: scale(1.05); box-shadow: 0 4px 12px var(--primary-glow); }
         
         /* RÁNQUINGS CON AVATARES MEJORADOS */
         .ranking-item { display: flex; flex-direction: column; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
@@ -758,7 +758,6 @@
         async function obtenerStatsRivalHistorial(partidoTexto) {
             if (!partidoTexto) return;
             
-            // Netegem el text per aïllar el nom del rival
             let rivalNet = partidoTexto.replace(/CF Sant Julià/gi, "").replace("-", "").trim().toUpperCase();
             if (!rivalNet || rivalNet === "") return;
 
@@ -787,7 +786,7 @@
                 }
 
                 if (filaRival) {
-                    const pj = filaRival[idxPJ] || '0';
+                    const pjs = filaRival[idxPJ] || '0';
                     const v = filaRival[idxV] || '0';
                     const e = filaRival[idxE] || '0';
                     const d = filaRival[idxD] || '0';
@@ -795,7 +794,6 @@
                     const gc = filaRival[idxGC] || '0';
 
                     const contenedorCartel = document.getElementById('txt-partido-detalles').parentElement;
-                    
                     const blocAntic = document.getElementById('historial-rival-bloc');
                     if (blocAntic) blocAntic.remove();
 
@@ -803,19 +801,20 @@
                         <div id="historial-rival-bloc" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); text-align: center;">
                             <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Històric des de 2011 vs ${filaRival[idxRival]}</span>
                             <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 0.9rem;">
-                                <div><strong>${pj}</strong> <span style="color:#94a3b8; font-size:0.8rem;">PJ</span></div>
+                                <div><strong>${pjs}</strong> <span style="color:#94a3b8; font-size:0.8rem;">PJ</span></div>
                                 <div style="color:var(--success)"><strong>${v}</strong> <span style="color:#94a3b8; font-size:0.8rem;">V</span></div>
                                 <div style="color:var(--warning)"><strong>${e}</strong> <span style="color:#94a3b8; font-size:0.8rem;">E</span></div>
                                 <div style="color:var(--danger)"><strong>${d}</strong> <span style="color:#94a3b8; font-size:0.8rem;">D</span></div>
                             </div>
-                            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;">
+                            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px; margin-bottom: 12px;">
                                 Gols: <span style="color:var(--text); font-weight:bold;">${gf}</span> favor / <span style="color:var(--text); font-weight:bold;">${gc}</span> contra
                             </div>
                             
-                            <div id="contenidor-detalls-partits" style="margin-top: 15px;">
-                                <button id="btn-veure-detalls" onclick="mostrarDetallPartitsRival('${filaRival[idxRival].replace(/'/g, "\\'")}')" style="width:100%; padding:0.6rem; background-color:rgba(59, 130, 246, 0.1); color:var(--primary); border:1px solid var(--primary); border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
+                            <div id="contenidor-detalls-partits">
+                                <button id="btn-veure-detalls" onclick="toggleDetallPartitsRival('${filaRival[idxRival].replace(/'/g, "\\'")}')" style="width:100%; padding:0.6rem; background-color:rgba(59, 130, 246, 0.1); color:var(--primary); border:1px solid var(--primary); border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
                                     📊 Consultar estadístiques vs ${filaRival[idxRival]}
                                 </button>
+                                <div id="llista-detalls-partits" style="display:none; margin-top: 15px;"></div>
                             </div>
                         </div>
                     `;
@@ -826,12 +825,28 @@
             }
         }
 
-        // NOU MOTOR ESCÀNER D'ARXIUS HISTÒRICS
-        async function mostrarDetallPartitsRival(rivalExacte) {
+        async function toggleDetallPartitsRival(rivalExacte) {
+            const llistaEl = document.getElementById('llista-detalls-partits');
             const btn = document.getElementById('btn-veure-detalls');
+            
+            // Si la llista ja està visible, l'amaguem de manera neta
+            if (llistaEl.style.display === 'block') {
+                llistaEl.style.display = 'none';
+                btn.innerHTML = `📊 Consultar estadístiques vs ${rivalExacte}`;
+                btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return;
+            }
+            
+            // Si ja teníem les dades descarregades d'abans, les mostrem directament sense fer un nou fetch
+            if (llistaEl.innerHTML !== "") {
+                llistaEl.style.display = 'block';
+                btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
+                return;
+            }
+            
             btn.innerHTML = '⏳ Escanejant els arxius (això pot trigar uns segons)...';
-            btn.style.opacity = '0.7';
             btn.disabled = true;
+            btn.style.opacity = '0.7';
 
             const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
             const temporades = [
@@ -842,7 +857,6 @@
 
             let partitsTrobats = [];
 
-            // Dividim la descàrrega en grups de 4 perquè Google no bloquegi la connexió
             for (let i = 0; i < temporades.length; i += 4) {
                 const batch = temporades.slice(i, i + 4);
                 const promeses = batch.map(t => 
@@ -866,7 +880,6 @@
                     
                     if (idxRival === -1 || idxRes === -1) return;
 
-                    // Escanegem on tens posats els Gols (G1...), Grogues (TG1...) i Vermelles (TV1...) a l'Excel
                     const golsIdx = [];
                     const groguesIdx = [];
                     const vermellesIdx = [];
@@ -877,7 +890,6 @@
                         if (/^TV\d+$/.test(h)) vermellesIdx.push(idx);
                     });
 
-                    // Busquem els partits que coincideixin amb l'equip
                     for(let r=1; r<dades.length; r++) {
                         const row = dades[r];
                         if (!row[idxRival]) continue;
@@ -899,6 +911,41 @@
                     }
                 });
             }
+
+            let htmlHTML = `<div style="text-align:left;">`;
+            if (partitsTrobats.length === 0) {
+                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold;">No s'han trobat enfrontaments directes.</p>`;
+            } else {
+                partitsTrobats.forEach(p => {
+                    htmlHTML += `
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                            <span style="color:var(--primary); font-weight:bold;">${p.temporada}</span>
+                            <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${p.lv}</span>
+                            <span style="color:var(--text); font-weight:900; background:rgba(255,255,255,0.1); padding: 2px 6px; border-radius:4px;">${p.resultat}</span>
+                        </div>
+                        ${p.gols.length > 0 ? `<div style="color:var(--success); margin-bottom:3px;">⚽ <span style="color:#cbd5e1;">${p.gols.join(', ')}</span></div>` : ''}
+                        ${p.tg.length > 0 ? `<div style="color:var(--warning); margin-bottom:3px;">🟨 <span style="color:#cbd5e1;">${p.tg.join(', ')}</span></div>` : ''}
+                        ${p.tv.length > 0 ? `<div style="color:var(--danger);">🟥 <span style="color:#cbd5e1;">${p.tv.join(', ')}</span></div>` : ''}
+                        ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#64748b; font-style:italic;">Sense registres individuals</div>` : ''}
+                    </div>`;
+                });
+                
+                // Botó de tancament inferior molt pràctic per a llistats llargs
+                htmlHTML += `
+                    <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 8px; padding:0.6rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:8px; font-weight:600; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                        🔼 Amagar llistat de partits
+                    </button>
+                `;
+            }
+            htmlHTML += `</div>`;
+            
+            llistaEl.innerHTML = htmlHTML;
+            llistaEl.style.display = 'block';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
+        }
 
             // Dibuixem la llista de partits a la pantalla
             let htmlHTML = `<div style="margin-top:15px; text-align:left;">`;

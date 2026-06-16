@@ -639,13 +639,41 @@
 
         async function actualizarJornadaManual() {
             const nuevaJor = parseInt(document.getElementById('admin-establecer-jornada-input').value);
-            await clienteSupabase.from('estado_porra').update({ jornada_activa: nuevaJor }).eq('id', 1);
-            alert(`Sistema configurat a la Jornada ${nuevaJor}`); location.reload();
+            if (isNaN(nuevaJor)) return;
+
+            // Utilitzem UPSERT per assegurar-nos que crea la fila si no existeix
+            const { error } = await clienteSupabase.from('estado_porra').upsert({ 
+                id: 1, 
+                jornada_activa: nuevaJor,
+                bloqueado: porraBloqueadaActualmente,
+                moderno_lock: porraBloqueadaActualmente,
+                open: !porraBloqueadaActualmente
+            });
+            
+            if (error) {
+                alert("⚠️ Error de Supabase: " + error.message);
+            } else {
+                alert(`Sistema configurat a la Jornada ${nuevaJor}`); 
+                location.reload();
+            }
         }
 
         async function cambiarEstadoPorra(nuevoEstado) {
-            await clienteSupabase.from('estado_porra').update({ open: !nuevoEstado, moderno_lock: nuevoEstado, bloqueado: nuevoEstado }).eq('id', 1);
-            alert(nuevoEstado ? "¡Vestidor tancat!" : "¡Vestidor obert!"); location.reload();
+            // Utilitzem UPSERT per assegurar-nos que crea la fila si no existeix
+            const { error } = await clienteSupabase.from('estado_porra').upsert({ 
+                id: 1, 
+                open: !nuevoEstado, 
+                moderno_lock: nuevoEstado, 
+                bloqueado: nuevoEstado,
+                jornada_activa: numeroJornadaGlobal
+            });
+
+            if (error) {
+                alert("⚠️ Error de Supabase: " + error.message);
+            } else {
+                alert(nuevoEstado ? "¡Vestidor tancat! 🔒" : "¡Vestidor obert! 🔓"); 
+                location.reload();
+            }
         }
 
         async function cargarCartelPartido() {

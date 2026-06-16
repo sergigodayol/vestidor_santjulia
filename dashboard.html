@@ -641,12 +641,11 @@
             const nuevaJor = parseInt(document.getElementById('admin-establecer-jornada-input').value);
             if (isNaN(nuevaJor)) return;
 
-            // Utilitzem UPSERT per assegurar-nos que crea la fila si no existeix
+            // Hem eliminat el 'moderno_lock' que donava l'error
             const { error } = await clienteSupabase.from('estado_porra').upsert({ 
                 id: 1, 
                 jornada_activa: nuevaJor,
                 bloqueado: porraBloqueadaActualmente,
-                moderno_lock: porraBloqueadaActualmente,
                 open: !porraBloqueadaActualmente
             });
             
@@ -659,11 +658,10 @@
         }
 
         async function cambiarEstadoPorra(nuevoEstado) {
-            // Utilitzem UPSERT per assegurar-nos que crea la fila si no existeix
+            // Hem eliminat el 'moderno_lock' que donava l'error
             const { error } = await clienteSupabase.from('estado_porra').upsert({ 
                 id: 1, 
                 open: !nuevoEstado, 
-                moderno_lock: nuevoEstado, 
                 bloqueado: nuevoEstado,
                 jornada_activa: numeroJornadaGlobal
             });

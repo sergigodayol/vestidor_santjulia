@@ -33,10 +33,11 @@
                 radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.05), transparent 25%);
             color: var(--text); 
             margin: 0; 
-            padding-bottom: 110px; 
+            padding-bottom: 110px; /* Más espacio para la barra flotante */
             -webkit-tap-highlight-color: transparent;
         }
         
+        /* CABECERA CON EFECTO CRISTAL */
         header { 
             background: rgba(11, 17, 32, 0.85);
             backdrop-filter: blur(12px);
@@ -59,6 +60,7 @@
         
         .container { padding: 1.2rem; max-width: 800px; margin: 0 auto; }
         
+        /* TARJETAS REDONDEADAS Y FLOTANTES */
         .card { 
             background: var(--surface); 
             backdrop-filter: blur(10px);
@@ -72,6 +74,7 @@
         }
         .card h3 { margin-top: 0; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px; }
         
+        /* ANIMACIÓN FLUIDA DE PESTAÑAS */
         .tab-content { display: none; opacity: 0; }
         .tab-content.active { 
             display: block; 
@@ -85,11 +88,13 @@
         .grid-rankings { display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
         @media(min-width: 650px) { .grid-rankings { grid-template-columns: 1fr 1fr; } }
 
+        /* BOTONES SUPERIORES TIPO PÍLDORA */
         .sub-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.2rem; }
         .sub-btn { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-muted); padding: 0.8rem 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; border-radius: 12px; transition: all 0.3s ease; text-align: center; }
         .sub-btn:hover { background: var(--surface-hover); color: #fff; transform: translateY(-2px); }
         .sub-btn.active { color: #fff; background: var(--primary); border-color: var(--primary); box-shadow: 0 4px 15px var(--primary-glow); }
 
+        /* NAVEGACIÓN INFERIOR ESTILO ISLA (iOS) */
         nav.bottom-nav { 
             position: fixed; 
             bottom: 15px; 
@@ -112,9 +117,12 @@
         .nav-btn.active { color: var(--primary); transform: translateY(-3px); }
         .nav-btn svg { width: 22px; height: 22px; fill: currentColor; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .nav-btn.active svg { transform: scale(1.15); filter: drop-shadow(0 2px 4px var(--primary-glow)); }
+        
+        /* Puntito activo debajo del icono */
         .nav-btn::after { content: ''; position: absolute; bottom: -8px; width: 4px; height: 4px; background: var(--primary); border-radius: 50%; opacity: 0; transition: opacity 0.3s ease; }
         .nav-btn.active::after { opacity: 1; }
 
+        /* LISTA DE PARTIDOS Y BOTONES DE QUINIELA MÁS COMPACTOS */
         .partido-fila { display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
         .partido-fila:last-child { border-bottom: none; }
         .equipos { font-size: 0.88rem; font-weight: 700; width: 45%; color: #e2e8f0; }
@@ -123,11 +131,13 @@
         .btn-pronostico:active { transform: scale(0.9); }
         .btn-pronostico.selected { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: transparent; color: #fff; transform: scale(1.05); box-shadow: 0 4px 12px var(--primary-glow); }
         
+        /* RÁNQUINGS CON AVATARES MEJORADOS */
         .ranking-item { display: flex; flex-direction: column; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
         .ranking-item:hover { background: rgba(255,255,255,0.02); border-radius: 12px; padding-left: 8px; padding-right: 8px; margin-left: -8px; margin-right: -8px; }
         .ranking-item:last-child { border-bottom: none; }
         .ranking-fila-principal { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .player-info { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, #334155, #1e293b); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .medalla { font-size: 1.2rem; min-width: 26px; text-align: center; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
         
         .contenedor-rafaga { display: flex; gap: 6px; margin-top: 6px; margin-left: 42px; align-items: center; }
@@ -136,22 +146,26 @@
         .circulo-grog { background: var(--warning); box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
         .circulo-vermell { background: var(--danger); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
         
+        /* BOTE Y MULTAS */
         .bote-total { text-align: center; font-size: 3rem; font-weight: 900; color: var(--danger); margin-top: 0.5rem; letter-spacing: -1.5px; text-shadow: 0 8px 24px rgba(239, 68, 68, 0.3); font-family: 'Outfit', sans-serif; }
         .multa-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px dashed var(--border); font-size: 0.95rem; }
         .multa-item:last-child { border-bottom: none; }
         .btn-eliminar-multa { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.9rem; cursor: pointer; padding: 4px 10px; margin-left: 10px; border-radius: 6px; transition: all 0.2s; }
         .btn-eliminar-multa:hover { background: var(--danger); color: white; transform: scale(1.05); }
 
+        /* INPUTS MODERNOS */
         input.input-jornada { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 10px; width: 65px; text-align: center; font-size: 1.1rem; font-weight: 800; }
         input.input-text-mvp, select.select-text-mvp, .input-admin-multa { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); padding: 0.9rem; border-radius: 12px; width: 100%; box-sizing: border-box; font-size: 1rem; margin-bottom: 1rem; transition: all 0.3s; font-family: inherit; font-weight: 500; }
         input.input-text-mvp:focus, select.select-text-mvp:focus, .input-admin-multa:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); background: rgba(0,0,0,0.5); }
         
+        /* ESTILOS DE TABLAS (STATS) */
         .table-wrapper { overflow-x: auto; position: relative; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.15); }
         table { width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
         th { padding: 12px 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
         td { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         tr:hover td { background: rgba(255,255,255,0.03); }
         
+        /* SCROLLBAR INVISIBLE/ELEGANTE PARA TABLAS Y CONTENEDORES */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
@@ -581,14 +595,12 @@
         function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
             let correuNetejat = pos.id_jugador.trim().toLowerCase();
             let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
-            
+            let inicials = nomAMostrar.substring(0, 2).toUpperCase();
             let medallaIcono = `${index + 1}.º`;
             if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
-            
             let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
-            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 38px;"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
-            
-            return `<div class="ranking-item"><div class="ranking-fila-principal"><div class="player-info"><span class="medalla">${medallaIcono}</span><span style="font-weight: 700; color: #f1f5f9; font-size: 1rem;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>${mòdulFormatatRafaga}</div>`;
+            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
+            return `<div class="ranking-item"><div class="ranking-fila-principal"><div class="player-info"><span class="medalla">${medallaIcono}</span><div class="avatar" style="background-color: ${index === 0 ? 'rgba(245, 158, 11, 0.2)' : '#334155'}; color: ${index === 0 ? 'var(--warning)' : '#fff'}">${inicials}</div><span style="font-weight: 600; color: #f1f5f9;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>${mòdulFormatatRafaga}</div>`;
         }
 
         async function cargarRanking() {
@@ -738,6 +750,7 @@
                 document.getElementById('txt-partido-cartel').textContent = data.p1 || "CF Sant Julià"; 
                 document.getElementById('txt-partido-detalles').textContent = data.p2 || "Consulta l'horari amb el delegat."; 
                 
+                // ⚽ Executem la cerca de l'historial del rival automàticament
                 obtenerStatsRivalHistorial(data.p1);
             }
         }
@@ -816,6 +829,7 @@
             const llistaEl = document.getElementById('llista-detalls-partits');
             const btn = document.getElementById('btn-veure-detalls');
             
+            // Si la llista ja està visible, l'amaguem de manera neta
             if (llistaEl.style.display === 'block') {
                 llistaEl.style.display = 'none';
                 btn.innerHTML = `📊 Consultar estadístiques vs ${rivalExacte}`;
@@ -823,13 +837,14 @@
                 return;
             }
             
+            // Si ja teníem les dades descarregades d'abans, les mostrem directament sense fer un nou fetch
             if (llistaEl.innerHTML !== "") {
                 llistaEl.style.display = 'block';
                 btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
                 return;
             }
             
-            btn.innerHTML = '⏳ Escanejant els arxius històrics...';
+            btn.innerHTML = '⏳ Escanejant els arxius (això pot trigar uns segons)...';
             btn.disabled = true;
             btn.style.opacity = '0.7';
 
@@ -899,67 +914,26 @@
 
             let htmlHTML = `<div style="text-align:left;">`;
             if (partitsTrobats.length === 0) {
-                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold; margin-top:15px;">No s'han trobat enfrontaments directes.</p>`;
+                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold;">No s'han trobat enfrontaments directes.</p>`;
             } else {
-                partitsTrobats.reverse();
-                
                 partitsTrobats.forEach(p => {
-                    let colorResultat = '#94a3b8';
-                    let bgResultat = 'rgba(255,255,255,0.05)';
-                    let lletraResultat = '-';
-                    let isLocal = p.lv.trim().toUpperCase() === 'LOCAL';
-
-                    if (p.resultat && p.resultat.includes('-')) {
-                        let parts = p.resultat.split('-');
-                        let golsLocal = parseInt(parts[0]);
-                        let golsVisitant = parseInt(parts[1]);
-
-                        if (!isNaN(golsLocal) && !isNaN(golsVisitant)) {
-                            if (golsLocal === golsVisitant) {
-                                colorResultat = 'var(--warning)';
-                                bgResultat = 'rgba(245, 158, 11, 0.15)';
-                                lletraResultat = 'E';
-                            } else if ((isLocal && golsLocal > golsVisitant) || (!isLocal && golsVisitant > golsLocal)) {
-                                colorResultat = 'var(--success)';
-                                bgResultat = 'rgba(16, 185, 129, 0.15)';
-                                lletraResultat = 'V';
-                            } else {
-                                colorResultat = 'var(--danger)';
-                                bgResultat = 'rgba(239, 68, 68, 0.15)';
-                                lletraResultat = 'D';
-                            }
-                        }
-                    }
-
-                    let iconaLV = isLocal ? '🏠 Casa' : '✈️ Fora';
-
                     htmlHTML += `
-                    <div style="background: var(--surface); padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;">
-                        
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 10px;">
-                            <div style="display:flex; align-items:center; gap: 8px;">
-                                <span style="background: var(--primary); color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 2px 4px var(--primary-glow);">${p.temporada}</span>
-                                <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${iconaLV}</span>
-                            </div>
-                            
-                            <div style="display:flex; align-items:center; gap: 8px;">
-                                <span style="color: ${colorResultat}; font-size: 0.8rem; font-weight: 800;">${lletraResultat}</span>
-                                <span style="color: ${colorResultat}; background: ${bgResultat}; border: 1px solid ${colorResultat}; font-weight:900; padding: 4px 10px; border-radius:8px; font-size: 1rem; letter-spacing: 1px;">${p.resultat}</span>
-                            </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                            <span style="color:var(--primary); font-weight:bold;">${p.temporada}</span>
+                            <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${p.lv}</span>
+                            <span style="color:var(--text); font-weight:900; background:rgba(255,255,255,0.1); padding: 2px 6px; border-radius:4px;">${p.resultat}</span>
                         </div>
-
-                        <div style="display:flex; flex-direction:column; gap: 5px;">
-                            ${p.gols.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">⚽</span> <span style="color:#cbd5e1; font-size: 0.85rem; font-weight:600;">${p.gols.join(', ')}</span></div>` : ''}
-                            ${p.tg.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟨</span> <span style="color:#94a3b8; font-size: 0.8rem;">${p.tg.join(', ')}</span></div>` : ''}
-                            ${p.tv.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟥</span> <span style="color:#ef4444; font-size: 0.8rem;">${p.tv.join(', ')}</span></div>` : ''}
-                            ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#475569; font-style:italic; font-size: 0.8rem;">Sense registres individuals...</div>` : ''}
-                        </div>
-
+                        ${p.gols.length > 0 ? `<div style="color:var(--success); margin-bottom:3px;">⚽ <span style="color:#cbd5e1;">${p.gols.join(', ')}</span></div>` : ''}
+                        ${p.tg.length > 0 ? `<div style="color:var(--warning); margin-bottom:3px;">🟨 <span style="color:#cbd5e1;">${p.tg.join(', ')}</span></div>` : ''}
+                        ${p.tv.length > 0 ? `<div style="color:var(--danger);">🟥 <span style="color:#cbd5e1;">${p.tv.join(', ')}</span></div>` : ''}
+                        ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#64748b; font-style:italic;">Sense registres individuals</div>` : ''}
                     </div>`;
                 });
                 
+                // Botó de tancament inferior molt pràctic per a llistats llargs
                 htmlHTML += `
-                    <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 5px; padding:0.8rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
+                    <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 8px; padding:0.6rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:8px; font-weight:600; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
                         🔼 Amagar llistat de partits
                     </button>
                 `;
@@ -973,7 +947,7 @@
             btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
         }
 
-        async function actualizarCartelPartido() {
+            async function actualizarCartelPartido() {
             const rival = document.getElementById('admin-input-partido-nombre').value.trim(); const det = document.getElementById('admin-input-partido-detalles').value.trim();
             if (!rival || !det) return;
             const { error } = await clienteSupabase.from('quinieles').upsert({ id_jugador: 'CARTEL', jornada: 99, p1: rival, p2: det }, { onConflict: 'id_jugador,jornada' });
@@ -1072,7 +1046,7 @@
             if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
         }
 
-        async function guardarResultadosReales() {
+       async function guardarResultadosReales() {
             const msgEl = document.getElementById('msg-admin'); if(Object.keys(resultadosRealesAdmin).length < 10) return;
             msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
             resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
@@ -1080,6 +1054,7 @@
             if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=10; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
             let seguent = numeroJornadaGlobal + 1; 
             
+            // Correcció: eliminem la referència a "open" aquí també
             await clienteSupabase.from('estado_porra').update({ bloqueado: false, jornada_activa: seguent }).eq('id', 1); 
             location.reload();
         }
@@ -1088,117 +1063,6 @@
             const { data: misQuinielas } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).neq('jornada', 99).order('jornada', { ascending: false });
             const historialEl = document.getElementById('lista-historial'); if (!misQuinielas || misQuinielas.length === 0) { historialEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap quiniela enviada.</p>'; return; }
             let html = ''; misQuinielas.forEach((q) => { html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 5px 0;">Jornada ${q.jornada || 1}</p><p style="margin:0; color:#94a3b8;">[P1: ${q.p1}] [P2: ${q.p2}] [P3: ${q.p3}] [P4: ${q.p4}] [P5: ${q.p5}] <br>[P6: ${q.p6}] [P7: ${q.p7}] [P8: ${q.p8}] [P9: ${q.p9}] [P10: ${q.p10}]</p></div>`; }); historialEl.innerHTML = html;
-        }
-
-        function parsearCSV(text) {
-            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
-            if (lineas.length === 0) return [];
-            
-            const primeraLinea = lineas[0];
-            const nComes = (primeraLinea.match(/,/g) || []).length;
-            const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
-            const separador = nPuntsComes > nComes ? ';' : ',';
-            
-            return lineas.map(linea => {
-                const r = []; let dins = false; let val = '';
-                for (let i = 0; i < linea.length; i++) {
-                    let c = linea[i];
-                    if (c === '"') { dins = !dins; } 
-                    else if (c === separador && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
-                    else { val += c; }
-                }
-                r.push(val.trim().replace(/^"|"$/g, ''));
-                return r;
-            }).filter(l => l.length > 0 && l.some(cel => cel !== ""));
-        }
-
-        function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
-        function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
-        function cambiarSubTabStats(subTabId, boton) { document.getElementById('tab-stats').querySelectorAll('.sub-tab-content-stats').forEach(st => st.style.display = 'none'); document.getElementById('tab-stats').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
-        
-        function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
-        function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
-        
-        async function verificarBoletoExistente() { 
-            const msgEl = document.getElementById('msg-quiniela'); 
-            const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
-            if (bEx) { 
-                msgEl.style.color = 'var(--warning)'; 
-                msgEl.textContent = `Ja tens un bitllet desat. Pots canviar els pronòstics i desar per substituir-lo.`; 
-                msgEl.style.display = 'block'; 
-                for(let i=1; i<=10; i++) { 
-                    const valorAnterior = bEx[`p${i}`]; 
-                    pronosticosSeleccionados[`p${i}`] = valorAnterior; 
-                    const fila = document.querySelector(`[data-partido="p${i}"]`); 
-                    if(fila) { 
-                        fila.querySelectorAll('.btn-pronostico').forEach(b => { 
-                            if(b.textContent === valorAnterior) b.classList.add('selected'); 
-                            else b.classList.remove('selected'); 
-                        }); 
-                    } 
-                } 
-            } else { 
-                msgEl.style.display = 'none'; 
-                pronosticosSeleccionados = {}; 
-                document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
-            } 
-        }
-
-        async function guardarQuiniela() { 
-            const msgEl = document.getElementById('msg-quiniela'); 
-            const btn = document.getElementById('btn-guardar-porra');
-            
-            if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) {
-                msgEl.style.color = 'var(--danger)'; 
-                msgEl.textContent = 'Falten partits per marcar o la jornada està tancada.'; 
-                msgEl.style.display = 'block';
-                return;
-            } 
-
-            btn.innerHTML = '⏳ Desant...';
-            btn.style.opacity = '0.7';
-
-            pronosticosSeleccionados['id_jugador'] = emailUsuario; 
-            pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; 
-            const { error } = await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); 
-            
-            if(!error) {
-                btn.innerHTML = '✅ Guardat correctament!';
-                btn.style.opacity = '1';
-                btn.style.backgroundColor = 'var(--success)';
-                
-                msgEl.style.color = 'var(--success)'; 
-                msgEl.textContent = 'Quiniela desada! (Si fas més canvis, se substituirà).'; 
-                msgEl.style.display = 'block';
-                
-                setTimeout(() => { 
-                    btn.innerHTML = 'Desar la Quiniela';
-                    btn.style.backgroundColor = 'var(--success)';
-                    verificarBoletoExistente(); 
-                }, 3000); 
-            }
-        }
-
-        async function cargarMultas() {
-            const { data: multas } = await clienteSupabase.from('multas').select('*');
-            const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas');
-            if(!multas || multas.length === 0) { if(boteEl) boteEl.textContent = '0.00 €'; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = '0.00 €'; if(listaEl) listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>'; return; }
-            
-            let sum = 0; let htmlLista = '';
-            multas.forEach(m => {
-                sum += parseFloat(m.import);
-                let botoBorrarExclusiu = (emailUsuario === 'sergigodayol@gmail.com') 
-                    ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
-                    : '';
-
-                htmlLista += `
-                    <div class="multa-item">
-                        <span><strong>${m.nom_jugador}</strong> (${m.motiu}) ${botoBorrarExclusiu}</span>
-                        <span style="color:var(--danger); font-weight:bold;">${m.import} €</span>
-                    </div>`;
-            });
-            let text = `${sum.toFixed(2)} €`;
-            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
         }
 
         async function cargarEstadisticas() {
@@ -1337,6 +1201,117 @@
                 console.error("Error carregant fulls:", error);
                 document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió amb Google Drive.</p>';
             }
+        }
+
+        function parsearCSV(text) {
+            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
+            if (lineas.length === 0) return [];
+            
+            const primeraLinea = lineas[0];
+            const nComes = (primeraLinea.match(/,/g) || []).length;
+            const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
+            const separador = nPuntsComes > nComes ? ';' : ',';
+            
+            return lineas.map(linea => {
+                const r = []; let dins = false; let val = '';
+                for (let i = 0; i < linea.length; i++) {
+                    let c = linea[i];
+                    if (c === '"') { dins = !dins; } 
+                    else if (c === separador && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
+                    else { val += c; }
+                }
+                r.push(val.trim().replace(/^"|"$/g, ''));
+                return r;
+            }).filter(l => l.length > 0 && l.some(cel => cel !== ""));
+        }
+
+        function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
+        function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        function cambiarSubTabStats(subTabId, boton) { document.getElementById('tab-stats').querySelectorAll('.sub-tab-content-stats').forEach(st => st.style.display = 'none'); document.getElementById('tab-stats').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        
+        function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
+        function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
+        
+        async function verificarBoletoExistente() { 
+            const msgEl = document.getElementById('msg-quiniela'); 
+            const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
+            if (bEx) { 
+                msgEl.style.color = 'var(--warning)'; 
+                msgEl.textContent = `Ja tens un bitllet desat. Pots canviar els pronòstics i desar per substituir-lo.`; 
+                msgEl.style.display = 'block'; 
+                for(let i=1; i<=10; i++) { 
+                    const valorAnterior = bEx[`p${i}`]; 
+                    pronosticosSeleccionados[`p${i}`] = valorAnterior; 
+                    const fila = document.querySelector(`[data-partido="p${i}"]`); 
+                    if(fila) { 
+                        fila.querySelectorAll('.btn-pronostico').forEach(b => { 
+                            if(b.textContent === valorAnterior) b.classList.add('selected'); 
+                            else b.classList.remove('selected'); 
+                        }); 
+                    } 
+                } 
+            } else { 
+                msgEl.style.display = 'none'; 
+                pronosticosSeleccionados = {}; 
+                document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
+            } 
+        }
+
+        async function guardarQuiniela() { 
+            const msgEl = document.getElementById('msg-quiniela'); 
+            const btn = document.getElementById('btn-guardar-porra');
+            
+            if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) {
+                msgEl.style.color = 'var(--danger)'; 
+                msgEl.textContent = 'Falten partits per marcar o la jornada està tancada.'; 
+                msgEl.style.display = 'block';
+                return;
+            } 
+
+            btn.innerHTML = '⏳ Desant...';
+            btn.style.opacity = '0.7';
+
+            pronosticosSeleccionados['id_jugador'] = emailUsuario; 
+            pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; 
+            const { error } = await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); 
+            
+            if(!error) {
+                btn.innerHTML = '✅ Guardat correctament!';
+                btn.style.opacity = '1';
+                btn.style.backgroundColor = 'var(--success)';
+                
+                msgEl.style.color = 'var(--success)'; 
+                msgEl.textContent = 'Quiniela desada! (Si fas més canvis, se substituirà).'; 
+                msgEl.style.display = 'block';
+                
+                setTimeout(() => { 
+                    btn.innerHTML = 'Desar la Quiniela';
+                    btn.style.backgroundColor = 'var(--success)';
+                    verificarBoletoExistente(); 
+                }, 3000); 
+            }
+        }
+
+        async function cargarMultas() {
+            const { data: multas } = await clienteSupabase.from('multas').select('*');
+            const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas');
+            if(!multas || multas.length === 0) { if(boteEl) boteEl.textContent = '0.00 €'; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = '0.00 €'; if(listaEl) listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>'; return; }
+            
+            let sum = 0; let htmlLista = '';
+            multas.forEach(m => {
+                sum += parseFloat(m.import);
+                let botoBorrarExclusiu = (emailUsuario === 'sergigodayol@gmail.com') 
+                    ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
+                    : '';
+
+                htmlLista += `
+                    <div class="multa-item">
+                        <span><strong>${m.nom_jugador}</strong> (${m.motiu}) ${botoBorrarExclusiu}</span>
+                        <span style="color:var(--danger); font-weight:bold;">${m.import} €</span>
+                    </div>`;
+            });
+            let text = `${sum.toFixed(2)} €`;
+            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
         }
 
         verificarSesion();

@@ -997,26 +997,71 @@
 
             let htmlHTML = `<div style="text-align:left;">`;
             if (partitsTrobats.length === 0) {
-                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold;">No s'han trobat enfrontaments directes.</p>`;
+                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold; margin-top:15px;">No s'han trobat enfrontaments directes.</p>`;
             } else {
+                
+                // 🔄 GIREM LA LLISTA PERQUÈ SURTI DEL MÉS NOU AL MÉS ANTIC
+                partitsTrobats.reverse();
+                
                 partitsTrobats.forEach(p => {
+                    // Lògica per calcular automàticament Victòria, Empat o Derrota
+                    let colorResultat = '#94a3b8';
+                    let bgResultat = 'rgba(255,255,255,0.05)';
+                    let lletraResultat = '-';
+                    let isLocal = p.lv.trim().toUpperCase() === 'LOCAL';
+
+                    if (p.resultat && p.resultat.includes('-')) {
+                        let parts = p.resultat.split('-');
+                        let golsLocal = parseInt(parts[0]);
+                        let golsVisitant = parseInt(parts[1]);
+
+                        if (!isNaN(golsLocal) && !isNaN(golsVisitant)) {
+                            if (golsLocal === golsVisitant) {
+                                colorResultat = 'var(--warning)'; // Groc
+                                bgResultat = 'rgba(245, 158, 11, 0.15)';
+                                lletraResultat = 'E';
+                            } else if ((isLocal && golsLocal > golsVisitant) || (!isLocal && golsVisitant > golsLocal)) {
+                                colorResultat = 'var(--success)'; // Verd
+                                bgResultat = 'rgba(16, 185, 129, 0.15)';
+                                lletraResultat = 'V';
+                            } else {
+                                colorResultat = 'var(--danger)';  // Vermell
+                                bgResultat = 'rgba(239, 68, 68, 0.15)';
+                                lletraResultat = 'D';
+                            }
+                        }
+                    }
+
+                    let iconaLV = isLocal ? '🏠 Casa' : '✈️ Fora';
+
                     htmlHTML += `
-                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
-                            <span style="color:var(--primary); font-weight:bold;">${p.temporada}</span>
-                            <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${p.lv}</span>
-                            <span style="color:var(--text); font-weight:900; background:rgba(255,255,255,0.1); padding: 2px 6px; border-radius:4px;">${p.resultat}</span>
+                    <div style="background: var(--surface); padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;">
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 10px;">
+                            <div style="display:flex; align-items:center; gap: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 2px 4px var(--primary-glow);">${p.temporada}</span>
+                                <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${iconaLV}</span>
+                            </div>
+                            
+                            <div style="display:flex; align-items:center; gap: 8px;">
+                                <span style="color: ${colorResultat}; font-size: 0.8rem; font-weight: 800;">${lletraResultat}</span>
+                                <span style="color: ${colorResultat}; background: ${bgResultat}; border: 1px solid ${colorResultat}; font-weight:900; padding: 4px 10px; border-radius:8px; font-size: 1rem; letter-spacing: 1px;">${p.resultat}</span>
+                            </div>
                         </div>
-                        ${p.gols.length > 0 ? `<div style="color:var(--success); margin-bottom:3px;">⚽ <span style="color:#cbd5e1;">${p.gols.join(', ')}</span></div>` : ''}
-                        ${p.tg.length > 0 ? `<div style="color:var(--warning); margin-bottom:3px;">🟨 <span style="color:#cbd5e1;">${p.tg.join(', ')}</span></div>` : ''}
-                        ${p.tv.length > 0 ? `<div style="color:var(--danger);">🟥 <span style="color:#cbd5e1;">${p.tv.join(', ')}</span></div>` : ''}
-                        ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#64748b; font-style:italic;">Sense registres individuals</div>` : ''}
+
+                        <div style="display:flex; flex-direction:column; gap: 5px;">
+                            ${p.gols.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">⚽</span> <span style="color:#cbd5e1; font-size: 0.85rem; font-weight:600;">${p.gols.join(', ')}</span></div>` : ''}
+                            ${p.tg.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟨</span> <span style="color:#94a3b8; font-size: 0.8rem;">${p.tg.join(', ')}</span></div>` : ''}
+                            ${p.tv.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟥</span> <span style="color:#ef4444; font-size: 0.8rem;">${p.tv.join(', ')}</span></div>` : ''}
+                            ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#475569; font-style:italic; font-size: 0.8rem;">Sense registres individuals...</div>` : ''}
+                        </div>
+
                     </div>`;
                 });
                 
-                // Botó de tancament inferior molt pràctic per a llistats llargs
+                // Botó de tancament inferior
                 htmlHTML += `
-                    <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 8px; padding:0.6rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:8px; font-weight:600; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                    <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 5px; padding:0.8rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
                         🔼 Amagar llistat de partits
                     </button>
                 `;

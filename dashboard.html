@@ -595,12 +595,18 @@
         function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
             let correuNetejat = pos.id_jugador.trim().toLowerCase();
             let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
-            let inicials = nomAMostrar.substring(0, 2).toUpperCase();
+            
+            // Icones de medalla per al Top 3
             let medallaIcono = `${index + 1}.º`;
             if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
+            
+            // Històric d'encerts (Forma)
             let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
-            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
-            return `<div class="ranking-item"><div class="ranking-fila-principal"><div class="player-info"><span class="medalla">${medallaIcono}</span><div class="avatar" style="background-color: ${index === 0 ? 'rgba(245, 158, 11, 0.2)' : '#334155'}; color: ${index === 0 ? 'var(--warning)' : '#fff'}">${inicials}</div><span style="font-weight: 600; color: #f1f5f9;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>${mòdulFormatatRafaga}</div>`;
+            // Ajustem el marge esquerre (margin-left:38px) perquè els puntets quedin alineats amb el nom ara que no hi ha avatar
+            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 38px;"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
+            
+            // Retornem la fila només amb la medalla i el nom, eliminant el <div class="avatar">
+            return `<div class="ranking-item"><div class="ranking-fila-principal"><div class="player-info"><span class="medalla">${medallaIcono}</span><span style="font-weight: 700; color: #f1f5f9; font-size: 1rem;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>${mòdulFormatatRafaga}</div>`;
         }
 
         async function cargarRanking() {

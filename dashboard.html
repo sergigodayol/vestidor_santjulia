@@ -988,6 +988,60 @@
             btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
         }
 
+        function parsearCSV(text) {
+            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
+            if (lineas.length === 0) return [];
+            
+            const primeraLinea = lineas[0];
+            const nComes = (primeraLinea.match(/,/g) || []).length;
+            const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
+            const separador = nPuntsComes > nComes ? ';' : ',';
+            
+            return lineas.map(linea => {
+                const r = []; let dins = false; let val = '';
+                for (let i = 0; i < linea.length; i++) {
+                    let c = linea[i];
+                    if (c === '"') { dins = !dins; } 
+                    else if (c === separador && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
+                    else { val += c; }
+                }
+                r.push(val.trim().replace(/^"|"$/g, ''));
+                return r;
+            }).filter(l => l.length > 0 && l.some(cel => cel !== ""));
+        }
+
+        function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
+        function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        function cambiarSubTabStats(subTabId, boton) { document.getElementById('tab-stats').querySelectorAll('.sub-tab-content-stats').forEach(st => st.style.display = 'none'); document.getElementById('tab-stats').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        
+        function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
+        function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
+        
+        async function verificarBoletoExistente() { 
+            const msgEl = document.getElementById('msg-quiniela'); 
+            const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
+            if (bEx) { 
+                msgEl.style.color = 'var(--warning)'; 
+                msgEl.textContent = `Ja tens un bitllet desat. Pots canviar els pronòstics i desar per substituir-lo.`; 
+                msgEl.style.display = 'block'; 
+                for(let i=1; i<=10; i++) { 
+                    const valorAnterior = bEx[`p${i}`]; 
+                    pronosticosSeleccionados[`p${i}`] = valorAnterior; 
+                    const fila = document.querySelector(`[data-partido="p${i}"]`); 
+                    if(fila) { 
+                        fila.querySelectorAll('.btn-pronostico').forEach(b => { 
+                            if(b.textContent === valorAnterior) b.classList.add('selected'); 
+                            else b.classList.remove('selected'); 
+                        }); 
+                    } 
+                } 
+            } else { 
+                msgEl.style.display = 'none'; 
+                pronosticosSeleccionados = {}; 
+                document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
+            } 
+        }
+
         async function guardarQuiniela() { 
             const msgEl = document.getElementById('msg-quiniela'); 
             const btn = document.getElementById('btn-guardar-porra');
@@ -1043,6 +1097,144 @@
             });
             let text = `${sum.toFixed(2)} €`;
             if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
+        }
+
+        async function cargarEstadisticas() {
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`;
+            const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
+
+            try {
+                const resLliga = await fetch(urlLliga);
+                const csvLliga = await resLliga.text();
+                const dadesLliga = parsearCSV(csvLliga);
+
+                const resGlobal = await fetch(urlGlobal);
+                const csvGlobal = await resGlobal.text();
+                const dadesGlobal = parsearCSV(csvGlobal);
+
+                if (dadesLliga.length === 0) {
+                    document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">El full de càrrec ha retornat un fitxer buit.</p>';
+                    return;
+                }
+
+                const headersLliga = dadesLliga[0].map(h => h.trim().toUpperCase());
+                const idxJugadorL = headersLliga.indexOf('JUGADOR');
+                const idxPartitsL = headersLliga.indexOf('PARTITS JUGATS');
+                const idxGolsL = headersLliga.indexOf('GOLS');
+                const idxTGL = headersLliga.indexOf('TG');
+                const idxTVL = headersLliga.indexOf('TV');
+
+                if (idxJugadorL === -1) {
+                    document.getElementById('tabla-stats-lliga').innerHTML = `<p style="color:var(--danger)">Error: No s'ha trobat la columna 'JUGADOR'. Revisa les capçaleres de l'Excel.</p>`;
+                    return;
+                }
+
+                const jugadorsActius = [];
+                let htmlLliga = `
+                    <div style="overflow-x: auto;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
+                                <th style="padding: 8px 4px;">JUGADOR</th>
+                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
+                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                for (let i = 1; i < dadesLliga.length; i++) {
+                    const fila = dadesLliga[i];
+                    const nom = fila[idxJugadorL] ? fila[idxJugadorL].trim() : "";
+
+                    if (nom.toUpperCase().includes('AMATEUR B') || nom.toUpperCase() === 'JUGADOR') {
+                        if (jugadorsActius.length > 0) break; 
+                        continue;
+                    }
+
+                    if (nom === "") {
+                        if (jugadorsActius.length > 0) break; 
+                        continue;
+                    }
+
+                    const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';
+                    const gols = fila[idxGolsL] ? fila[idxGolsL].trim() : '0';
+                    const tg = fila[idxTGL] ? fila[idxTGL].trim() : '0';
+                    const tv = fila[idxTVL] ? fila[idxTVL].trim() : '0';
+
+                    jugadorsActius.push(nom.toLowerCase());
+
+                    htmlLliga += `
+                        <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
+                            <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nom}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pj}</td>
+                            <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tg}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tv}</td>
+                        </tr>`;
+                }
+                htmlLliga += `</tbody></table></div>`;
+                document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
+
+                const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
+                const idxJugadorG = headersGlobal.indexOf('JUGADOR');
+                const idxPartitsG = headersGlobal.indexOf('PARTITS JUGATS');
+                const idxGolsG = headersGlobal.indexOf('GOLS');
+                const idxTGG = headersGlobal.indexOf('TG');
+                const idxTVG = headersGlobal.indexOf('TV');
+
+                let htmlHistoric = `
+                    <div style="overflow-x: auto;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
+                                <th style="padding: 8px 4px;">JUGADOR</th>
+                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
+                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                let hiHaHistoric = false;
+                for (let i = 1; i < dadesGlobal.length; i++) {
+                    const fila = dadesGlobal[i];
+                    if (!fila[idxJugadorG] || fila[idxJugadorG].trim() === "") continue;
+
+                    const nomG = fila[idxJugadorG].trim();
+                    
+                    if (jugadorsActius.includes(nomG.toLowerCase())) {
+                        hiHaHistoric = true;
+                        const pjG = fila[idxPartitsG] ? fila[idxPartitsG].trim() : '0';
+                        const golsG = fila[idxGolsG] ? fila[idxGolsG].trim() : '0';
+                        const tgG = fila[idxTGG] ? fila[idxTGG].trim() : '0';
+                        const tvG = fila[idxTVG] ? fila[idxTVG].trim() : '0';
+
+                        htmlHistoric += `
+                            <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
+                                <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nomG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pjG}</td>
+                                <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tgG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tvG}</td>
+                            </tr>`;
+                    }
+                }
+
+                if (!hiHaHistoric) {
+                    htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
+                }
+
+                htmlHistoric += `</tbody></table></div>`;
+                document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
+
+            } catch (error) {
+                console.error("Error carregant fulls:", error);
+                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió amb Google Drive.</p>';
+            }
         }
 
         verificarSesion();

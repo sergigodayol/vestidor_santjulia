@@ -207,7 +207,7 @@
             </div>
 
             <div class="card" style="border-left: 4px solid var(--danger); margin-top: 1rem; text-align: center;">
-                <h3>💰 Diners recaptats</h3>
+                <h3 style="justify-content: center;">💰 Total multes</h3>
                 <div class="bote-total" id="resumen-multas" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
             </div>
         </div>
@@ -673,7 +673,7 @@
                 let avisPerill = ''; let estilText = 'color:#94a3b8;';
                 if (a.diesQueden === 0) { avisPerill = ' 🔥 <strong>AVUI PORTA LES PASTES!</strong>'; estilText = 'color:var(--danger); font-weight:bold;'; }
                 else if (a.diesQueden <= 7) { avisPerill = ' ⚠️ <strong>TOCA EL DIVENDRES!</strong>'; estilText = 'color:var(--warning); font-weight:bold;'; }
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom:1px solid var(--border);"><span>🏃‍♂️ <strong>${a.nom}</strong> (${a.dia} de ${a.mes})${avisPerill}</span><span style="${estilText}">${a.diesQueden === 0 ? 'Avui' : 'Queden ' + a.diesQueden + ' dies'}</span></div>`;
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom:1px solid var(--border);"><span>🍰 <strong>${a.nom}</strong> (${a.dia} de ${a.mes})${avisPerill}</span><span style="${estilText}">${a.diesQueden === 0 ? 'Avui' : 'Queden ' + a.diesQueden + ' dies'}</span></div>`;
             });
             divAniversaris.innerHTML = html;
         }

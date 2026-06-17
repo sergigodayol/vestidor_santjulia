@@ -596,16 +596,12 @@
             let correuNetejat = pos.id_jugador.trim().toLowerCase();
             let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
             
-            // Icones de medalla per al Top 3
             let medallaIcono = `${index + 1}.º`;
             if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
             
-            // Històric d'encerts (Forma)
             let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
-            // Ajustem el marge esquerre (margin-left:38px) perquè els puntets quedin alineats amb el nom ara que no hi ha avatar
             let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 38px;"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
             
-            // Retornem la fila només amb la medalla i el nom, eliminant el <div class="avatar">
             return `<div class="ranking-item"><div class="ranking-fila-principal"><div class="player-info"><span class="medalla">${medallaIcono}</span><span style="font-weight: 700; color: #f1f5f9; font-size: 1rem;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>${mòdulFormatatRafaga}</div>`;
         }
 
@@ -835,7 +831,6 @@
             const llistaEl = document.getElementById('llista-detalls-partits');
             const btn = document.getElementById('btn-veure-detalls');
             
-            // Si la llista ja està visible, l'amaguem de manera neta
             if (llistaEl.style.display === 'block') {
                 llistaEl.style.display = 'none';
                 btn.innerHTML = `📊 Consultar estadístiques vs ${rivalExacte}`;
@@ -843,7 +838,6 @@
                 return;
             }
             
-            // Si ja teníem les dades descarregades, les mostrem directament
             if (llistaEl.innerHTML !== "") {
                 llistaEl.style.display = 'block';
                 btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
@@ -863,7 +857,6 @@
 
             let partitsTrobats = [];
 
-            // Descàrrega per blocs per no saturar Google
             for (let i = 0; i < temporades.length; i += 4) {
                 const batch = temporades.slice(i, i + 4);
                 const promeses = batch.map(t => 
@@ -923,88 +916,9 @@
             if (partitsTrobats.length === 0) {
                 htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold; margin-top:15px;">No s'han trobat enfrontaments directes.</p>`;
             } else {
-                partitsTrobats.forEach(p => {
-                    // Lògica per calcular automàticament Victòria, Empat o Derrota
-                    let colorResultat = '#94a3b8';
-                    let bgResultat = 'rgba(255,255,255,0.05)';
-                    let lletraResultat = '-';
-                    let isLocal = p.lv.trim().toUpperCase() === 'LOCAL';
-
-                    if (p.resultat && p.resultat.includes('-')) {
-                        let parts = p.resultat.split('-');
-                        let golsLocal = parseInt(parts[0]);
-                        let golsVisitant = parseInt(parts[1]);
-
-                        if (!isNaN(golsLocal) && !isNaN(golsVisitant)) {
-                            if (golsLocal === golsVisitant) {
-                                colorResultat = 'var(--warning)'; // Groc
-                                bgResultat = 'rgba(245, 158, 11, 0.15)';
-                                lletraResultat = 'E';
-                            } else if ((isLocal && golsLocal > golsVisitant) || (!isLocal && golsVisitant > golsLocal)) {
-                                colorResultat = 'var(--success)'; // Verd
-                                bgResultat = 'rgba(16, 185, 129, 0.15)';
-                                lletraResultat = 'V';
-                            } else {
-                                colorResultat = 'var(--danger)';  // Vermell
-                                bgResultat = 'rgba(239, 68, 68, 0.15)';
-                                lletraResultat = 'D';
-                            }
-                        }
-                    }
-
-                    let iconaLV = isLocal ? '🏠 Casa' : '✈️ Fora';
-
-                    htmlHTML += `
-                    <div style="background: var(--surface); padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;">
-                        
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 10px;">
-                            <div style="display:flex; align-items:center; gap: 8px;">
-                                <span style="background: var(--primary); color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 2px 4px var(--primary-glow);">${p.temporada}</span>
-                                <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${iconaLV}</span>
-                            </div>
-                            
-                            <div style="display:flex; align-items:center; gap: 8px;">
-                                <span style="color: ${colorResultat}; font-size: 0.8rem; font-weight: 800;">${lletraResultat}</span>
-                                <span style="color: ${colorResultat}; background: ${bgResultat}; border: 1px solid ${colorResultat}; font-weight:900; padding: 4px 10px; border-radius:8px; font-size: 1rem; letter-spacing: 1px;">${p.resultat}</span>
-                            </div>
-                        </div>
-
-                        <div style="display:flex; flex-direction:column; gap: 5px;">
-                            ${p.gols.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">⚽</span> <span style="color:#cbd5e1; font-size: 0.85rem; font-weight:600;">${p.gols.join(', ')}</span></div>` : ''}
-                            ${p.tg.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟨</span> <span style="color:#94a3b8; font-size: 0.8rem;">${p.tg.join(', ')}</span></div>` : ''}
-                            ${p.tv.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟥</span> <span style="color:#ef4444; font-size: 0.8rem;">${p.tv.join(', ')}</span></div>` : ''}
-                            ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#475569; font-style:italic; font-size: 0.8rem;">Sense registres individuals...</div>` : ''}
-                        </div>
-
-                    </div>`;
-                });
-                
-                // Botó de tancament inferior
-                htmlHTML += `
-                    <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 5px; padding:0.8rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
-                        🔼 Amagar llistat de partits
-                    </button>
-                `;
-            }
-            htmlHTML += `</div>`;
-            
-            llistaEl.innerHTML = htmlHTML;
-            llistaEl.style.display = 'block';
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
-        }
-
-            let htmlHTML = `<div style="text-align:left;">`;
-            if (partitsTrobats.length === 0) {
-                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold; margin-top:15px;">No s'han trobat enfrontaments directes.</p>`;
-            } else {
-                
-                // 🔄 GIREM LA LLISTA PERQUÈ SURTI DEL MÉS NOU AL MÉS ANTIC
                 partitsTrobats.reverse();
                 
                 partitsTrobats.forEach(p => {
-                    // Lògica per calcular automàticament Victòria, Empat o Derrota
                     let colorResultat = '#94a3b8';
                     let bgResultat = 'rgba(255,255,255,0.05)';
                     let lletraResultat = '-';
@@ -1017,15 +931,15 @@
 
                         if (!isNaN(golsLocal) && !isNaN(golsVisitant)) {
                             if (golsLocal === golsVisitant) {
-                                colorResultat = 'var(--warning)'; // Groc
+                                colorResultat = 'var(--warning)';
                                 bgResultat = 'rgba(245, 158, 11, 0.15)';
                                 lletraResultat = 'E';
                             } else if ((isLocal && golsLocal > golsVisitant) || (!isLocal && golsVisitant > golsLocal)) {
-                                colorResultat = 'var(--success)'; // Verd
+                                colorResultat = 'var(--success)';
                                 bgResultat = 'rgba(16, 185, 129, 0.15)';
                                 lletraResultat = 'V';
                             } else {
-                                colorResultat = 'var(--danger)';  // Vermell
+                                colorResultat = 'var(--danger)';
                                 bgResultat = 'rgba(239, 68, 68, 0.15)';
                                 lletraResultat = 'D';
                             }
@@ -1059,7 +973,6 @@
                     </div>`;
                 });
                 
-                // Botó de tancament inferior
                 htmlHTML += `
                     <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 5px; padding:0.8rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
                         🔼 Amagar llistat de partits
@@ -1073,316 +986,6 @@
             btn.disabled = false;
             btn.style.opacity = '1';
             btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
-        }
-
-            async function actualizarCartelPartido() {
-            const rival = document.getElementById('admin-input-partido-nombre').value.trim(); const det = document.getElementById('admin-input-partido-detalles').value.trim();
-            if (!rival || !det) return;
-            const { error } = await clienteSupabase.from('quinieles').upsert({ id_jugador: 'CARTEL', jornada: 99, p1: rival, p2: det }, { onConflict: 'id_jugador,jornada' });
-            if(!error) { alert("¡Cartellera publicada!"); location.reload(); }
-        }
-
-        async function crearMultaManual() {
-            const nom = document.getElementById('select-admin-multa-nom').value; 
-            const motiu = document.getElementById('multa-motiu').value.trim(); 
-            const valImport = parseFloat(document.getElementById('multa-import').value); 
-            const msgM = document.getElementById('msg-admin-multa');
-
-            if(!nom || !motiu || isNaN(valImport) || valImport <= 0) {
-                msgM.style.color = 'var(--danger)'; msgM.textContent = 'Selecciona un jugador culpable i omple tots els camps.'; msgM.style.display = 'block'; return;
-            }
-            msgM.style.color = 'var(--warning)'; msgM.textContent = 'Sancionant...'; msgM.style.display = 'block';
-            
-            const { error } = await clienteSupabase.from('multas').insert([{ nom_jugador: nom, motiu: motiu, import: valImport }]);
-            if(!error) { 
-                msgM.style.color = 'var(--success)'; msgM.textContent = `¡Sanció aplicada! 💸`; 
-                document.getElementById('select-admin-multa-nom').value = ''; 
-                document.getElementById('multa-motiu').value = ''; 
-                document.getElementById('multa-import').value = ''; 
-                cargarMultas(); setTimeout(() => { msgM.style.display = 'none'; }, 3000); 
-            }
-        }
-
-        async function eliminarMultaBase(idMulta, nomJugador) {
-            if(confirm(`Estàs segur que vols eliminar la multa d'en ${nomJugador}?`)) {
-                const { error } = await clienteSupabase.from('multas').delete().eq('id', idMulta);
-                if (error) { alert("Error al eliminar: " + error.message); }
-                else { alert("Multa liquidada/eliminada correctament! 👍"); cargarMultas(); }
-            }
-        }
-
-        async function cargarQuinielasCompanys() {
-            const listaCompanysEl = document.getElementById('lista-quinielas-companys');
-            if (!porraBloqueadaActualmente) { listaCompanysEl.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--warning);"><p style="font-size:2rem; margin:0 0 0.5rem 0;">🔒</p><p style="margin:0; font-size:1rem; font-weight:bold;">Bitllets ocults temporandament</p></div>`; return; }
-            const { data: quinielas } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal).neq('id_jugador', 'CARTEL');
-            if(!quinielas || quinielas.length === 0) { listaCompanysEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap company ha enviat la quiniela encara.</p>'; return; }
-            let html = '';
-            quinielas.forEach(q => {
-                let nom = dadesPerfilsMapejades[q.id_jugador.trim().toLowerCase()] || q.id_jugador.split('@')[0];
-                html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 5px 0;">👤 ${nom}</p><p style="margin:0; color:var(--text); letter-spacing: 2px; font-family: monospace;">1:${q.p1} | 2:${q.p2} | 3:${q.p3} | 4:${q.p4} | 5:${q.p5} <br>6:${q.p6} | 7:${q.p7} | 8:${q.p8} | 9:${q.p9} | 10:${q.p10}</p></div>`;
-            });
-            listaCompanysEl.innerHTML = html;
-        }
-
-        async function cargarRankingMVP() {
-            const { data: totsElsVots, error } = await clienteSupabase.from('vots_mvp').select('*');
-            const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); 
-            const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
-            let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
-            if(error || !totsElsVots || totsElsVots.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
-            
-            let votsPerJornada = {};
-            totsElsVots.forEach(v => { let jor = v.jornada; let nom = v.nominat.trim(); if(nom) { if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; } });
-            
-            let palmaresTrofeus = {};
-            Object.keys(votsPerJornada).forEach(jor => {
-                let votsDeLaSetmana = votsPerJornada[jor]; let maximVots = 0; let guanyadorsSetmana = [];
-                Object.keys(votsDeLaSetmana).forEach(nom => { if (votsDeLaSetmana[nom] > maximVots) { maximVots = votsDeLaSetmana[nom]; guanyadorsSetmana = [nom]; } else if (votsDeLaSetmana[nom] === maximVots) { guanyadorsSetmana.push(nom); } });
-                guanyadorsSetmana.forEach(guanyador => { palmaresTrofeus[guanyador] = (palmaresTrofeus[guanyador] || 0) + 1; });
-            });
-            
-            let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
-            if(llistaPalmares.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
-            
-            let htmlInicio = '';
-            let htmlFull = '';
-            
-            llistaPalmares.forEach((mvp, index) => { 
-                let fila = generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); 
-                htmlFull += fila;
-                if(index < 3) htmlInicio += fila;
-            });
-            
-            if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
-            if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
-        }
-
-        async function cargarVotMVPExistente() {
-            if(numeroJornadaGlobal === 1) return;
-            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
-            const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', jornadaAVotar).maybeSingle();
-            if(votFet) { if(selectMvp) selectMvp.value = votFet.nominat; if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a la Jornada ${jornadaAVotar}.`; msgMvp.style.display = 'block'; } }
-        }
-
-        async function guardarVotMVP() {
-            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
-            const { data: cerrojo = {} } = await clienteSupabase.from('estado_porra').select('*').eq('id', 1).single();
-            if(cerrojo && cerrojo.bloqueado) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 El termini de votació de l\'MVP està tancat.'; msgMvp.style.display = 'block'; return; }
-            const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
-            msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
-            const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: jornadaAVotar, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
-            if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
-        }
-
-       async function guardarResultadosReales() {
-            const msgEl = document.getElementById('msg-admin'); if(Object.keys(resultadosRealesAdmin).length < 10) return;
-            msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
-            resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
-            const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
-            if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=10; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
-            let seguent = numeroJornadaGlobal + 1; 
-            
-            // Correcció: eliminem la referència a "open" aquí també
-            await clienteSupabase.from('estado_porra').update({ bloqueado: false, jornada_activa: seguent }).eq('id', 1); 
-            location.reload();
-        }
-
-        async function cargarHistorial() {
-            const { data: misQuinielas } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).neq('jornada', 99).order('jornada', { ascending: false });
-            const historialEl = document.getElementById('lista-historial'); if (!misQuinielas || misQuinielas.length === 0) { historialEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap quiniela enviada.</p>'; return; }
-            let html = ''; misQuinielas.forEach((q) => { html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 5px 0;">Jornada ${q.jornada || 1}</p><p style="margin:0; color:#94a3b8;">[P1: ${q.p1}] [P2: ${q.p2}] [P3: ${q.p3}] [P4: ${q.p4}] [P5: ${q.p5}] <br>[P6: ${q.p6}] [P7: ${q.p7}] [P8: ${q.p8}] [P9: ${q.p9}] [P10: ${q.p10}]</p></div>`; }); historialEl.innerHTML = html;
-        }
-
-        async function cargarEstadisticas() {
-            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
-            const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`;
-            const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
-
-            try {
-                const resLliga = await fetch(urlLliga);
-                const csvLliga = await resLliga.text();
-                const dadesLliga = parsearCSV(csvLliga);
-
-                const resGlobal = await fetch(urlGlobal);
-                const csvGlobal = await resGlobal.text();
-                const dadesGlobal = parsearCSV(csvGlobal);
-
-                if (dadesLliga.length === 0) {
-                    document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">El full de càrrec ha retornat un fitxer buit.</p>';
-                    return;
-                }
-
-                const headersLliga = dadesLliga[0].map(h => h.trim().toUpperCase());
-                const idxJugadorL = headersLliga.indexOf('JUGADOR');
-                const idxPartitsL = headersLliga.indexOf('PARTITS JUGATS');
-                const idxGolsL = headersLliga.indexOf('GOLS');
-                const idxTGL = headersLliga.indexOf('TG');
-                const idxTVL = headersLliga.indexOf('TV');
-
-                if (idxJugadorL === -1) {
-                    document.getElementById('tabla-stats-lliga').innerHTML = `<p style="color:var(--danger)">Error: No s'ha trobat la columna 'JUGADOR'. Revisa les capçaleres de l'Excel.</p>`;
-                    return;
-                }
-
-                const jugadorsActius = [];
-                let htmlLliga = `
-                    <div style="overflow-x: auto;">
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
-                                <th style="padding: 8px 4px;">JUGADOR</th>
-                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
-                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                for (let i = 1; i < dadesLliga.length; i++) {
-                    const fila = dadesLliga[i];
-                    const nom = fila[idxJugadorL] ? fila[idxJugadorL].trim() : "";
-
-                    if (nom.toUpperCase().includes('AMATEUR B') || nom.toUpperCase() === 'JUGADOR') {
-                        if (jugadorsActius.length > 0) break; 
-                        continue;
-                    }
-
-                    if (nom === "") {
-                        if (jugadorsActius.length > 0) break; 
-                        continue;
-                    }
-
-                    const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';
-                    const gols = fila[idxGolsL] ? fila[idxGolsL].trim() : '0';
-                    const tg = fila[idxTGL] ? fila[idxTGL].trim() : '0';
-                    const tv = fila[idxTVL] ? fila[idxTVL].trim() : '0';
-
-                    jugadorsActius.push(nom.toLowerCase());
-
-                    htmlLliga += `
-                        <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                            <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nom}</td>
-                            <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pj}</td>
-                            <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
-                            <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tg}</td>
-                            <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tv}</td>
-                        </tr>`;
-                }
-                htmlLliga += `</tbody></table></div>`;
-                document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
-
-                const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
-                const idxJugadorG = headersGlobal.indexOf('JUGADOR');
-                const idxPartitsG = headersGlobal.indexOf('PARTITS JUGATS');
-                const idxGolsG = headersGlobal.indexOf('GOLS');
-                const idxTGG = headersGlobal.indexOf('TG');
-                const idxTVG = headersGlobal.indexOf('TV');
-
-                let htmlHistoric = `
-                    <div style="overflow-x: auto;">
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
-                                <th style="padding: 8px 4px;">JUGADOR</th>
-                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
-                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                let hiHaHistoric = false;
-                for (let i = 1; i < dadesGlobal.length; i++) {
-                    const fila = dadesGlobal[i];
-                    if (!fila[idxJugadorG] || fila[idxJugadorG].trim() === "") continue;
-
-                    const nomG = fila[idxJugadorG].trim();
-                    
-                    if (jugadorsActius.includes(nomG.toLowerCase())) {
-                        hiHaHistoric = true;
-                        const pjG = fila[idxPartitsG] ? fila[idxPartitsG].trim() : '0';
-                        const golsG = fila[idxGolsG] ? fila[idxGolsG].trim() : '0';
-                        const tgG = fila[idxTGG] ? fila[idxTGG].trim() : '0';
-                        const tvG = fila[idxTVG] ? fila[idxTVG].trim() : '0';
-
-                        htmlHistoric += `
-                            <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                                <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nomG}</td>
-                                <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pjG}</td>
-                                <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
-                                <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tgG}</td>
-                                <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tvG}</td>
-                            </tr>`;
-                    }
-                }
-
-                if (!hiHaHistoric) {
-                    htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
-                }
-
-                htmlHistoric += `</tbody></table></div>`;
-                document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
-
-            } catch (error) {
-                console.error("Error carregant fulls:", error);
-                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió amb Google Drive.</p>';
-            }
-        }
-
-        function parsearCSV(text) {
-            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
-            if (lineas.length === 0) return [];
-            
-            const primeraLinea = lineas[0];
-            const nComes = (primeraLinea.match(/,/g) || []).length;
-            const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
-            const separador = nPuntsComes > nComes ? ';' : ',';
-            
-            return lineas.map(linea => {
-                const r = []; let dins = false; let val = '';
-                for (let i = 0; i < linea.length; i++) {
-                    let c = linea[i];
-                    if (c === '"') { dins = !dins; } 
-                    else if (c === separador && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
-                    else { val += c; }
-                }
-                r.push(val.trim().replace(/^"|"$/g, ''));
-                return r;
-            }).filter(l => l.length > 0 && l.some(cel => cel !== ""));
-        }
-
-        function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
-        function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
-        function cambiarSubTabStats(subTabId, boton) { document.getElementById('tab-stats').querySelectorAll('.sub-tab-content-stats').forEach(st => st.style.display = 'none'); document.getElementById('tab-stats').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
-        
-        function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
-        function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
-        
-        async function verificarBoletoExistente() { 
-            const msgEl = document.getElementById('msg-quiniela'); 
-            const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
-            if (bEx) { 
-                msgEl.style.color = 'var(--warning)'; 
-                msgEl.textContent = `Ja tens un bitllet desat. Pots canviar els pronòstics i desar per substituir-lo.`; 
-                msgEl.style.display = 'block'; 
-                for(let i=1; i<=10; i++) { 
-                    const valorAnterior = bEx[`p${i}`]; 
-                    pronosticosSeleccionados[`p${i}`] = valorAnterior; 
-                    const fila = document.querySelector(`[data-partido="p${i}"]`); 
-                    if(fila) { 
-                        fila.querySelectorAll('.btn-pronostico').forEach(b => { 
-                            if(b.textContent === valorAnterior) b.classList.add('selected'); 
-                            else b.classList.remove('selected'); 
-                        }); 
-                    } 
-                } 
-            } else { 
-                msgEl.style.display = 'none'; 
-                pronosticosSeleccionados = {}; 
-                document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
-            } 
         }
 
         async function guardarQuiniela() { 

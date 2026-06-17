@@ -33,11 +33,10 @@
                 radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.05), transparent 25%);
             color: var(--text); 
             margin: 0; 
-            padding-bottom: 110px; /* Más espacio para la barra flotante */
+            padding-bottom: 110px; 
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* CABECERA CON EFECTO CRISTAL */
         header { 
             background: rgba(11, 17, 32, 0.85);
             backdrop-filter: blur(12px);
@@ -60,7 +59,6 @@
         
         .container { padding: 1.2rem; max-width: 800px; margin: 0 auto; }
         
-        /* TARJETAS REDONDEADAS Y FLOTANTES */
         .card { 
             background: var(--surface); 
             backdrop-filter: blur(10px);
@@ -74,7 +72,6 @@
         }
         .card h3 { margin-top: 0; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px; }
         
-        /* ANIMACIÓN FLUIDA DE PESTAÑAS */
         .tab-content { display: none; opacity: 0; }
         .tab-content.active { 
             display: block; 
@@ -88,13 +85,11 @@
         .grid-rankings { display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
         @media(min-width: 650px) { .grid-rankings { grid-template-columns: 1fr 1fr; } }
 
-        /* BOTONES SUPERIORES TIPO PÍLDORA */
         .sub-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.2rem; }
         .sub-btn { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-muted); padding: 0.8rem 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; border-radius: 12px; transition: all 0.3s ease; text-align: center; }
         .sub-btn:hover { background: var(--surface-hover); color: #fff; transform: translateY(-2px); }
         .sub-btn.active { color: #fff; background: var(--primary); border-color: var(--primary); box-shadow: 0 4px 15px var(--primary-glow); }
 
-        /* NAVEGACIÓN INFERIOR ESTILO ISLA (iOS) */
         nav.bottom-nav { 
             position: fixed; 
             bottom: 15px; 
@@ -117,12 +112,9 @@
         .nav-btn.active { color: var(--primary); transform: translateY(-3px); }
         .nav-btn svg { width: 22px; height: 22px; fill: currentColor; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .nav-btn.active svg { transform: scale(1.15); filter: drop-shadow(0 2px 4px var(--primary-glow)); }
-        
-        /* Puntito activo debajo del icono */
         .nav-btn::after { content: ''; position: absolute; bottom: -8px; width: 4px; height: 4px; background: var(--primary); border-radius: 50%; opacity: 0; transition: opacity 0.3s ease; }
         .nav-btn.active::after { opacity: 1; }
 
-        /* LISTA DE PARTIDOS Y BOTONES DE QUINIELA MÁS COMPACTOS */
         .partido-fila { display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
         .partido-fila:last-child { border-bottom: none; }
         .equipos { font-size: 0.88rem; font-weight: 700; width: 45%; color: #e2e8f0; }
@@ -131,13 +123,11 @@
         .btn-pronostico:active { transform: scale(0.9); }
         .btn-pronostico.selected { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: transparent; color: #fff; transform: scale(1.05); box-shadow: 0 4px 12px var(--primary-glow); }
         
-        /* RÁNQUINGS CON AVATARES MEJORADOS */
         .ranking-item { display: flex; flex-direction: column; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
         .ranking-item:hover { background: rgba(255,255,255,0.02); border-radius: 12px; padding-left: 8px; padding-right: 8px; margin-left: -8px; margin-right: -8px; }
         .ranking-item:last-child { border-bottom: none; }
         .ranking-fila-principal { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .player-info { display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, #334155, #1e293b); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .medalla { font-size: 1.2rem; min-width: 26px; text-align: center; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
         
         .contenedor-rafaga { display: flex; gap: 6px; margin-top: 6px; margin-left: 42px; align-items: center; }
@@ -146,26 +136,22 @@
         .circulo-grog { background: var(--warning); box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
         .circulo-vermell { background: var(--danger); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
         
-        /* BOTE Y MULTAS */
         .bote-total { text-align: center; font-size: 3rem; font-weight: 900; color: var(--danger); margin-top: 0.5rem; letter-spacing: -1.5px; text-shadow: 0 8px 24px rgba(239, 68, 68, 0.3); font-family: 'Outfit', sans-serif; }
         .multa-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px dashed var(--border); font-size: 0.95rem; }
         .multa-item:last-child { border-bottom: none; }
         .btn-eliminar-multa { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.9rem; cursor: pointer; padding: 4px 10px; margin-left: 10px; border-radius: 6px; transition: all 0.2s; }
         .btn-eliminar-multa:hover { background: var(--danger); color: white; transform: scale(1.05); }
 
-        /* INPUTS MODERNOS */
         input.input-jornada { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 10px; width: 65px; text-align: center; font-size: 1.1rem; font-weight: 800; }
         input.input-text-mvp, select.select-text-mvp, .input-admin-multa { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); padding: 0.9rem; border-radius: 12px; width: 100%; box-sizing: border-box; font-size: 1rem; margin-bottom: 1rem; transition: all 0.3s; font-family: inherit; font-weight: 500; }
         input.input-text-mvp:focus, select.select-text-mvp:focus, .input-admin-multa:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); background: rgba(0,0,0,0.5); }
         
-        /* ESTILOS DE TABLAS (STATS) */
         .table-wrapper { overflow-x: auto; position: relative; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.15); }
         table { width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
         th { padding: 12px 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
         td { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         tr:hover td { background: rgba(255,255,255,0.03); }
         
-        /* SCROLLBAR INVISIBLE/ELEGANTE PARA TABLAS Y CONTENEDORES */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
@@ -752,7 +738,6 @@
                 document.getElementById('txt-partido-cartel').textContent = data.p1 || "CF Sant Julià"; 
                 document.getElementById('txt-partido-detalles').textContent = data.p2 || "Consulta l'horari amb el delegat."; 
                 
-                // ⚽ Executem la cerca de l'historial del rival automàticament
                 obtenerStatsRivalHistorial(data.p1);
             }
         }
@@ -986,6 +971,123 @@
             btn.disabled = false;
             btn.style.opacity = '1';
             btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
+        }
+
+        async function actualizarCartelPartido() {
+            const rival = document.getElementById('admin-input-partido-nombre').value.trim(); const det = document.getElementById('admin-input-partido-detalles').value.trim();
+            if (!rival || !det) return;
+            const { error } = await clienteSupabase.from('quinieles').upsert({ id_jugador: 'CARTEL', jornada: 99, p1: rival, p2: det }, { onConflict: 'id_jugador,jornada' });
+            if(!error) { alert("¡Cartellera publicada!"); location.reload(); }
+        }
+
+        async function crearMultaManual() {
+            const nom = document.getElementById('select-admin-multa-nom').value; 
+            const motiu = document.getElementById('multa-motiu').value.trim(); 
+            const valImport = parseFloat(document.getElementById('multa-import').value); 
+            const msgM = document.getElementById('msg-admin-multa');
+
+            if(!nom || !motiu || isNaN(valImport) || valImport <= 0) {
+                msgM.style.color = 'var(--danger)'; msgM.textContent = 'Selecciona un jugador culpable i omple tots els camps.'; msgM.style.display = 'block'; return;
+            }
+            msgM.style.color = 'var(--warning)'; msgM.textContent = 'Sancionant...'; msgM.style.display = 'block';
+            
+            const { error } = await clienteSupabase.from('multas').insert([{ nom_jugador: nom, motiu: motiu, import: valImport }]);
+            if(!error) { 
+                msgM.style.color = 'var(--success)'; msgM.textContent = `¡Sanció aplicada! 💸`; 
+                document.getElementById('select-admin-multa-nom').value = ''; 
+                document.getElementById('multa-motiu').value = ''; 
+                document.getElementById('multa-import').value = ''; 
+                cargarMultas(); setTimeout(() => { msgM.style.display = 'none'; }, 3000); 
+            }
+        }
+
+        async function eliminarMultaBase(idMulta, nomJugador) {
+            if(confirm(`Estàs segur que vols eliminar la multa d'en ${nomJugador}?`)) {
+                const { error } = await clienteSupabase.from('multas').delete().eq('id', idMulta);
+                if (error) { alert("Error al eliminar: " + error.message); }
+                else { alert("Multa liquidada/eliminada correctament! 👍"); cargarMultas(); }
+            }
+        }
+
+        async function cargarQuinielasCompanys() {
+            const listaCompanysEl = document.getElementById('lista-quinielas-companys');
+            if (!porraBloqueadaActualmente) { listaCompanysEl.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--warning);"><p style="font-size:2rem; margin:0 0 0.5rem 0;">🔒</p><p style="margin:0; font-size:1rem; font-weight:bold;">Bitllets ocults temporandament</p></div>`; return; }
+            const { data: quinielas } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal).neq('id_jugador', 'CARTEL');
+            if(!quinielas || quinielas.length === 0) { listaCompanysEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap company ha enviat la quiniela encara.</p>'; return; }
+            let html = '';
+            quinielas.forEach(q => {
+                let nom = dadesPerfilsMapejades[q.id_jugador.trim().toLowerCase()] || q.id_jugador.split('@')[0];
+                html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 5px 0;">👤 ${nom}</p><p style="margin:0; color:var(--text); letter-spacing: 2px; font-family: monospace;">1:${q.p1} | 2:${q.p2} | 3:${q.p3} | 4:${q.p4} | 5:${q.p5} <br>6:${q.p6} | 7:${q.p7} | 8:${q.p8} | 9:${q.p9} | 10:${q.p10}</p></div>`;
+            });
+            listaCompanysEl.innerHTML = html;
+        }
+
+        async function cargarRankingMVP() {
+            const { data: totsElsVots, error } = await clienteSupabase.from('vots_mvp').select('*');
+            const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); 
+            const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
+            let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
+            if(error || !totsElsVots || totsElsVots.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
+            
+            let votsPerJornada = {};
+            totsElsVots.forEach(v => { let jor = v.jornada; let nom = v.nominat.trim(); if(nom) { if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; } });
+            
+            let palmaresTrofeus = {};
+            Object.keys(votsPerJornada).forEach(jor => {
+                let votsDeLaSetmana = votsPerJornada[jor]; let maximVots = 0; let guanyadorsSetmana = [];
+                Object.keys(votsDeLaSetmana).forEach(nom => { if (votsDeLaSetmana[nom] > maximVots) { maximVots = votsDeLaSetmana[nom]; guanyadorsSetmana = [nom]; } else if (votsDeLaSetmana[nom] === maximVots) { guanyadorsSetmana.push(nom); } });
+                guanyadorsSetmana.forEach(guanyador => { palmaresTrofeus[guanyador] = (palmaresTrofeus[guanyador] || 0) + 1; });
+            });
+            
+            let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
+            if(llistaPalmares.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
+            
+            let htmlInicio = '';
+            let htmlFull = '';
+            
+            llistaPalmares.forEach((mvp, index) => { 
+                let fila = generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); 
+                htmlFull += fila;
+                if(index < 3) htmlInicio += fila;
+            });
+            
+            if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
+            if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
+        }
+
+        async function cargarVotMVPExistente() {
+            if(numeroJornadaGlobal === 1) return;
+            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
+            const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', jornadaAVotar).maybeSingle();
+            if(votFet) { if(selectMvp) selectMvp.value = votFet.nominat; if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a la Jornada ${jornadaAVotar}.`; msgMvp.style.display = 'block'; } }
+        }
+
+        async function guardarVotMVP() {
+            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
+            const { data: cerrojo = {} } = await clienteSupabase.from('estado_porra').select('*').eq('id', 1).single();
+            if(cerrojo && cerrojo.bloqueado) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 El termini de votació de l\'MVP està tancat.'; msgMvp.style.display = 'block'; return; }
+            const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
+            msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
+            const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: jornadaAVotar, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
+            if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
+        }
+
+        async function guardarResultadosReales() {
+            const msgEl = document.getElementById('msg-admin'); if(Object.keys(resultadosRealesAdmin).length < 10) return;
+            msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
+            resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
+            const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
+            if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=10; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
+            let seguent = numeroJornadaGlobal + 1; 
+            
+            await clienteSupabase.from('estado_porra').update({ bloqueado: false, jornada_activa: seguent }).eq('id', 1); 
+            location.reload();
+        }
+
+        async function cargarHistorial() {
+            const { data: misQuinielas } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).neq('jornada', 99).order('jornada', { ascending: false });
+            const historialEl = document.getElementById('lista-historial'); if (!misQuinielas || misQuinielas.length === 0) { historialEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap quiniela enviada.</p>'; return; }
+            let html = ''; misQuinielas.forEach((q) => { html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 5px 0;">Jornada ${q.jornada || 1}</p><p style="margin:0; color:#94a3b8;">[P1: ${q.p1}] [P2: ${q.p2}] [P3: ${q.p3}] [P4: ${q.p4}] [P5: ${q.p5}] <br>[P6: ${q.p6}] [P7: ${q.p7}] [P8: ${q.p8}] [P9: ${q.p9}] [P10: ${q.p10}]</p></div>`; }); historialEl.innerHTML = html;
         }
 
         function parsearCSV(text) {

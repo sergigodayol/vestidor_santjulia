@@ -1470,7 +1470,6 @@
                 let nomPropi = dadesPerfilsMapejades[t.id_jugador.trim().toLowerCase()] || t.id_jugador.split('@')[0];
 
                 try {
-                    // Demanem les últimes 10 activitats d'aquest jugador (siguin de l'esport que siguin)
                     let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=10`, {
                         headers: { 'Authorization': `Bearer ${tokenValid}` }
                     });
@@ -1478,20 +1477,34 @@
                     
                     if (Array.isArray(activities)) {
                         activities.forEach(act => {
+                            // Càlcul del ritme o velocitat segons l'esport
+                            let paceStr = '';
+                            if ((act.type.includes('Run') || act.type.includes('Walk')) && act.average_speed > 0) {
+                                let secsPerKm = 1000 / act.average_speed;
+                                let pMins = Math.floor(secsPerKm / 60);
+                                let pSecs = Math.floor(secsPerKm % 60).toString().padStart(2, '0');
+                                paceStr = `${pMins}:${pSecs} /km`;
+                            } else if (act.type.includes('Ride') && act.average_speed > 0) {
+                                let kmh = (act.average_speed * 3.6).toFixed(1);
+                                paceStr = `${kmh} km/h`;
+                            }
+
                             totesLesActivitats.push({
                                 nomJugador: nomPropi,
                                 nomActivitat: act.name,
                                 tipus: act.type,
-                                distancia: (act.distance / 1000).toFixed(2), // Ho passem a Quilòmetres
-                                temps: act.moving_time, // Ho passem a Segons
-                                data: new Date(act.start_date)
+                                distancia: (act.distance / 1000).toFixed(2),
+                                temps: act.moving_time,
+                                data: new Date(act.start_date),
+                                desnivell: act.total_elevation_gain || 0,
+                                ritme: paceStr,
+                                bpm: act.has_heartrate ? Math.round(act.average_heartrate) : null
                             });
                         });
                     }
                 } catch(e) { console.error("Error obtenint dades del jugador:", nomPropi, e); }
             }
 
-            // Ordenem absolutament totes les activitats de l'equip de més nova a més vella
             totesLesActivitats.sort((a, b) => b.data - a.data);
 
             if (totesLesActivitats.length === 0) {
@@ -1499,13 +1512,11 @@
                 return;
             }
 
-            // Construïm les targetes HTML per a cada activitat amb disseny fosc
             let html = '';
             totesLesActivitats.forEach(act => {
                 let mins = Math.floor(act.temps / 60); let h = Math.floor(mins / 60); let m = mins % 60;
                 let timeStr = h > 0 ? `${h}h ${m}m` : `${m} min`;
                 
-                // Posem una icona xula depenent de l'esport que hagin fet
                 let emoji = '🏃‍♂️';
                 if (act.tipus.includes('Ride')) emoji = '🚴‍♂️';
                 else if (act.tipus.includes('Swim')) emoji = '🏊‍♂️';
@@ -1516,6 +1527,13 @@
                 let distStr = parseFloat(act.distancia) > 0 ? `<div>📏 <span style="color:#cbd5e1; font-weight:600;">${act.distancia} km</span></div>` : '';
                 let options = { weekday: 'short', day: 'numeric', month: 'short' };
                 let dateStr = act.data.toLocaleDateString('ca-ES', options);
+
+                // --- CREACIÓ DE LES ETIQUETES DE DETALLS (BADGES) ---
+                let extraBadges = '';
+                if (act.ritme) extraBadges += `<span style="background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border);">⚡ ${act.ritme}</span>`;
+                if (act.desnivell > 0) extraBadges += `<span style="background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border);">⛰️ ${act.desnivell}m</span>`;
+                if (act.bpm) extraBadges += `<span style="background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2);">💓 ${act.bpm} bpm</span>`;
+                let badgesDiv = extraBadges ? `<div style="display:flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-size: 0.75rem;">${extraBadges}</div>` : '';
 
                 html += `
                 <div class="card" style="padding: 1.2rem; margin-bottom: 0.8rem; border-left: 3px solid #fc4c02; background: rgba(30, 41, 59, 0.5);">
@@ -1528,6 +1546,7 @@
                         <div>⏱️ <span style="color:#cbd5e1; font-weight:600;">${timeStr}</span></div>
                         ${distStr}
                     </div>
+                    ${badgesDiv}
                 </div>`;
             });
             feedEl.innerHTML = html;

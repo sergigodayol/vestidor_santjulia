@@ -484,86 +484,50 @@
         let cacheHistoricaRafagues = {}; 
 
         async function inicializarDashboard() {
-            const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
-            const selectMvp = document.getElementById('select-nom-mvp');
-            const selectAdminMulta = document.getElementById('select-admin-multa-nom');
-            const selectAdminEntreno = document.getElementById('select-admin-entreno-nom');
-            
-            if(llistaPerfils) { 
-                llistaPerfils.forEach(p => { 
-                    dadesPerfilsMapejades[p.id_jugador.trim().toLowerCase()] = p.nom_real; 
-                    if(selectMvp) {
-                        let opcio = document.createElement('option');
-                        opcio.value = p.nom_real.trim(); 
-                        opcio.textContent = p.nom_real;
-                        selectMvp.appendChild(opcio);
-                    }
-                    if(selectAdminMulta) {
-                        let opcioMulta = document.createElement('option');
-                        opcioMulta.value = p.nom_real.trim();
-                        opcioMulta.textContent = p.nom_real;
-                        selectAdminMulta.appendChild(opcioMulta);
-                    }
-                    if(selectAdminEntreno) {
-                        let opcioEntreno = document.createElement('option');
-                        opcioEntreno.value = p.nom_real.trim();
-                        opcioEntreno.textContent = p.nom_real;
-                        selectAdminEntreno.appendChild(opcioEntreno);
-                    }
-                }); 
-            }
+            try {
+                const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
+                const selectMvp = document.getElementById('select-nom-mvp');
+                const selectAdminMulta = document.getElementById('select-admin-multa-nom');
+                const selectAdminEntreno = document.getElementById('select-admin-entreno-nom');
+                
+                if(llistaPerfils) { 
+                    llistaPerfils.forEach(p => { 
+                        dadesPerfilsMapejades[p.id_jugador.trim().toLowerCase()] = p.nom_real; 
+                        if(selectMvp) {
+                            let opcio = document.createElement('option');
+                            opcio.value = p.nom_real.trim(); 
+                            opcio.textContent = p.nom_real;
+                            selectMvp.appendChild(opcio);
+                        }
+                        if(selectAdminMulta) {
+                            let opcioMulta = document.createElement('option');
+                            opcioMulta.value = p.nom_real.trim();
+                            opcioMulta.textContent = p.nom_real;
+                            selectAdminMulta.appendChild(opcioMulta);
+                        }
+                        if(selectAdminEntreno) {
+                            let opcioEntreno = document.createElement('option');
+                            opcioEntreno.value = p.nom_real.trim();
+                            opcioEntreno.textContent = p.nom_real;
+                            selectAdminEntreno.appendChild(opcioEntreno);
+                        }
+                    }); 
+                }
+            } catch(e) { console.error("Error perfils:", e); }
 
-            await consultarEstadoCerrojo();
-            await calcularMotorDeRafagues();
-            cargarRanking();
+            // Sense 'await' bloquejadors perquè l'App carregui de cop
+            consultarEstadoCerrojo();
+            calcularMotorDeRafagues().then(() => { cargarRanking(); });
+            
             cargarRankingMVP(); 
             cargarRankingEntrenosInicio();
             cargarMultas();
             cargarCartelPartido(); 
-            await cargarCalendariAniversaris();
-            await verificarBoletoExistente();
+            cargarCalendariAniversaris();
+            verificarBoletoExistente();
             cargarEstadisticas();
-            cargarFeedStrava();
-        }
-
-        async function verificarSesion() {
-            const { data: { session } } = await clienteSupabase.auth.getSession();
-            if (!session) { window.location.href = 'index.html'; return; }
-            emailUsuario = session.user.email;
             
-            const { data: perfilPropi } = await clienteSupabase.from('perfils').select('*').eq('id_jugador', emailUsuario).maybeSingle();
-            if (!perfilPropi) { document.getElementById('card-completar-perfil').style.display = 'block'; }
-            
-            let nomHeader = perfilPropi ? perfilPropi.nom_real : emailUsuario.split('@')[0];
-            document.getElementById('saludo-usuario').textContent = `👋 Hola, ${nomHeader}!`;
-            
-            const isMainAdmin = (emailUsuario === 'sergigodayol@gmail.com');
-            const isEntrenador = (emailUsuario === 'martiolisan@gmail.com' || emailUsuario === 'ericsoleponsa@hotmail.es');
-
-            if(isMainAdmin || isEntrenador) {
-                const navBar = document.getElementById('barra-navegacion-principal');
-                navBar.innerHTML += `
-                    <button class="nav-btn" style="color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
-                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor; margin-bottom: 5px;">
-                            <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
-                        </svg>
-                        Gestió
-                    </button>
-                `;
-
-                if (isEntrenador && !isMainAdmin) {
-                    document.getElementById('admin-gestio-titol').textContent = "🏃‍♂️ Panell Tècnic";
-                    document.getElementById('admin-gestio-desc').textContent = "Aquesta pantalla és per gestionar en directe els punts dels entrenaments.";
-                    document.getElementById('admin-card-cartellera').style.display = 'none';
-                    document.getElementById('admin-card-aniversaris').style.display = 'none';
-                    document.getElementById('admin-card-lock').style.display = 'none';
-                    document.getElementById('admin-card-multes').style.display = 'none';
-                    document.getElementById('admin-card-resultats').style.display = 'none';
-                }
-            }
-            
-            await gestionarRetornStrava();
-            await inicializarDashboard(); 
+            gestionarRetornStrava().then(() => cargarFeedStrava());
         }
 
         async function guardarNombreMigracion() {
@@ -1522,7 +1486,57 @@
             feedEl.innerHTML = html;
         }
 
+        // Aquesta és la funció que faltava i que engega tota l'App!
+        async function verificarSesion() {
+            try {
+                const { data: { session } } = await clienteSupabase.auth.getSession();
+                if (!session) { window.location.href = 'index.html'; return; }
+                emailUsuario = session.user.email;
+                
+                const { data: perfilPropi } = await clienteSupabase.from('perfils').select('*').eq('id_jugador', emailUsuario).maybeSingle();
+                if (!perfilPropi) { document.getElementById('card-completar-perfil').style.display = 'block'; }
+                
+                let nomHeader = perfilPropi ? perfilPropi.nom_real : emailUsuario.split('@')[0];
+                document.getElementById('saludo-usuario').textContent = `👋 Hola, ${nomHeader}!`;
+                
+                const isMainAdmin = (emailUsuario === 'sergigodayol@gmail.com');
+                const isEntrenador = (emailUsuario === 'martiolisan@gmail.com' || emailUsuario === 'ericsoleponsa@hotmail.es');
+
+                if(isMainAdmin || isEntrenador) {
+                    const navBar = document.getElementById('barra-navegacion-principal');
+                    if(!document.getElementById('btn-gestio-admin')) {
+                        navBar.insertAdjacentHTML('beforeend', `
+                            <button id="btn-gestio-admin" class="nav-btn" style="color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
+                                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor; margin-bottom: 5px;">
+                                    <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                                </svg>
+                                Gestió
+                            </button>
+                        `);
+                    }
+
+                    if (isEntrenador && !isMainAdmin) {
+                        document.getElementById('admin-gestio-titol').textContent = "🏃‍♂️ Panell Tècnic";
+                        document.getElementById('admin-gestio-desc').textContent = "Aquesta pantalla és per gestionar en directe els punts dels entrenaments.";
+                        document.getElementById('admin-card-cartellera').style.display = 'none';
+                        document.getElementById('admin-card-aniversaris').style.display = 'none';
+                        document.getElementById('admin-card-lock').style.display = 'none';
+                        document.getElementById('admin-card-multes').style.display = 'none';
+                        document.getElementById('admin-card-resultats').style.display = 'none';
+                    }
+                }
+                
+                // Un cop verificat qui ets, cridem la resta
+                inicializarDashboard();
+
+            } catch (err) {
+                console.error("Error en iniciar sessió:", err);
+            }
+        }
+
+        // Ara sí, la crida final funciona perquè la funció existeix
         verificarSesion();
+
     </script>
 </body>
 </html>

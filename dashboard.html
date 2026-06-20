@@ -1336,12 +1336,12 @@
         }
 
         async function gestionarRetornStrava() {
-            const estatEl = document.getElementById('estat-strava');
+            const feedEl = document.getElementById('feed-strava');
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             
             if (code) {
-                estatEl.innerHTML = '<p style="color:var(--warning); font-weight:bold;">⏳ Sincronitzant amb Strava... No tanquis.</p>';
+                if(feedEl) feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:var(--warning); font-weight:bold;">⏳ Processant permís d\'Strava...</p></div>';
                 
                 try {
                     const response = await fetch('https://www.strava.com/oauth/token', {
@@ -1367,60 +1367,19 @@
                         });
                         
                         if (!error) {
-                            estatEl.innerHTML = '<p style="color:var(--success); font-weight:bold; font-size:1.1rem;">✅ Compte enllaçat correctament!</p><p style="color:#94a3b8; font-size:0.85rem;">Ja estàs a punt per sumar quilòmetres.</p>';
+                            // Netejem la URL perquè no quedi el codi lleig a dalt
                             window.history.replaceState({}, document.title, window.location.pathname);
                         } else {
-                            estatEl.innerHTML = '<p style="color:var(--danger); font-weight:bold;">❌ Error guardant les dades.</p>';
+                            if(feedEl) feedEl.innerHTML = '<p style="color:var(--danger); font-weight:bold; text-align:center;">❌ Error guardant les dades a la base de dades.</p>';
                         }
                     }
                 } catch (err) {
                     console.error("Error Strava API:", err);
-                    estatEl.innerHTML = '<p style="color:var(--danger); font-weight:bold;">❌ Error de connexió.</p>';
-                }
-            } else {
-                const { data: tokenData } = await clienteSupabase.from('strava_tokens').select('*').eq('id_jugador', emailUsuario).maybeSingle();
-                if (tokenData) {
-                    estatEl.innerHTML = '<p style="color:var(--success); font-weight:bold; font-size:1.1rem;">✅ Compte Strava actiu</p><p style="color:#94a3b8; font-size:0.85rem;">Estem preparant el rànquing d\'entrenaments. Estigues atent!</p><button onclick="iniciarConnexioStrava()" style="background-color: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 15px;">Re-connectar</button>';
+                    if(feedEl) feedEl.innerHTML = '<p style="color:var(--danger); font-weight:bold; text-align:center;">❌ Error de connexió amb Strava.</p>';
                 }
             }
+            // Ja no ens cal cap "else" per posar "Compte actiu", anem directes a carregar el mur!
         }
-        async function obtenerTokenStravaValid(dbToken) {
-            const ara = Math.floor(Date.now() / 1000);
-            if (dbToken.expires_at > ara + 300) { return dbToken.access_token; } // Si encara és vàlid, l'usem
-            
-            try {
-                const resp = await fetch('https://www.strava.com/oauth/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        client_id: stravaClientId,
-                        client_secret: stravaClientSecret,
-                        grant_type: 'refresh_token',
-                        refresh_token: dbToken.refresh_token
-                    })
-                });
-                const data = await resp.json();
-                if (data.access_token) {
-                    await clienteSupabase.from('strava_tokens').update({
-                        access_token: data.access_token, refresh_token: data.refresh_token, expires_at: data.expires_at
-                    }).eq('id_jugador', dbToken.id_jugador);
-                    return data.access_token;
-                }
-            } catch(e) { console.error("Error renovant el token", e); return null; }
-            return null;
-        }
-
-        // Funció que descarrega les últimes 10 activitats de tothom, les barreja i les pinta
-        async function cargarFeedStrava() {
-            const feedEl = document.getElementById('feed-strava');
-            if(!feedEl) return;
-            feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#fc4c02;">Sincronitzant vestidor...</p></div>';
-
-            const { data: tokens } = await clienteSupabase.from('strava_tokens').select('*');
-            if(!tokens || tokens.length === 0) {
-                feedEl.innerHTML = '<p style="text-align:center; color:#94a3b8;">Cap jugador enllaçat.</p>';
-                return;
-            }
 
             let totesLesActivitats = [];
             for (let t of tokens) {

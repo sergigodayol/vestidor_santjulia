@@ -426,19 +426,18 @@
         </div>
 
         <div id="tab-strava" class="tab-content">
-            <div class="card" style="border-left: 4px solid #fc4c02; text-align: center; padding: 2rem 1.5rem;">
-                <h3 style="color:#fc4c02; justify-content: center; margin-bottom: 5px;">🔥 Pretemporada Strava</h3>
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">Per aparèixer al rànquing oficial de l'equip, has d'enllaçar el teu compte.</p>
+            <div class="card" style="border-left: 4px solid #fc4c02; text-align: center; padding: 1.5rem;">
+                <h3 style="color:#fc4c02; justify-content: center; margin-bottom: 5px;">🔥 Pretemporada</h3>
                 
-                <div id="estat-strava">
-                    <button onclick="iniciarConnexioStrava()" style="background-color: #fc4c02; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(252, 76, 2, 0.3); transition: transform 0.2s;">
+                <div id="estat-strava" style="margin-bottom: 10px;">
+                    <button onclick="iniciarConnexioStrava()" style="background-color: #fc4c02; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(252, 76, 2, 0.3);">
                         🔗 Connectar amb Strava
                     </button>
                 </div>
             </div>
-        </div>
 
-    </div>
+            <div id="feed-strava"></div>
+        </div>
 
     <nav class="bottom-nav" id="barra-navegacion-principal">
         <button class="nav-btn active" onclick="cambiarPestaña('inicio', this)">
@@ -527,6 +526,7 @@
             await cargarCalendariAniversaris();
             await verificarBoletoExistente();
             cargarEstadisticas();
+            cargarFeedStrava();
         }
 
         async function verificarSesion() {
@@ -1422,6 +1422,115 @@
                     estatEl.innerHTML = '<p style="color:var(--success); font-weight:bold; font-size:1.1rem;">✅ Compte Strava actiu</p><p style="color:#94a3b8; font-size:0.85rem;">Estem preparant el rànquing d\'entrenaments. Estigues atent!</p><button onclick="iniciarConnexioStrava()" style="background-color: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 15px;">Re-connectar</button>';
                 }
             }
+        }
+        async function obtenerTokenStravaValid(dbToken) {
+            const ara = Math.floor(Date.now() / 1000);
+            if (dbToken.expires_at > ara + 300) { return dbToken.access_token; } // Si encara és vàlid, l'usem
+            
+            try {
+                const resp = await fetch('https://www.strava.com/oauth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client_id: stravaClientId,
+                        client_secret: stravaClientSecret,
+                        grant_type: 'refresh_token',
+                        refresh_token: dbToken.refresh_token
+                    })
+                });
+                const data = await resp.json();
+                if (data.access_token) {
+                    await clienteSupabase.from('strava_tokens').update({
+                        access_token: data.access_token, refresh_token: data.refresh_token, expires_at: data.expires_at
+                    }).eq('id_jugador', dbToken.id_jugador);
+                    return data.access_token;
+                }
+            } catch(e) { console.error("Error renovant el token", e); return null; }
+            return null;
+        }
+
+        // Funció que descarrega les últimes 10 activitats de tothom, les barreja i les pinta
+        async function cargarFeedStrava() {
+            const feedEl = document.getElementById('feed-strava');
+            if(!feedEl) return;
+            feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#fc4c02; font-size:2rem; margin:0; animation: pulse 1.5s infinite;">⏳</p><p style="color:#94a3b8; font-weight:bold;">Sincronitzant entrenaments...</p></div>';
+
+            const { data: tokens } = await clienteSupabase.from('strava_tokens').select('*');
+            if(!tokens || tokens.length === 0) {
+                feedEl.innerHTML = '<p style="text-align:center; color:#94a3b8;">Encara no hi ha jugadors enllaçats a Strava.</p>';
+                return;
+            }
+
+            let totesLesActivitats = [];
+
+            for (let t of tokens) {
+                let tokenValid = await obtenerTokenStravaValid(t);
+                if (!tokenValid) continue;
+
+                let nomPropi = dadesPerfilsMapejades[t.id_jugador.trim().toLowerCase()] || t.id_jugador.split('@')[0];
+
+                try {
+                    // Demanem les últimes 10 activitats d'aquest jugador (siguin de l'esport que siguin)
+                    let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=10`, {
+                        headers: { 'Authorization': `Bearer ${tokenValid}` }
+                    });
+                    let activities = await req.json();
+                    
+                    if (Array.isArray(activities)) {
+                        activities.forEach(act => {
+                            totesLesActivitats.push({
+                                nomJugador: nomPropi,
+                                nomActivitat: act.name,
+                                tipus: act.type,
+                                distancia: (act.distance / 1000).toFixed(2), // Ho passem a Quilòmetres
+                                temps: act.moving_time, // Ho passem a Segons
+                                data: new Date(act.start_date)
+                            });
+                        });
+                    }
+                } catch(e) { console.error("Error obtenint dades del jugador:", nomPropi, e); }
+            }
+
+            // Ordenem absolutament totes les activitats de l'equip de més nova a més vella
+            totesLesActivitats.sort((a, b) => b.data - a.data);
+
+            if (totesLesActivitats.length === 0) {
+                feedEl.innerHTML = '<p style="text-align:center; color:#94a3b8;">De moment ningú ha registrat activitats.</p>';
+                return;
+            }
+
+            // Construïm les targetes HTML per a cada activitat amb disseny fosc
+            let html = '';
+            totesLesActivitats.forEach(act => {
+                let mins = Math.floor(act.temps / 60); let h = Math.floor(mins / 60); let m = mins % 60;
+                let timeStr = h > 0 ? `${h}h ${m}m` : `${m} min`;
+                
+                // Posem una icona xula depenent de l'esport que hagin fet
+                let emoji = '🏃‍♂️';
+                if (act.tipus.includes('Ride')) emoji = '🚴‍♂️';
+                else if (act.tipus.includes('Swim')) emoji = '🏊‍♂️';
+                else if (act.tipus.includes('Weight') || act.tipus.includes('Workout')) emoji = '🏋️‍♂️';
+                else if (act.tipus.includes('Walk')) emoji = '🚶‍♂️';
+                else if (act.tipus.includes('Soccer')) emoji = '⚽';
+                
+                let distStr = parseFloat(act.distancia) > 0 ? `<div>📏 <span style="color:#cbd5e1; font-weight:600;">${act.distancia} km</span></div>` : '';
+                let options = { weekday: 'short', day: 'numeric', month: 'short' };
+                let dateStr = act.data.toLocaleDateString('ca-ES', options);
+
+                html += `
+                <div class="card" style="padding: 1.2rem; margin-bottom: 0.8rem; border-left: 3px solid #fc4c02; background: rgba(30, 41, 59, 0.5);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="color:#f8fafc; font-weight:800; font-size:0.95rem;">👤 ${act.nomJugador}</span>
+                        <span style="color:#64748b; font-size:0.75rem; text-transform:capitalize;">${dateStr}</span>
+                    </div>
+                    <h4 style="margin: 0 0 10px 0; font-size:1.1rem; color:var(--info); font-weight:600;">${emoji} ${act.nomActivitat}</h4>
+                    <div style="display:flex; gap:15px; font-size:0.85rem; color:#94a3b8;">
+                        <div>⏱️ <span style="color:#cbd5e1; font-weight:600;">${timeStr}</span></div>
+                        ${distStr}
+                    </div>
+                </div>`;
+            });
+            feedEl.innerHTML = html;
         }
 
         // --- ARRANQUE PRINCIPAL ---

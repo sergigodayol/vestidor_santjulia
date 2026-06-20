@@ -98,20 +98,44 @@
             bottom: 15px; 
             left: 15px; 
             right: 15px; 
-            background: rgba(15, 23, 42, 0.85); 
+            background: rgba(15, 23, 42, 0.92); 
             backdrop-filter: blur(16px); 
             -webkit-backdrop-filter: blur(16px);
             display: flex; 
-            justify-content: space-around; 
+            justify-content: flex-start; /* Alinia a l'esquerra per permetre el lliscament */
+            overflow-x: auto; /* Permet el lliscament horitzontal */
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* Suavitat per iPhone */
             border: 1px solid rgba(255,255,255,0.1); 
-            padding: 0.6rem 0; 
+            padding: 0.7rem 0.5rem; 
             z-index: 100; 
             border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
             max-width: 500px;
             margin: 0 auto;
         }
-        .nav-btn { background: none; border: none; color: #64748b; font-size: 0.65rem; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; padding: 0 2px; transition: all 0.3s ease; position: relative; }
+
+        /* Amaguem la barra de desplaçament perquè quedi net */
+        nav.bottom-nav::-webkit-scrollbar { display: none; }
+        nav.bottom-nav { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .nav-btn { 
+            background: none; 
+            border: none; 
+            color: #64748b; 
+            font-size: 0.65rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 5px; 
+            flex: 0 0 68px; /* FIXEM L'AMPLADA PERQUÈ NO S'AXAFIN */
+            padding: 0 2px; 
+            transition: all 0.3s ease; 
+            position: relative; 
+        }
+        
         .nav-btn.active { color: var(--primary); transform: translateY(-3px); }
         .nav-btn svg { width: 22px; height: 22px; fill: currentColor; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .nav-btn.active svg { transform: scale(1.15); filter: drop-shadow(0 2px 4px var(--primary-glow)); }
@@ -1424,7 +1448,6 @@
                 let nomPropi = dadesPerfilsMapejades[t.id_jugador.trim().toLowerCase()] || t.id_jugador.split('@')[0];
 
                 try {
-                    // Hem pujat a 15 per persona perquè el mur tingui més historial global
                     let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=15`, {
                         headers: { 'Authorization': `Bearer ${tokenValid}` }
                     });
@@ -1432,7 +1455,6 @@
                     
                     if (Array.isArray(activities)) {
                         activities.forEach(act => {
-                            // 1. Càlcul del Ritme o Velocitat
                             let ritmeStr = null;
                             if ((act.type.includes('Run') || act.type.includes('Walk') || act.type.includes('Hike')) && act.average_speed > 0) {
                                 let secsPerKm = 1000 / act.average_speed;
@@ -1443,22 +1465,16 @@
                                 ritmeStr = `${(act.average_speed * 3.6).toFixed(1)} km/h`;
                             }
 
-                            // 2. Càlcul intel·ligent de Calories (L'API de resum d'Strava no sempre les envia)
                             let kcalCalculades = act.calories ? Math.round(act.calories) : null;
                             if (!kcalCalculades) {
                                 if (act.type.includes('Run') || act.type.includes('Walk') || act.type.includes('Hike')) {
-                                    // 1 km corrent/caminant = aprox 75 kcal consumides pel cos humà
                                     kcalCalculades = Math.round((act.distance / 1000) * 75);
                                 } else if (act.type.includes('Ride')) {
-                                    // En bici 1 kJ de treball = aprox 1 kcal humana consumida
                                     kcalCalculades = act.kilojoules ? Math.round(act.kilojoules) : Math.round((act.distance / 1000) * 25);
                                 } else if (act.type.includes('Weight') || act.type.includes('Workout')) {
-                                    // Aprox 6 kcal per minut de peses/gimnàs
                                     kcalCalculades = Math.round((act.moving_time / 60) * 6);
-                                } else if (act.type.includes('Swim')) {
-                                    kcalCalculades = Math.round((act.moving_time / 60) * 11);
                                 } else {
-                                    kcalCalculades = Math.round((act.moving_time / 60) * 8); // Esport per defecte
+                                    kcalCalculades = Math.round((act.moving_time / 60) * 8);
                                 }
                             }
 
@@ -1480,23 +1496,25 @@
             }
 
             totesLesActivitats.sort((a, b) => b.data - a.data);
-            let activitatsFinals = totesLesActivitats.slice(0, 30); // Limitem l'espectacularitat a 30
+            let activitatsFinals = totesLesActivitats.slice(0, 30);
 
             let html = '';
             activitatsFinals.forEach(act => {
                 let mins = Math.floor(act.temps / 60); let h = Math.floor(mins / 60); let m = mins % 60;
                 let timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
                 
-                // 3. Emojis per a cada esport arreglats
                 let tipusA = act.tipus.toLowerCase();
-                let emoji = '🏅'; 
+                let emoji = '⚽'; 
                 if (tipusA.includes('ride') || tipusA.includes('bicy')) emoji = '🚴‍♂️';
                 else if (tipusA.includes('run')) emoji = '🏃‍♂️';
                 else if (tipusA.includes('walk') || tipusA.includes('hike')) emoji = '🚶‍♂️';
                 else if (tipusA.includes('swim')) emoji = '🏊‍♂️';
-                else if (tipusA.includes('weight') || tipusA.includes('workout') || tipusA.includes('crossfit')) emoji = '🏋️‍♂️';
-                else if (tipusA.includes('soccer') || tipusA.includes('football')) emoji = '⚽';
+                else if (tipusA.includes('weight') || tipusA.includes('workout') || tipusA.includes('force') || tipusA.includes('pull') || tipusA.includes('push')) emoji = '🏋️‍♂️';
                 
+                // EXTRACTOR DE DATA I HORA
+                let dataF = act.data.toLocaleDateString('ca-ES', {day:'numeric', month:'short'});
+                let horaF = act.data.toLocaleTimeString('ca-ES', {hour: '2-digit', minute: '2-digit'});
+
                 let badges = [];
                 if (parseFloat(act.distancia) > 0) badges.push(`📏 ${act.distancia} km`);
                 if (act.ritme) badges.push(`👟 ${act.ritme}`);
@@ -1510,7 +1528,7 @@
                 <div class="card" style="padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #fc4c02; background: rgba(30, 41, 59, 0.4);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="color:#f8fafc; font-weight:800; font-size:0.9rem;">👤 ${act.nomJugador}</span>
-                        <span style="color:#64748b; font-size:0.7rem; text-transform:capitalize;">${act.data.toLocaleDateString('ca-ES', {weekday: 'short', day:'numeric', month:'short'})}</span>
+                        <span style="color:#64748b; font-size:0.7rem;">${dataF} • ${horaF}</span>
                     </div>
                     <div style="font-weight:600; font-size:1rem; color:var(--info); margin-bottom: 8px;">${emoji} ${act.nomActivitat}</div>
                     <div style="display:flex; gap: 8px; flex-wrap: wrap; color: #94a3b8; align-items: center;">

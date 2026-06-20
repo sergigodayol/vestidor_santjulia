@@ -1480,7 +1480,7 @@
                                 temps: act.moving_time,
                                 data: new Date(act.start_date),
                                 kcal: act.calories ? Math.round(act.calories) : null,
-                                bpm: act.average_heartrate ? Math.round(act.average_heartrate) : null,
+                                bpm: act.has_heartrate ? Math.round(act.average_heartrate) : null,
                                 desnivell: act.total_elevation_gain || 0,
                                 velocitat: act.average_speed ? (act.average_speed * 3.6).toFixed(1) : null
                             });
@@ -1522,9 +1522,7 @@
             feedEl.innerHTML = html;
         }
 
-        // Finalment, la crida d'arrencada
         verificarSesion();
-
     </script>
 </body>
 </html>

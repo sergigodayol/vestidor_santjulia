@@ -426,18 +426,15 @@
         </div>
 
         <div id="tab-strava" class="tab-content">
-            <div class="card" style="border-left: 4px solid #fc4c02; text-align: center; padding: 1.5rem;">
-                <h3 style="color:#fc4c02; justify-content: center; margin-bottom: 5px;">🔥 Pretemporada</h3>
-                
-                <div id="estat-strava" style="margin-bottom: 10px;">
-                    <button onclick="iniciarConnexioStrava()" style="background-color: #fc4c02; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(252, 76, 2, 0.3);">
-                        🔗 Connectar amb Strava
-                    </button>
-                </div>
-            </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.5rem 0.2rem;">
+        <h3 style="margin:0; font-size: 1rem; color: #fc4c02;">🔥 Activitat de l'equip</h3>
+        <button onclick="iniciarConnexioStrava()" style="background: rgba(252, 76, 2, 0.1); border: 1px solid #fc4c02; color: #fc4c02; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">
+            🔄 Sincronitzar
+        </button>
+    </div>
 
-            <div id="feed-strava"></div>
-        </div>
+    <div id="feed-strava"></div>
+</div>
 
     <nav class="bottom-nav" id="barra-navegacion-principal">
         <button class="nav-btn active" onclick="cambiarPestaña('inicio', this)">
@@ -1453,7 +1450,7 @@
         async function cargarFeedStrava() {
     const feedEl = document.getElementById('feed-strava');
     if(!feedEl) return;
-    feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#fc4c02;">Sincronitzant entrenaments...</p></div>';
+    feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#fc4c02;">Sincronitzant vestidor...</p></div>';
 
     const { data: tokens } = await clienteSupabase.from('strava_tokens').select('*');
     if(!tokens || tokens.length === 0) {
@@ -1468,8 +1465,8 @@
         let nomPropi = dadesPerfilsMapejades[t.id_jugador.trim().toLowerCase()] || t.id_jugador.split('@')[0];
 
         try {
-            // Demanem més detalls amb 'activity' (de vegades el feed general en dona menys)
-            let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=10`, {
+            // Demanem les últimes 5 de cada un per tenir bon volum sense petar l'API
+            let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=5`, {
                 headers: { 'Authorization': `Bearer ${tokenValid}` }
             });
             let activities = await req.json();
@@ -1490,24 +1487,26 @@
                     });
                 });
             }
-        } catch(e) { console.error("Error:", e); }
+        } catch(e) { console.error("Error obtenint dades:", e); }
     }
 
+    // 1. Ordenem de més nova a més vella
     totesLesActivitats.sort((a, b) => b.data - a.data);
 
+    // 2. LIMIT GLOBAL: Ens quedem només amb les 20 primeres
+    let activitatsFinals = totesLesActivitats.slice(0, 20);
+
     let html = '';
-    totesLesActivitats.forEach(act => {
+    activitatsFinals.forEach(act => {
         let mins = Math.floor(act.temps / 60); let h = Math.floor(mins / 60); let m = mins % 60;
         let timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
         let emoji = act.tipus.includes('Ride') ? '🚴‍♂️' : (act.tipus.includes('Run') ? '🏃‍♂️' : '⚽');
         
-        // Etiquetes (Badges) amb tota la info disponible
         let badges = [];
         if (parseFloat(act.distancia) > 0) badges.push(`📏 ${act.distancia}km`);
         if (act.kcal) badges.push(`🔥 ${act.kcal}kcal`);
         if (act.bpm) badges.push(`💓 ${act.bpm}bpm`);
         if (act.desnivell > 5) badges.push(`⛰️ ${act.desnivell}m`);
-        if (act.velocitat && act.tipus.includes('Ride')) badges.push(`💨 ${act.velocitat}km/h`);
 
         let badgesHTML = badges.map(b => `<span style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border);">${b}</span>`).join('');
 

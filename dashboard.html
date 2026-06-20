@@ -1367,7 +1367,6 @@
                         });
                         
                         if (!error) {
-                            // Netejem la URL perquè no quedi el codi lleig a dalt
                             window.history.replaceState({}, document.title, window.location.pathname);
                         } else {
                             if(feedEl) feedEl.innerHTML = '<p style="color:var(--danger); font-weight:bold; text-align:center;">❌ Error guardant les dades a la base de dades.</p>';
@@ -1378,8 +1377,44 @@
                     if(feedEl) feedEl.innerHTML = '<p style="color:var(--danger); font-weight:bold; text-align:center;">❌ Error de connexió amb Strava.</p>';
                 }
             }
-            // Ja no ens cal cap "else" per posar "Compte actiu", anem directes a carregar el mur!
         }
+
+        async function obtenerTokenStravaValid(dbToken) {
+            const ara = Math.floor(Date.now() / 1000);
+            if (dbToken.expires_at > ara + 300) { return dbToken.access_token; }
+            
+            try {
+                const resp = await fetch('https://www.strava.com/oauth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client_id: stravaClientId,
+                        client_secret: stravaClientSecret,
+                        grant_type: 'refresh_token',
+                        refresh_token: dbToken.refresh_token
+                    })
+                });
+                const data = await resp.json();
+                if (data.access_token) {
+                    await clienteSupabase.from('strava_tokens').update({
+                        access_token: data.access_token, refresh_token: data.refresh_token, expires_at: data.expires_at
+                    }).eq('id_jugador', dbToken.id_jugador);
+                    return data.access_token;
+                }
+            } catch(e) { console.error("Error renovant el token", e); return null; }
+            return null;
+        }
+
+        async function cargarFeedStrava() {
+            const feedEl = document.getElementById('feed-strava');
+            if(!feedEl) return;
+            feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#fc4c02;">Sincronitzant vestidor...</p></div>';
+
+            const { data: tokens } = await clienteSupabase.from('strava_tokens').select('*');
+            if(!tokens || tokens.length === 0) {
+                feedEl.innerHTML = '<p style="text-align:center; color:#94a3b8;">Cap jugador enllaçat.</p>';
+                return;
+            }
 
             let totesLesActivitats = [];
             for (let t of tokens) {
@@ -1445,7 +1480,6 @@
             feedEl.innerHTML = html;
         }
 
-        // Aquesta és la funció que faltava i que engega tota l'App!
         async function verificarSesion() {
             try {
                 const { data: { session } } = await clienteSupabase.auth.getSession();
@@ -1493,7 +1527,7 @@
             }
         }
 
-        // Ara sí, la crida final funciona perquè la funció existeix
+        // L'arrencada
         verificarSesion();
 
     </script>

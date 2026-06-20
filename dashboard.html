@@ -1448,85 +1448,81 @@
 
         // Funció que descarrega les últimes 10 activitats de tothom, les barreja i les pinta
         async function cargarFeedStrava() {
-    const feedEl = document.getElementById('feed-strava');
-    if(!feedEl) return;
-    feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#fc4c02;">Sincronitzant vestidor...</p></div>';
+            const feedEl = document.getElementById('feed-strava');
+            if(!feedEl) return;
+            feedEl.innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#fc4c02;">Sincronitzant vestidor...</p></div>';
 
-    const { data: tokens } = await clienteSupabase.from('strava_tokens').select('*');
-    if(!tokens || tokens.length === 0) {
-        feedEl.innerHTML = '<p style="text-align:center; color:#94a3b8;">Cap jugador enllaçat.</p>';
-        return;
-    }
-
-    let totesLesActivitats = [];
-    for (let t of tokens) {
-        let tokenValid = await obtenerTokenStravaValid(t);
-        if (!tokenValid) continue;
-        let nomPropi = dadesPerfilsMapejades[t.id_jugador.trim().toLowerCase()] || t.id_jugador.split('@')[0];
-
-        try {
-            // Demanem les últimes 5 de cada un per tenir bon volum sense petar l'API
-            let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=5`, {
-                headers: { 'Authorization': `Bearer ${tokenValid}` }
-            });
-            let activities = await req.json();
-            
-            if (Array.isArray(activities)) {
-                activities.forEach(act => {
-                    totesLesActivitats.push({
-                        nomJugador: nomPropi,
-                        nomActivitat: act.name,
-                        tipus: act.type,
-                        distancia: (act.distance / 1000).toFixed(2),
-                        temps: act.moving_time,
-                        data: new Date(act.start_date),
-                        kcal: act.calories ? Math.round(act.calories) : null,
-                        bpm: act.average_heartrate ? Math.round(act.average_heartrate) : null,
-                        desnivell: act.total_elevation_gain || 0,
-                        velocitat: act.average_speed ? (act.average_speed * 3.6).toFixed(1) : null
-                    });
-                });
+            const { data: tokens } = await clienteSupabase.from('strava_tokens').select('*');
+            if(!tokens || tokens.length === 0) {
+                feedEl.innerHTML = '<p style="text-align:center; color:#94a3b8;">Cap jugador enllaçat.</p>';
+                return;
             }
-        } catch(e) { console.error("Error obtenint dades:", e); }
-    }
 
-    // 1. Ordenem de més nova a més vella
-    totesLesActivitats.sort((a, b) => b.data - a.data);
+            let totesLesActivitats = [];
+            for (let t of tokens) {
+                let tokenValid = await obtenerTokenStravaValid(t);
+                if (!tokenValid) continue;
+                let nomPropi = dadesPerfilsMapejades[t.id_jugador.trim().toLowerCase()] || t.id_jugador.split('@')[0];
 
-    // 2. LIMIT GLOBAL: Ens quedem només amb les 20 primeres
-    let activitatsFinals = totesLesActivitats.slice(0, 20);
+                try {
+                    let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=5`, {
+                        headers: { 'Authorization': `Bearer ${tokenValid}` }
+                    });
+                    let activities = await req.json();
+                    
+                    if (Array.isArray(activities)) {
+                        activities.forEach(act => {
+                            totesLesActivitats.push({
+                                nomJugador: nomPropi,
+                                nomActivitat: act.name,
+                                tipus: act.type,
+                                distancia: (act.distance / 1000).toFixed(2),
+                                temps: act.moving_time,
+                                data: new Date(act.start_date),
+                                kcal: act.calories ? Math.round(act.calories) : null,
+                                bpm: act.average_heartrate ? Math.round(act.average_heartrate) : null,
+                                desnivell: act.total_elevation_gain || 0,
+                                velocitat: act.average_speed ? (act.average_speed * 3.6).toFixed(1) : null
+                            });
+                        });
+                    }
+                } catch(e) { console.error("Error obtenint dades:", e); }
+            }
 
-    let html = '';
-    activitatsFinals.forEach(act => {
-        let mins = Math.floor(act.temps / 60); let h = Math.floor(mins / 60); let m = mins % 60;
-        let timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
-        let emoji = act.tipus.includes('Ride') ? '🚴‍♂️' : (act.tipus.includes('Run') ? '🏃‍♂️' : '⚽');
-        
-        let badges = [];
-        if (parseFloat(act.distancia) > 0) badges.push(`📏 ${act.distancia}km`);
-        if (act.kcal) badges.push(`🔥 ${act.kcal}kcal`);
-        if (act.bpm) badges.push(`💓 ${act.bpm}bpm`);
-        if (act.desnivell > 5) badges.push(`⛰️ ${act.desnivell}m`);
+            totesLesActivitats.sort((a, b) => b.data - a.data);
+            let activitatsFinals = totesLesActivitats.slice(0, 20);
 
-        let badgesHTML = badges.map(b => `<span style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border);">${b}</span>`).join('');
+            let html = '';
+            activitatsFinals.forEach(act => {
+                let mins = Math.floor(act.temps / 60); let h = Math.floor(mins / 60); let m = mins % 60;
+                let timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+                let emoji = act.tipus.includes('Ride') ? '🚴‍♂️' : (act.tipus.includes('Run') ? '🏃‍♂️' : '⚽');
+                
+                let badges = [];
+                if (parseFloat(act.distancia) > 0) badges.push(`📏 ${act.distancia}km`);
+                if (act.kcal) badges.push(`🔥 ${act.kcal}kcal`);
+                if (act.bpm) badges.push(`💓 ${act.bpm}bpm`);
+                if (act.desnivell > 5) badges.push(`⛰️ ${act.desnivell}m`);
 
-        html += `
-        <div class="card" style="padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #fc4c02; background: rgba(30, 41, 59, 0.4);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="color:#f8fafc; font-weight:800; font-size:0.9rem;">👤 ${act.nomJugador}</span>
-                <span style="color:#64748b; font-size:0.7rem;">${act.data.toLocaleDateString('ca-ES', {day:'numeric', month:'short'})}</span>
-            </div>
-            <div style="font-weight:600; font-size:0.95rem; color:var(--info); margin-bottom: 8px;">${emoji} ${act.nomActivitat}</div>
-            <div style="display:flex; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; color: #94a3b8;">
-                <span>⏱️ ${timeStr}</span>
-                ${badgesHTML}
-            </div>
-        </div>`;
-    });
-    feedEl.innerHTML = html;
-}
+                let badgesHTML = badges.map(b => `<span style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border);">${b}</span>`).join('');
 
-        // --- ARRANQUE PRINCIPAL ---
+                html += `
+                <div class="card" style="padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #fc4c02; background: rgba(30, 41, 59, 0.4);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="color:#f8fafc; font-weight:800; font-size:0.9rem;">👤 ${act.nomJugador}</span>
+                        <span style="color:#64748b; font-size:0.7rem;">${act.data.toLocaleDateString('ca-ES', {day:'numeric', month:'short'})}</span>
+                    </div>
+                    <div style="font-weight:600; font-size:0.95rem; color:var(--info); margin-bottom: 8px;">${emoji} ${act.nomActivitat}</div>
+                    <div style="display:flex; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; color: #94a3b8;">
+                        <span>⏱️ ${timeStr}</span>
+                        ${badgesHTML}
+                    </div>
+                </div>`;
+            });
+            feedEl.innerHTML = html;
+        }
+
+        // Finalment, la crida d'arrencada
         verificarSesion();
 
     </script>

@@ -1424,7 +1424,7 @@
                 let nomPropi = dadesPerfilsMapejades[t.id_jugador.trim().toLowerCase()] || t.id_jugador.split('@')[0];
 
                 try {
-                    // Augmentem a 15 per persona perquè hi hagi més historial al mur
+                    // Hem pujat a 15 per persona perquè el mur tingui més historial global
                     let req = await fetch(`https://www.strava.com/api/v3/athlete/activities?per_page=15`, {
                         headers: { 'Authorization': `Bearer ${tokenValid}` }
                     });
@@ -1432,9 +1432,9 @@
                     
                     if (Array.isArray(activities)) {
                         activities.forEach(act => {
-                            // 1. Calcular el ritme (min/km) o velocitat (km/h)
+                            // 1. Càlcul del Ritme o Velocitat
                             let ritmeStr = null;
-                            if ((act.type.includes('Run') || act.type.includes('Walk')) && act.average_speed > 0) {
+                            if ((act.type.includes('Run') || act.type.includes('Walk') || act.type.includes('Hike')) && act.average_speed > 0) {
                                 let secsPerKm = 1000 / act.average_speed;
                                 let pMins = Math.floor(secsPerKm / 60);
                                 let pSecs = Math.floor(secsPerKm % 60).toString().padStart(2, '0');
@@ -1443,8 +1443,24 @@
                                 ritmeStr = `${(act.average_speed * 3.6).toFixed(1)} km/h`;
                             }
 
-                            // 2. Caçar les Kcal (Strava a vegades les amaga sota kilojoules)
-                            let kcalCalculades = act.calories ? Math.round(act.calories) : (act.kilojoules ? Math.round(act.kilojoules / 4.184) : null);
+                            // 2. Càlcul intel·ligent de Calories (L'API de resum d'Strava no sempre les envia)
+                            let kcalCalculades = act.calories ? Math.round(act.calories) : null;
+                            if (!kcalCalculades) {
+                                if (act.type.includes('Run') || act.type.includes('Walk') || act.type.includes('Hike')) {
+                                    // 1 km corrent/caminant = aprox 75 kcal consumides pel cos humà
+                                    kcalCalculades = Math.round((act.distance / 1000) * 75);
+                                } else if (act.type.includes('Ride')) {
+                                    // En bici 1 kJ de treball = aprox 1 kcal humana consumida
+                                    kcalCalculades = act.kilojoules ? Math.round(act.kilojoules) : Math.round((act.distance / 1000) * 25);
+                                } else if (act.type.includes('Weight') || act.type.includes('Workout')) {
+                                    // Aprox 6 kcal per minut de peses/gimnàs
+                                    kcalCalculades = Math.round((act.moving_time / 60) * 6);
+                                } else if (act.type.includes('Swim')) {
+                                    kcalCalculades = Math.round((act.moving_time / 60) * 11);
+                                } else {
+                                    kcalCalculades = Math.round((act.moving_time / 60) * 8); // Esport per defecte
+                                }
+                            }
 
                             totesLesActivitats.push({
                                 nomJugador: nomPropi,
@@ -1464,40 +1480,41 @@
             }
 
             totesLesActivitats.sort((a, b) => b.data - a.data);
-            let activitatsFinals = totesLesActivitats.slice(0, 30); // Limitem el mur total a 30
+            let activitatsFinals = totesLesActivitats.slice(0, 30); // Limitem l'espectacularitat a 30
 
             let html = '';
             activitatsFinals.forEach(act => {
                 let mins = Math.floor(act.temps / 60); let h = Math.floor(mins / 60); let m = mins % 60;
                 let timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
                 
-                // 3. Emojis per a tothom!
-                let emoji = '⚽'; // Si no és res d'abaix, assumim futbol
-                if (act.tipus.includes('Ride')) emoji = '🚴‍♂️';
-                else if (act.tipus.includes('Run')) emoji = '🏃‍♂️';
-                else if (act.tipus.includes('Walk')) emoji = '🚶‍♂️';
-                else if (act.tipus.includes('Swim')) emoji = '🏊‍♂️';
-                else if (act.tipus.includes('Weight') || act.tipus.includes('Workout')) emoji = '🏋️‍♂️';
+                // 3. Emojis per a cada esport arreglats
+                let tipusA = act.tipus.toLowerCase();
+                let emoji = '🏅'; 
+                if (tipusA.includes('ride') || tipusA.includes('bicy')) emoji = '🚴‍♂️';
+                else if (tipusA.includes('run')) emoji = '🏃‍♂️';
+                else if (tipusA.includes('walk') || tipusA.includes('hike')) emoji = '🚶‍♂️';
+                else if (tipusA.includes('swim')) emoji = '🏊‍♂️';
+                else if (tipusA.includes('weight') || tipusA.includes('workout') || tipusA.includes('crossfit')) emoji = '🏋️‍♂️';
+                else if (tipusA.includes('soccer') || tipusA.includes('football')) emoji = '⚽';
                 
-                // Muntem les etiquetes
                 let badges = [];
-                if (parseFloat(act.distancia) > 0) badges.push(`📏 ${act.distancia}km`);
-                if (act.ritme) badges.push(`⚡ ${act.ritme}`);
-                if (act.kcal) badges.push(`🔥 ${act.kcal}kcal`);
-                if (act.bpm) badges.push(`💓 ${act.bpm}bpm`);
+                if (parseFloat(act.distancia) > 0) badges.push(`📏 ${act.distancia} km`);
+                if (act.ritme) badges.push(`👟 ${act.ritme}`);
+                if (act.kcal) badges.push(`🔥 ${act.kcal} kcal`);
+                if (act.bpm) badges.push(`💓 ${act.bpm} bpm`);
                 if (act.desnivell > 5) badges.push(`⛰️ ${act.desnivell}m`);
 
-                let badgesHTML = badges.map(b => `<span style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border);">${b}</span>`).join('');
+                let badgesHTML = badges.map(b => `<span style="background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.75rem; font-weight: 600;">${b}</span>`).join('');
 
                 html += `
                 <div class="card" style="padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #fc4c02; background: rgba(30, 41, 59, 0.4);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="color:#f8fafc; font-weight:800; font-size:0.9rem;">👤 ${act.nomJugador}</span>
-                        <span style="color:#64748b; font-size:0.7rem;">${act.data.toLocaleDateString('ca-ES', {day:'numeric', month:'short'})}</span>
+                        <span style="color:#64748b; font-size:0.7rem; text-transform:capitalize;">${act.data.toLocaleDateString('ca-ES', {weekday: 'short', day:'numeric', month:'short'})}</span>
                     </div>
-                    <div style="font-weight:600; font-size:0.95rem; color:var(--info); margin-bottom: 8px;">${emoji} ${act.nomActivitat}</div>
-                    <div style="display:flex; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; color: #94a3b8;">
-                        <span>⏱️ ${timeStr}</span>
+                    <div style="font-weight:600; font-size:1rem; color:var(--info); margin-bottom: 8px;">${emoji} ${act.nomActivitat}</div>
+                    <div style="display:flex; gap: 8px; flex-wrap: wrap; color: #94a3b8; align-items: center;">
+                        <span style="background: rgba(0,0,0,0.2); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">⏱️ ${timeStr}</span>
                         ${badgesHTML}
                     </div>
                 </div>`;

@@ -426,13 +426,14 @@
         </div>
 
         <div id="tab-strava" class="tab-content">
-            <div class="card" style="border-left: 4px solid #fc4c02; padding: 0; overflow: hidden;">
-                <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface);">
-                    <h3 style="color:#fc4c02; margin-bottom: 0;">🔥 Pretemporada</h3>
-                    <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0;">Rànquing i última activitat de l'equip.</p>
-                </div>
-                <div style="background: #f8fafc; width: 100%; display: flex; justify-content: center; padding: 15px 0;">
-                    <iframe allowtransparency='true' frameborder='0' height='454' scrolling='no' src='https://www.strava.com/clubs/2207580/latest-rides/c52c4ced182eb466006d08254b084244c700d14f?show_rides=true' width='300'></iframe>
+            <div class="card" style="border-left: 4px solid #fc4c02; text-align: center; padding: 2rem 1.5rem;">
+                <h3 style="color:#fc4c02; justify-content: center; margin-bottom: 5px;">🔥 Pretemporada Strava</h3>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">Per aparèixer al rànquing oficial de l'equip, has d'enllaçar el teu compte.</p>
+                
+                <div id="estat-strava">
+                    <button onclick="iniciarConnexioStrava()" style="background-color: #fc4c02; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(252, 76, 2, 0.3); transition: transform 0.2s;">
+                        🔗 Connectar amb Strava
+                    </button>
                 </div>
             </div>
         </div>
@@ -467,6 +468,12 @@
     <script>
         const urlSupa = 'https://gfpnyxwjllljjxdcadfy.supabase.co';
         const keySupa = 'sb_publishable_F2oufPKZ4W3dkTbLGdGZBw_xDQ6UIxQ';
+        
+        // --- CLAUS STRAVA ---
+        const stravaClientId = '259786';
+        const stravaClientSecret = '9d1524a134f9020f0b09fcadff26032deac13eed';
+        const stravaRedirectUri = 'https://sergigodayol.github.io/vestidor_santjulia/dashboard.html';
+        // --------------------
 
         const clienteSupabase = window.supabase.createClient(urlSupa, keySupa, {
             auth: { storage: window.sessionStorage }
@@ -515,6 +522,8 @@
                     document.getElementById('admin-card-resultats').style.display = 'none';
                 }
             }
+            await gestionarRetornStrava();
+        }
 
             const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
             const selectMvp = document.getElementById('select-nom-mvp');
@@ -1355,6 +1364,65 @@
             } catch (error) {
                 console.error("Error carregant fulls:", error);
                 document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió amb Google Drive.</p>';
+            }
+        }
+        function iniciarConnexioStrava() {
+            // Això envia el jugador a la pantalla taronja d'Strava per donar permís
+            const authUrl = `https://www.strava.com/oauth/authorize?client_id=${stravaClientId}&response_type=code&redirect_uri=${encodeURIComponent(stravaRedirectUri)}&approval_prompt=force&scope=activity:read_all`;
+            window.location.href = authUrl;
+        }
+
+        async function gestionarRetornStrava() {
+            const estatEl = document.getElementById('estat-strava');
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code'); // Si venim d'Strava, hi haurà un codi a la URL
+            
+            if (code) {
+                estatEl.innerHTML = '<p style="color:var(--warning); font-weight:bold;">⏳ Sincronitzant amb Strava... No tanquis.</p>';
+                
+                try {
+                    // Fem l'intercanvi: Donem el codi i demanem el Token definitiu
+                    const response = await fetch('https://www.strava.com/oauth/token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            client_id: stravaClientId,
+                            client_secret: stravaClientSecret,
+                            code: code,
+                            grant_type: 'authorization_code'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.access_token) {
+                        // Guardem el permís a la nostra base de dades
+                        const { error } = await clienteSupabase.from('strava_tokens').upsert({
+                            id_jugador: emailUsuario,
+                            athlete_id: data.athlete.id.toString(),
+                            access_token: data.access_token,
+                            refresh_token: data.refresh_token,
+                            expires_at: data.expires_at
+                        });
+                        
+                        if (!error) {
+                            estatEl.innerHTML = '<p style="color:var(--success); font-weight:bold; font-size:1.1rem;">✅ Compte enllaçat correctament!</p><p style="color:#94a3b8; font-size:0.85rem;">Ja estàs a punt per sumar quilòmetres.</p>';
+                            // Netegem la URL perquè quedi maca
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        } else {
+                            estatEl.innerHTML = '<p style="color:var(--danger); font-weight:bold;">❌ Error guardant les dades.</p>';
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error Strava API:", err);
+                    estatEl.innerHTML = '<p style="color:var(--danger); font-weight:bold;">❌ Error de connexió.</p>';
+                }
+            } else {
+                // Si la persona obre l'app normal, comprovem si ja el té enllaçat
+                const { data: tokenData } = await clienteSupabase.from('strava_tokens').select('*').eq('id_jugador', emailUsuario).maybeSingle();
+                if (tokenData) {
+                    estatEl.innerHTML = '<p style="color:var(--success); font-weight:bold; font-size:1.1rem;">✅ Compte Strava actiu</p><p style="color:#94a3b8; font-size:0.85rem;">Estem preparant el rànquing d\'entrenaments. Estigues atent!</p><button onclick="iniciarConnexioStrava()" style="background-color: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-top: 15px;">Re-connectar</button>';
+                }
             }
         }
 

@@ -13,18 +13,19 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
         :root {
-            --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.4);
-            --bg: #0b1120; 
-            --surface: rgba(30, 41, 59, 0.7);
-            --surface-hover: rgba(30, 41, 59, 0.9);
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: rgba(255, 255, 255, 0.08);
+            /* Tema CF Sant Julià: Blau i Blanc */
+            --primary: #2563eb; /* Blau Reial */
+            --primary-glow: rgba(37, 99, 235, 0.4);
+            --bg: #061124; /* Blau Nit Molt Fosc (per mantenir l'estil dark) */
+            --surface: rgba(15, 30, 55, 0.8); /* Blau marí per a les targetes */
+            --surface-hover: rgba(30, 60, 110, 0.9);
+            --text: #ffffff; /* Blanc pur */
+            --text-muted: #cbd5e1; /* Blanc apagat */
+            --border: rgba(255, 255, 255, 0.15); /* Vores més blanques i definides */
             --danger: #ef4444;
             --success: #10b981;
             --warning: #f59e0b;
-            --info: #0ea5e9;
+            --info: #38bdf8;
             --purple: #8b5cf6;
         }
 
@@ -32,12 +33,24 @@
             font-family: 'Outfit', system-ui, -apple-system, sans-serif; 
             background-color: var(--bg); 
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.05), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.05), transparent 25%);
+                radial-gradient(circle at 15% 10%, rgba(37, 99, 235, 0.15), transparent 30%),
+                radial-gradient(circle at 85% 80%, rgba(255, 255, 255, 0.05), transparent 30%);
             color: var(--text); 
             margin: 0; 
             padding-bottom: 110px; 
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- CLASSE PER A LES FOTOS DE PERFIL --- */
+        .avatar-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            background-color: var(--surface);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            flex-shrink: 0;
         }
         
         header { 
@@ -586,6 +599,20 @@
             } catch(e) { console.log(e); }
         }
 
+       // Motor d'Avatars Intel·ligent
+        function getAvatar(nomJugador) {
+            if (!nomJugador || nomJugador === '-') return '';
+            
+            // Converteix "Sergi Godayol" a "sergi_godayol.jpg"
+            const nomFitxer = nomJugador.trim().toLowerCase().replace(/\s+/g, '_') + '.jpg';
+            
+            // Si la foto no existeix, crea un cercle Blau i Blanc amb les inicials (Ex: "SE")
+            const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nomJugador)}&background=2563eb&color=fff&rounded=true&bold=true&size=128`;
+            
+            // Busca la foto a la carpeta "fotos". Si falla, carrega les inicials automàticament.
+            return `<img src="fotos/${nomFitxer}" onerror="this.onerror=null; this.src='${fallback}';" class="avatar-img" alt="${nomJugador}">`;
+        }
+
         function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
             let correuNetejat = pos.id_jugador.trim().toLowerCase();
             let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
@@ -594,9 +621,22 @@
             if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
             
             let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
-            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 38px;"><span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
+            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 70px;"><span style="font-size:0.7rem; color:#cbd5e1; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
             
-            return `<div class="ranking-item"><div class="ranking-fila-principal"><div class="player-info"><span class="medalla">${medallaIcono}</span><span style="font-weight: 700; color: #f1f5f9; font-size: 1rem;">${nomAMostrar}</span></div><span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span></div>${mòdulFormatatRafaga}</div>`;
+            let avatarHTML = getAvatar(nomAMostrar); // Generem la foto
+            
+            return `
+            <div class="ranking-item">
+                <div class="ranking-fila-principal">
+                    <div class="player-info" style="display:flex; align-items:center; gap:10px;">
+                        <span class="medalla" style="width:25px;">${medallaIcono}</span> 
+                        ${avatarHTML} 
+                        <span style="font-weight: 700; color: var(--text); font-size: 1rem;">${nomAMostrar}</span>
+                    </div>
+                    <span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span>
+                </div>
+                ${mòdulFormatatRafaga}
+            </div>`;
         }
 
         async function cargarRanking() {
@@ -1504,8 +1544,7 @@
                 else if (tipusA.includes('swim')) emoji = '🏊‍♂️';
                 else if (tipusA.includes('weight') || tipusA.includes('workout') || tipusA.includes('force') || tipusA.includes('pull') || tipusA.includes('push')) emoji = '🏋️‍♂️';
                 
-                // EXTRACTOR DE DATA I HORA
-                let dataF = act.data.toLocaleDateString('ca-ES', {day:'numeric', month:'short'});
+                let dataF = act.data.toLocaleDateString('ca-ES', {weekday: 'short', day:'numeric', month:'short'});
                 let horaF = act.data.toLocaleTimeString('ca-ES', {hour: '2-digit', minute: '2-digit'});
 
                 let badges = [];
@@ -1517,15 +1556,20 @@
 
                 let badgesHTML = badges.map(b => `<span style="background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.75rem; font-weight: 600;">${b}</span>`).join('');
 
+                let fotoJugador = getAvatar(act.nomJugador); // Generem la foto aquí també!
+
                 html += `
-                <div class="card" style="padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #fc4c02; background: rgba(30, 41, 59, 0.4);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                        <span style="color:#f8fafc; font-weight:800; font-size:0.9rem;">👤 ${act.nomJugador}</span>
-                        <span style="color:#64748b; font-size:0.7rem;">${dataF} • ${horaF}</span>
+                <div class="card" style="padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #fc4c02; background: rgba(15, 30, 55, 0.4);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap: 8px;">
+                            ${fotoJugador}
+                            <span style="color:#ffffff; font-weight:800; font-size:0.95rem;">${act.nomJugador}</span>
+                        </div>
+                        <span style="color:#cbd5e1; font-size:0.7rem; text-transform:capitalize;">${dataF} • ${horaF}</span>
                     </div>
                     <div style="font-weight:600; font-size:1rem; color:var(--info); margin-bottom: 8px;">${emoji} ${act.nomActivitat}</div>
-                    <div style="display:flex; gap: 8px; flex-wrap: wrap; color: #94a3b8; align-items: center;">
-                        <span style="background: rgba(0,0,0,0.2); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">⏱️ ${timeStr}</span>
+                    <div style="display:flex; gap: 8px; flex-wrap: wrap; color: #cbd5e1; align-items: center;">
+                        <span style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">⏱️ ${timeStr}</span>
                         ${badgesHTML}
                     </div>
                 </div>`;

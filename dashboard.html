@@ -106,36 +106,60 @@
         .container { padding: 1.2rem; max-width: 800px; margin: 0 auto; }
         
         .card { 
-            background: var(--surface); 
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            border-radius: 14px; 
-            padding: 1.4rem; 
+            position: relative;
+            background: 
+                linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 45%),
+                var(--surface); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 18px; 
+            padding: 1.5rem; 
             margin-bottom: 1.1rem; 
             border: 1px solid var(--border); 
-            box-shadow: 0 4px 22px rgba(0, 0, 0, 0.22); 
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 18px 40px -22px rgba(0,0,0,0.65),
+                0 4px 14px rgba(0,0,0,0.25);
             transition: border-color 0.2s ease;
         }
         .card h3 { 
-            margin-top: 0; 
-            margin-bottom: 1.1rem; 
-            padding-bottom: 0.85rem;
+            margin: 0 0 1.25rem 0; 
+            padding: 0;
             display: flex; 
             align-items: center; 
-            gap: 9px; 
+            gap: 11px; 
             font-family: 'Oswald', sans-serif;
             font-size: 0.95rem; 
             font-weight: 600; 
             letter-spacing: 0.3px; 
             text-transform: uppercase;
-            border-bottom: 1px solid var(--border);
         }
+
+        .card-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+        .card-icon-sm { width: 26px; height: 26px; border-radius: 8px; font-size: 0.85rem; }
+        .icon-blue { background: rgba(47, 111, 237, 0.14); }
+        .icon-gold { background: rgba(227, 178, 60, 0.14); }
+        .icon-danger { background: rgba(239, 68, 68, 0.14); }
+        .icon-success { background: rgba(34, 197, 94, 0.14); }
+        .icon-info { background: rgba(56, 189, 248, 0.14); }
+        .icon-purple { background: rgba(139, 108, 246, 0.14); }
 
         .card-hero {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, rgba(47,111,237,0.12), var(--surface) 60%);
-            border-color: rgba(47,111,237,0.30);
+            background: 
+                linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0) 45%),
+                linear-gradient(180deg, rgba(47,111,237,0.14), var(--surface) 65%);
+            border-color: rgba(47,111,237,0.32);
         }
         .card-hero::before {
             content: '';
@@ -257,6 +281,22 @@
         .btn-eliminar-multa { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.9rem; cursor: pointer; padding: 4px 10px; margin-left: 10px; border-radius: 6px; transition: all 0.2s; }
         .btn-eliminar-multa:hover { background: var(--danger); color: white; }
 
+        .btn-cta {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        .btn-cta:active { transform: scale(0.98); }
+        .btn-cta-primary { background: linear-gradient(135deg, #3b82f6, var(--primary-deep)); color: #fff; box-shadow: 0 10px 24px -8px rgba(47,111,237,0.55); }
+        .btn-cta-gold { background: linear-gradient(135deg, #f0c766, var(--gold)); color: #1a1305; box-shadow: 0 10px 24px -8px rgba(227,178,60,0.45); }
+        .btn-cta-success { background: linear-gradient(135deg, #34d67f, var(--success)); color: #06280f; box-shadow: 0 10px 24px -8px rgba(34,197,94,0.4); }
+
         input.input-jornada { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 9px; width: 65px; text-align: center; font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-weight: 700; }
         input.input-text-mvp, select.select-text-mvp, .input-admin-multa { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); padding: 0.85rem; border-radius: 10px; width: 100%; box-sizing: border-box; font-size: 0.95rem; margin-bottom: 1rem; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; }
         input.input-text-mvp:focus, select.select-text-mvp:focus, .input-admin-multa:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); background: rgba(0,0,0,0.5); }
@@ -286,10 +326,10 @@
     <div class="container">
         
         <div id="card-completar-perfil" class="card" style="display:none; border:2px dashed var(--warning); background-color: rgba(245, 158, 11, 0.03);">
-            <h3 style="color:var(--warning)">👋 Configura el teu Perfil</h3>
+            <h3><span class="card-icon icon-gold">👋</span> Configura el teu Perfil</h3>
             <p style="color:#94a3b8; font-size:0.9rem; margin-top:-0.5rem;">Per sortir correctament al rànquing oficial del vestidor, escriu el teu Nom i Cognom:</p>
             <input type="text" id="input-migracion-nom" class="input-text-mvp" style="border-color:var(--warning);" placeholder="Ex: Sergi Godayol">
-            <button onclick="guardarNombreMigracion()" style="width:100%; padding:0.7rem; background-color:var(--warning); color:#111827; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Assignar Nom Oficial</button>
+            <button onclick="guardarNombreMigracion()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.8rem;">Assignar Nom Oficial</button>
         </div>
 
         <div id="tab-inicio" class="tab-content active">
@@ -299,30 +339,30 @@
                 <p id="txt-partido-detalles" style="margin: 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
             </div>
 
-            <div class="card" style="border-left: 4px solid var(--warning);">
-                <h3>🎂 Properes Pastes</h3>
+            <div class="card">
+                <h3><span class="card-icon icon-gold">🎂</span> Properes Pastes</h3>
                 <div id="lista-aniversarios-inicio" style="font-size: 0.95rem;">Carregant el calendari de pastes...</div>
             </div>
 
             <div class="grid-rankings">
-                <div class="card" style="border-left: 4px solid var(--purple);">
-                    <h3>🏆 Top 3 Quiniela</h3>
+                <div class="card">
+                    <h3><span class="card-icon icon-purple">🏆</span> Top 3 Quiniela</h3>
                     <div id="tabla-ranking">Carregant la classificació...</div>
                 </div>
 
-                <div class="card" style="border-left: 4px solid var(--warning);">
-                    <h3>👑 Top 3 MVPs</h3>
+                <div class="card">
+                    <h3><span class="card-icon icon-gold">👑</span> Top 3 MVPs</h3>
                     <div id="tabla-ranking-mvp-inicio">Carregant els MVPs de la temporada...</div>
                 </div>
 
-                <div class="card" style="border-left: 4px solid var(--info);">
-                    <h3 style="color:var(--text);">🏃‍♂️ Top 3 Entrenos</h3>
+                <div class="card">
+                    <h3><span class="card-icon icon-info">🏃‍♂️</span> Top 3 Entrenos</h3>
                     <div id="tabla-ranking-entrenos-inicio">Carregant la lliga d'entrenaments...</div>
                 </div>
             </div>
 
-            <div class="card" style="border-left: 4px solid var(--danger); margin-top: 1rem; text-align: center;">
-                <h3 style="justify-content: center;">💰 Total multes</h3>
+            <div class="card" style="margin-top: 1rem; text-align: center;">
+                <h3 style="justify-content: center;"><span class="card-icon icon-danger">💰</span> Total multes</h3>
                 <div class="bote-total" id="resumen-multas" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
             </div>
         </div>
@@ -338,7 +378,7 @@
             <div id="sub-jornada" class="sub-tab-content">
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
-                        <h3>⚽ Pronòstics</h3>
+                        <h3><span class="card-icon icon-blue">⚽</span> Pronòstics</h3>
                         <div style="background: #111827; padding: 0.5rem 0.9rem; border-radius: 10px; border: 1px solid var(--border);">
                             <span style="font-size:0.8rem; color:#94a3b8; font-weight:600;">Jornada Activa:</span>
                             <span id="txt-jornada-jugador-titulo" style="font-weight:800; color:var(--primary); margin-left:5px;">-</span>
@@ -362,7 +402,7 @@
                             }
                         </script>
                     </div>
-                    <button id="btn-guardar-porra" onclick="guardarQuiniela()" style="margin-top: 2rem; width: 100%; padding: 0.9rem; background-color: var(--success); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
+                    <button id="btn-guardar-porra" onclick="guardarQuiniela()" class="btn-cta btn-cta-success" style="margin-top: 2rem; width: 100%; padding: 0.95rem; font-size: 0.95rem;">
                         Desar la Quiniela
                     </button>
                     <p id="msg-quiniela" style="text-align:center; display:none; margin-top: 1rem; font-weight: bold;"></p>
@@ -371,30 +411,30 @@
 
             <div id="sub-ranking-intern" class="sub-tab-content" style="display:none;">
                 <div class="card">
-                    <h3>📈 Classificació de la Quiniela</h3>
+                    <h3><span class="card-icon icon-purple">📈</span> Classificació de la Quiniela</h3>
                     <div id="tabla-ranking-quiniela-pestana">Carregant la lliga de la porra...</div>
                 </div>
             </div>
 
             <div id="sub-companys" class="sub-tab-content" style="display:none;">
                 <div class="card">
-                    <h3>👀 Bitllets de la Jornada <span id="txt-jornada-companys-titulo" style="color:var(--primary)">-</span></h3>
+                    <h3><span class="card-icon icon-blue">👀</span> Bitllets de la Jornada <span id="txt-jornada-companys-titulo" style="color:var(--primary)">-</span></h3>
                     <div id="lista-quinielas-companys">Carregant bitllets de l'equip...</div>
                 </div>
             </div>
 
             <div id="sub-historial" class="sub-tab-content" style="display:none;">
                 <div class="card">
-                    <h3>📂 Els teus bitllets desats</h3>
+                    <h3><span class="card-icon icon-blue">📂</span> Els teus bitllets desats</h3>
                     <div id="lista-historial">Carregant el teu històric...</div>
                 </div>
             </div>
         </div>
 
         <div id="tab-mvp" class="tab-content">
-            <div id="contenedor-votar-mvp" class="card" style="border-left: 4px solid var(--warning);">
+            <div id="contenedor-votar-mvp" class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <h3>⭐ Vota l'MVP de la Jornada <span id="txt-jornada-mvp-titulo" style="color:var(--warning)">-</span></h3>
+                    <h3><span class="card-icon icon-gold">⭐</span> Vota l'MVP de la Jornada <span id="txt-jornada-mvp-titulo" style="color:var(--warning)">-</span></h3>
                 </div>
                 <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.2rem; margin-top:-0.5rem;">Selecciona a la llista el company que creus que ha estat el millor del partit passat.</p>
                 
@@ -402,21 +442,21 @@
                     <option value="">-- Tria un jugador registrat --</option>
                 </select>
 
-                <button onclick="guardarVotMVP()" style="width: 100%; padding: 0.8rem; background-color: var(--warning); color: #111827; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: opacity 0.2s;">
+                <button onclick="guardarVotMVP()" class="btn-cta btn-cta-gold" style="width: 100%; padding: 0.85rem;">
                     Enviar el meu vot MVP
                 </button>
                 <p id="msg-mvp-votacio" style="text-align:center; display:none; margin-top: 1rem; font-weight: bold;"></p>
             </div>
 
             <div class="card">
-                <h3>👑 Rànquing de Trofeus MVP de la Temporada</h3>
+                <h3><span class="card-icon icon-gold">👑</span> Rànquing de Trofeus MVP de la Temporada</h3>
                 <div id="tabla-ranking-mvp">Carregant el rànquing d'MVPs...</div>
             </div>
         </div>
 
         <div id="tab-entrenos" class="tab-content">
-            <div class="card" style="border-left: 4px solid var(--info);">
-                <h3>🏃‍♂️ Lliga d'Entrenaments (Global)</h3>
+            <div class="card">
+                <h3><span class="card-icon icon-info">🏃‍♂️</span> Lliga d'Entrenaments (Global)</h3>
                 <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Classificació global de punts d'entreno.</p>
                 <div id="tabla-ranking-entrenos-full">Carregant el rànquing complet...</div>
             </div>
@@ -430,7 +470,7 @@
 
             <div id="sub-lliga" class="sub-tab-content-stats">
                 <div class="card">
-                    <h3>📊 Estadístiques Oficials - Temporada 26/27</h3>
+                    <h3><span class="card-icon icon-blue">📊</span> Estadístiques Oficials - Temporada 26/27</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Dades generals obtingudes directament del sistema de control de l'equip.</p>
                     <div id="tabla-stats-lliga">Carregant estadístiques des de Google Sheets...</div>
                 </div>
@@ -438,7 +478,7 @@
 
             <div id="sub-historic" class="sub-tab-content-stats" style="display:none;">
                 <div class="card">
-                    <h3>📜 Històric Acumulat del Vestidor</h3>
+                    <h3><span class="card-icon icon-info">📜</span> Històric Acumulat del Vestidor</h3>
                     <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Trajectòria global filtrada exclusivament per als membres actius de la plantilla actual.</p>
                     <div id="tabla-stats-historic">Carregant historial des de Google Sheets...</div>
                 </div>
@@ -446,13 +486,13 @@
         </div>
 
         <div id="tab-multas" class="tab-content">
-            <div class="card" style="border-left: 4px solid var(--danger);">
-                <h3>💰 Pot de Multes Pendents</h3>
+            <div class="card">
+                <h3><span class="card-icon icon-danger">💰</span> Pot de Multes Pendents</h3>
                 <div class="bote-total" id="total-bote" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
             </div>
 
-            <div class="card" style="border-left: 4px solid var(--warning);">
-                <h3>📜 Llista de Sancions</h3>
+            <div class="card">
+                <h3><span class="card-icon icon-gold">📜</span> Llista de Sancions</h3>
                 <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.2rem; margin-top:-0.5rem;">Consulta aquí les multes vigents al vestidor.</p>
                 <div class="tarifario-lista">
                     <div class="tarifa-item">
@@ -487,43 +527,43 @@
             </div>
 
             <div class="card">
-                <h3>📋 Llista de Sancions</h3>
+                <h3><span class="card-icon icon-danger">📋</span> Llista de Sancions</h3>
                 <div id="lista-multas">Carregant les sancions...</div>
             </div>
         </div>
 
         <div id="tab-gestio" class="tab-content">
-            <div class="card" style="border: 2px solid var(--danger); background-color: rgba(239, 68, 68, 0.02);">
-                <h3 id="admin-gestio-titol" style="color:var(--danger)">⚙️ Panell de Control Secret (Admin)</h3>
+            <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.35); background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 45%), rgba(239, 68, 68, 0.04);">
+                <h3 id="admin-gestio-titol"><span class="card-icon icon-danger">⚙️</span> Panell de Control Secret (Admin)</h3>
                 <p id="admin-gestio-desc" style="color: #94a3b8; font-size:0.85rem; margin-top:-0.5rem; margin-bottom:1.5rem;">Aquesta pantalla només la pots veure tu, Sergi.</p>
                 
-                <div id="admin-card-entrenos" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
-                    <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--info)">🏃‍♂️ Sumar Punts d'Entreno</p>
+                <div id="admin-card-entrenos" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-info">🏃‍♂️</span> Sumar Punts d'Entreno</p>
                     
-                    <select id="select-admin-entreno-nom" class="input-admin-multa" style="background: #111827; color: white;">
+                    <select id="select-admin-entreno-nom" class="input-admin-multa" style="background: rgba(0,0,0,0.35); color: white;">
                         <option value="">-- Selecciona el jugador (Equip Guanyador) --</option>
                     </select>
 
-                    <button onclick="sumarPuntEntreno()" style="width:100%; padding:0.6rem; background-color:var(--info); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Afegir +1 Punt</button>
+                    <button onclick="sumarPuntEntreno()" class="btn-cta" style="width:100%; padding:0.65rem; background-color:var(--info); color:#06222f;">Afegir +1 Punt</button>
                     <p id="msg-admin-entreno" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
                 </div>
 
-                <div id="admin-card-cartellera" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
-                    <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--primary)">📅 Cartellera: Pròxim Partit</p>
+                <div id="admin-card-cartellera" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue">📅</span> Cartellera: Pròxim Partit</p>
                     <input type="text" id="admin-input-partido-nombre" class="input-admin-multa" placeholder="Rival (Ex: CF Sant Julià - UD Taradell)">
                     <input type="text" id="admin-input-partido-detalles" class="input-admin-multa" placeholder="Horari i Lloc (Ex: Dissabte 16:00h | Municipal)">
-                    <button onclick="actualizarCartelPartido()" style="width:100%; padding:0.6rem; background-color:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Publicar al Panell d'Inici</button>
+                    <button onclick="actualizarCartelPartido()" class="btn-cta btn-cta-primary" style="width:100%; padding:0.65rem;">Publicar al Panell d'Inici</button>
                 </div>
 
-                <div id="admin-card-aniversaris" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
-                    <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--warning)">🎂 Afegir Aniversari / Pastes</p>
+                <div id="admin-card-aniversaris" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-gold">🎂</span> Afegir Aniversari / Pastes</p>
                     <input type="text" id="admin-aniversario-nom" class="input-admin-multa" placeholder="Nom complet del jugador">
                     <input type="date" id="admin-aniversario-data" class="input-admin-multa">
-                    <button onclick="crearAniversarioManual()" style="width:100%; padding:0.6rem; background-color:var(--warning); color:#111827; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Registrar Aniversari</button>
+                    <button onclick="crearAniversarioManual()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.65rem;">Registrar Aniversari</button>
                 </div>
 
-                <div id="admin-card-lock" class="card" style="background: #111827; border-color: var(--border); text-align: center; margin-bottom: 1.5rem;">
-                    <p style="font-size: 0.95rem; margin-top:0;"><strong>🔒 Control d'Admissió Setmanal</strong></p>
+                <div id="admin-card-lock" class="card" style="text-align: center; margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; justify-content:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-purple">🔒</span> Control d'Admissió Setmanal</p>
                     <div style="margin-bottom:1rem; font-size:0.9rem;">
                         <span>Jornada actual: </span>
                         <input type="number" id="admin-establecer-jornada-input" class="input-jornada" min="1">
@@ -536,21 +576,21 @@
                     <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
                 </div>
                 
-                <div id="admin-card-multes" class="card" style="background: #111827; border-color: var(--border); margin-bottom: 1.5rem;">
-                    <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--danger)">📝 Sancionar Jugador</p>
+                <div id="admin-card-multes" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-danger">📝</span> Sancionar Jugador</p>
                     
-                    <select id="select-admin-multa-nom" class="input-admin-multa" style="background: #111827; color: white;">
+                    <select id="select-admin-multa-nom" class="input-admin-multa" style="background: rgba(0,0,0,0.35); color: white;">
                         <option value="">-- Selecciona el jugador culpable --</option>
                     </select>
 
                     <input type="text" id="multa-motiu" class="input-admin-multa" placeholder="Motiu de la multa (Ex: Arribar tard)">
                     <input type="number" id="multa-import" class="input-admin-multa" placeholder="Import en euros (€) (Ex: 5)" min="1">
-                    <button onclick="crearMultaManual()" style="width:100%; padding:0.6rem; background-color:var(--danger); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">Aplicar Sanció</button>
+                    <button onclick="crearMultaManual()" class="btn-cta" style="width:100%; padding:0.65rem; background-color:var(--danger); color:white;">Aplicar Sanció</button>
                     <p id="msg-admin-multa" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
                 </div>
                 
-                <div id="admin-card-resultats" class="card" style="background: #111827; border-color: var(--border);">
-                    <p style="font-size: 0.95rem; margin-top:0; font-weight:bold; color:var(--text)">⚽ Introduir Resultats Reals - Jornada <span id="txt-jornada-admin-evaluar" style="color:var(--danger)">-</span></p>
+                <div id="admin-card-resultats" class="card">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue">⚽</span> Introduir Resultats Reals - Jornada <span id="txt-jornada-admin-evaluar" style="color:var(--danger)">-</span></p>
                     <div id="lista-admin-partidos">
                         <script>
                             for(let i=1; i<=10; i++) {
@@ -574,9 +614,9 @@
         </div>
 
         <div id="tab-strava" class="tab-content">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.5rem 0.2rem;">
-        <h3 style="margin:0; font-size: 1rem; color: #fc4c02;">🔥 Activitat de l'equip</h3>
-        <button onclick="iniciarConnexioStrava()" style="background: rgba(252, 76, 2, 0.1); border: 1px solid #fc4c02; color: #fc4c02; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.3rem 0.2rem;">
+        <h3 style="margin:0; font-family:'Oswald', sans-serif; font-size: 0.95rem; letter-spacing:0.3px; text-transform:uppercase; display:flex; align-items:center; gap:9px;"><span class="card-icon" style="background: rgba(252, 76, 2, 0.14);">🔥</span> Activitat de l'equip</h3>
+        <button onclick="iniciarConnexioStrava()" style="background: rgba(252, 76, 2, 0.12); border: 1px solid rgba(252, 76, 2, 0.4); color: #fc4c02; padding: 6px 12px; border-radius: 8px; font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:0.3px; font-size: 0.68rem; font-weight: 600; cursor: pointer;">
             🔄 Sincronitzar
         </button>
     </div>

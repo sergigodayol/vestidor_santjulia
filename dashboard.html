@@ -172,6 +172,13 @@
         .bote-total { text-align: center; font-size: 3rem; font-weight: 900; color: var(--danger); margin-top: 0.5rem; letter-spacing: -1.5px; text-shadow: 0 8px 24px rgba(239, 68, 68, 0.3); font-family: 'Outfit', sans-serif; }
         .multa-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px dashed var(--border); font-size: 0.95rem; }
         .multa-item:last-child { border-bottom: none; }
+
+        .tarifario-lista { display: flex; flex-direction: column; gap: 8px; }
+        .tarifa-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0.75rem 0.9rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; transition: background 0.2s; }
+        .tarifa-item:hover { background: rgba(0,0,0,0.3); }
+        .tarifa-concepto { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; line-height: 1.35; }
+        .tarifa-concepto em { color: #94a3b8; font-style: normal; font-weight: 500; }
+        .tarifa-precio { flex-shrink: 0; background: rgba(245, 158, 11, 0.12); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); font-weight: 800; font-size: 0.9rem; padding: 5px 12px; border-radius: 8px; white-space: nowrap; }
         .btn-eliminar-multa { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.9rem; cursor: pointer; padding: 4px 10px; margin-left: 10px; border-radius: 6px; transition: all 0.2s; }
         .btn-eliminar-multa:hover { background: var(--danger); color: white; transform: scale(1.05); }
 
@@ -368,6 +375,42 @@
                 <h3>💰 Pot de Multes Pendents</h3>
                 <div class="bote-total" id="total-bote" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
             </div>
+
+            <div class="card" style="border-left: 4px solid var(--warning);">
+                <h3>📜 Llista de sancions</h3>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.2rem; margin-top:-0.5rem;">Consulta aquí les multes vigents al vestidor.</p>
+                <div class="tarifario-lista">
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">⏰ Arribar tard a un entreno sense avisar <em>(a partir de les 19:46)</em></span>
+                        <span class="tarifa-precio">5 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">⏰ Arribar tard a una convocatòria sense avisar</span>
+                        <span class="tarifa-precio">5 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">🚫 No presentar-se a un entreno sense avisar</span>
+                        <span class="tarifa-precio">10 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">⚽ Posar-se a xutar entre exercicis en un entreno</span>
+                        <span class="tarifa-precio">1 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">👕 Arribar al partit sense la vestimenta de l'equip</span>
+                        <span class="tarifa-precio">3 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">🟨 Targeta groga evitable <em>(protestar, encarar-se amb el rival...)</em></span>
+                        <span class="tarifa-precio">3 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">🟥 Targeta vermella evitable <em>(protestar, encarar-se amb el rival...)</em></span>
+                        <span class="tarifa-precio">10 €</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <h3>📋 Llista de Sancions</h3>
                 <div id="lista-multas">Carregant les sancions...</div>

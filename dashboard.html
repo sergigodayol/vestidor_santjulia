@@ -295,9 +295,12 @@
 
     <header>
         <img src="escut.png" alt="Escut CF Sant Julià" class="header-logo" onerror="this.style.display='none'">
-        <div class="header-text">
-            <h1 id="saludo-usuario">Carregant el vestidor...</h1>
-            <p class="eyebrow">CF Sant Julià - Temporada 26/27</p>
+        <div class="header-text" style="display:flex; align-items:center; gap:10px;">
+            <span id="avatar-usuario-header"></span>
+            <div>
+                <h1 id="saludo-usuario">Carregant el vestidor...</h1>
+                <p class="eyebrow">CF Sant Julià - Temporada 26/27</p>
+            </div>
         </div>
     </header>
 
@@ -714,17 +717,21 @@
         }
 
        // Motor d'Avatars Intel·ligent
-        function getAvatar(nomJugador) {
+        function getAvatar(nomJugador, mida) {
             if (!nomJugador || nomJugador === '-') return '';
-            
-            // Converteix "Sergi Godayol" a "sergi_godayol.jpg"
-            const nomFitxer = nomJugador.trim().toLowerCase().replace(/\s+/g, '_') + '.jpg';
+            const alt = mida || 28;
+
+            // Treu accents/dièresis (Martí Solà -> marti sola) per no dependre de noms de fitxer amb tildes
+            const nomNormalitzat = nomJugador.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            // Converteix "Marti Sola" a "marti_sola.jpg"
+            const nomFitxer = nomNormalitzat.toLowerCase().replace(/\s+/g, '_') + '.jpg';
             
             // Si la foto no existeix, crea un cercle Blau i Blanc amb les inicials (Ex: "SE")
             const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nomJugador)}&background=2563eb&color=fff&rounded=true&bold=true&size=128`;
             
             // Busca la foto a la carpeta "fotos". Si falla, carrega les inicials automàticament.
-            return `<img src="fotos/${nomFitxer}" onerror="this.onerror=null; this.src='${fallback}';" class="avatar-img" alt="${nomJugador}">`;
+            return `<img src="fotos/${nomFitxer}" onerror="this.onerror=null; this.src='${fallback}';" class="avatar-img" style="width:${alt}px; height:${alt}px;" alt="${nomJugador}">`;
         }
 
         function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
@@ -1179,7 +1186,8 @@
             let html = '';
             quinielas.forEach(q => {
                 let nom = dadesPerfilsMapejades[q.id_jugador.trim().toLowerCase()] || q.id_jugador.split('@')[0];
-                html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 5px 0;">👤 ${nom}</p><p style="margin:0; color:var(--text); letter-spacing: 2px; font-family: monospace;">1:${q.p1} | 2:${q.p2} | 3:${q.p3} | 4:${q.p4} | 5:${q.p5} <br>6:${q.p6} | 7:${q.p7} | 8:${q.p8} | 9:${q.p9} | 10:${q.p10}</p></div>`;
+                let avatarHTML = getAvatar(nom, 24);
+                html += `<div class="card" style="margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">${avatarHTML} ${nom}</p><p style="margin:0; color:var(--text); letter-spacing: 2px; font-family: monospace;">1:${q.p1} | 2:${q.p2} | 3:${q.p3} | 4:${q.p4} | 5:${q.p5} <br>6:${q.p6} | 7:${q.p7} | 8:${q.p8} | 9:${q.p9} | 10:${q.p10}</p></div>`;
             });
             listaCompanysEl.innerHTML = html;
         }
@@ -1512,6 +1520,7 @@
                 
                 let nomHeader = perfilPropi ? perfilPropi.nom_real : emailUsuario.split('@')[0];
                 document.getElementById('saludo-usuario').textContent = `👋 Hola, ${nomHeader}!`;
+                document.getElementById('avatar-usuario-header').innerHTML = getAvatar(nomHeader, 42);
                 
                 const isMainAdmin = (emailUsuario === 'sergigodayol@gmail.com');
                 const isEntrenador = (emailUsuario === 'martiolisan@gmail.com' || emailUsuario === 'ericsoleponsa@hotmail.es');

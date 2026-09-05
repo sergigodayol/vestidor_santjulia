@@ -1355,9 +1355,10 @@
             if(!multas || multas.length === 0) { if(boteEl) boteEl.textContent = '0.00 €'; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = '0.00 €'; if(listaEl) listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>'; return; }
             
             let sum = 0; let htmlLista = '';
+            const usuarisAmbPermisEsborrar = ['sergigodayol@gmail.com', 'martiolisan@gmail.com', 'ericsoleponsa@hotmail.es'];
             multas.forEach(m => {
                 sum += parseFloat(m.import);
-                let botoBorrarExclusiu = (emailUsuario === 'sergigodayol@gmail.com') 
+                let botoBorrarExclusiu = usuarisAmbPermisEsborrar.includes(emailUsuario) 
                     ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
                     : '';
 
@@ -1540,11 +1541,10 @@
 
                     if (isEntrenador && !isMainAdmin) {
                         document.getElementById('admin-gestio-titol').textContent = "🏃‍♂️ Panell Tècnic";
-                        document.getElementById('admin-gestio-desc').textContent = "Aquesta pantalla és per gestionar en directe els punts dels entrenaments.";
+                        document.getElementById('admin-gestio-desc').textContent = "Aquesta pantalla és per gestionar en directe els punts dels entrenaments i les multes.";
                         document.getElementById('admin-card-cartellera').style.display = 'none';
                         document.getElementById('admin-card-aniversaris').style.display = 'none';
                         document.getElementById('admin-card-lock').style.display = 'none';
-                        document.getElementById('admin-card-multes').style.display = 'none';
                         document.getElementById('admin-card-resultats').style.display = 'none';
                     }
                 }

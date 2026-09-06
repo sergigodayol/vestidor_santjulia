@@ -557,6 +557,17 @@
                     <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
                 </div>
                 
+                <div id="admin-card-mvp" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Control de Votació MVP</p>
+                    <p style="color:#94a3b8; font-size:0.8rem; margin-top:-0.6rem; margin-bottom:1rem;">Independent de la quiniela. Escriu una etiqueta (Ex: "Jornada 12" o "Amistós Platja d'Aro") i obre la votació quan vulguis.</p>
+                    <input type="text" id="admin-mvp-etiqueta" class="input-admin-multa" placeholder="Etiqueta del partit (Ex: Amistós Platja d'Aro)">
+                    <div style="display:flex; gap: 10px; justify-content: center; margin-bottom: 0.8rem;">
+                        <button onclick="cambiarEstadoMVP(true)" style="flex:1; padding: 0.6rem 1rem; background: var(--success); color: #06280f; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔓 Obrir Votacions</button>
+                        <button onclick="cambiarEstadoMVP(false)" style="flex:1; padding: 0.6rem 1rem; background: var(--danger); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔒 Tancar Votacions</button>
+                    </div>
+                    <p id="txt-estado-mvp-actual" style="font-size: 0.8rem; color: var(--warning); margin: 0; text-align:center;">Carregant estat...</p>
+                </div>
+
                 <div id="admin-card-multes" class="card" style="margin-bottom: 1.2rem;">
                     <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> Sancionar Jugador</p>
                     
@@ -631,6 +642,8 @@
         let numeroJornadaGlobal = 1;
         let dadesPerfilsMapejades = {}; 
         let cacheHistoricaRafagues = {}; 
+        let etiquetaMvpActiva = '';
+        let mvpBloquejat = true;
 
         async function inicializarDashboard() {
             try {
@@ -666,6 +679,7 @@
 
             // Sense 'await' bloquejadors perquè l'App carregui de cop
             consultarEstadoCerrojo();
+            consultarEstadoMVP();
             calcularMotorDeRafagues().then(() => { cargarRanking(); });
             
             cargarRankingMVP(); 
@@ -859,12 +873,55 @@
             if(data) {
                 porraBloqueadaActualmente = data.bloqueado; numeroJornadaGlobal = data.jornada_activa || 1;
                 document.getElementById('txt-jornada-jugador-titulo').textContent = numeroJornadaGlobal; document.getElementById('txt-jornada-companys-titulo').textContent = numeroJornadaGlobal;
-                const divVotarMvp = document.getElementById('contenedor-votar-mvp'); const spanMvpTitulo = document.getElementById('txt-jornada-mvp-titulo');
-                if (numeroJornadaGlobal === 1) { if(divVotarMvp) divVotarMvp.innerHTML = `<h3>⭐ Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Les votacions de l'MVP començaran a la Jornada 2.</p>`; }
-                else { if(spanMvpTitulo) spanMvpTitulo.textContent = (numeroJornadaGlobal - 1); }
                 const spanAdmin = document.getElementById('txt-jornada-admin-evaluar'); if(spanAdmin) spanAdmin.textContent = numeroJornadaGlobal;
                 const inputManual = document.getElementById('admin-establecer-jornada-input'); if(inputManual) inputManual.value = numeroJornadaGlobal;
                 const txt = document.getElementById('txt-estado-actual'); if(txt) { txt.textContent = porraBloqueadaActualmente ? `Jornada ${numeroJornadaGlobal} | 🔒 TANCADA` : `Jornada ${numeroJornadaGlobal} | 🔓 OBERTA`; txt.style.color = porraBloqueadaActualmente ? "var(--danger)" : "var(--success)"; }
+            }
+        }
+
+        async function consultarEstadoMVP() {
+            const { data } = await clienteSupabase.from('estado_mvp').select('*').eq('id', 1).maybeSingle();
+            const spanMvpTitulo = document.getElementById('txt-jornada-mvp-titulo');
+            const divVotarMvp = document.getElementById('contenedor-votar-mvp');
+            const txtAdmin = document.getElementById('txt-estado-mvp-actual');
+            const inputEtiqueta = document.getElementById('admin-mvp-etiqueta');
+
+            if (!data || !data.etiqueta) {
+                etiquetaMvpActiva = '';
+                mvpBloquejat = true;
+                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>⭐ Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap votació d'MVP oberta.</p>`;
+                if (txtAdmin) { txtAdmin.textContent = 'Sense votació configurada.'; txtAdmin.style.color = 'var(--warning)'; }
+                return;
+            }
+
+            etiquetaMvpActiva = data.etiqueta;
+            mvpBloquejat = data.bloquejat;
+
+            if (spanMvpTitulo) spanMvpTitulo.textContent = etiquetaMvpActiva;
+            if (inputEtiqueta) inputEtiqueta.value = etiquetaMvpActiva;
+
+            if (mvpBloquejat) {
+                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>⭐ Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Les votacions per a <strong>${etiquetaMvpActiva}</strong> estan tancades ara mateix.</p>`;
+            }
+
+            if (txtAdmin) {
+                txtAdmin.textContent = mvpBloquejat ? `🔒 Tancat — "${etiquetaMvpActiva}"` : `🔓 Obert — "${etiquetaMvpActiva}"`;
+                txtAdmin.style.color = mvpBloquejat ? 'var(--danger)' : 'var(--success)';
+            }
+        }
+
+        async function cambiarEstadoMVP(obrir) {
+            let etiqueta = document.getElementById('admin-mvp-etiqueta').value.trim();
+            if (obrir && !etiqueta) { alert('Escriu una etiqueta abans d\'obrir les votacions (Ex: "Jornada 12" o "Amistós Platja d\'Aro").'); return; }
+            if (!etiqueta) etiqueta = etiquetaMvpActiva;
+
+            const { error } = await clienteSupabase.from('estado_mvp').upsert({ id: 1, etiqueta: etiqueta, bloquejat: !obrir });
+
+            if (error) {
+                alert("⚠️ Error de Supabase: " + error.message);
+            } else {
+                alert(obrir ? `¡Votacions MVP obertes per: ${etiqueta}! 🔓` : "¡Votacions MVP tancades! 🔒");
+                location.reload();
             }
         }
 
@@ -1226,19 +1283,20 @@
         }
 
         async function cargarVotMVPExistente() {
-            if(numeroJornadaGlobal === 1) return;
-            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
-            const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', jornadaAVotar).maybeSingle();
-            if(votFet) { if(selectMvp) selectMvp.value = votFet.nominat; if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a la Jornada ${jornadaAVotar}.`; msgMvp.style.display = 'block'; } }
+            const selectMvp = document.getElementById('select-nom-mvp');
+            if(!selectMvp || mvpBloquejat || !etiquetaMvpActiva) return;
+            const msgMvp = document.getElementById('msg-mvp-votacio');
+            const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', etiquetaMvpActiva).maybeSingle();
+            if(votFet) { if(selectMvp) selectMvp.value = votFet.nominat; if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a "${etiquetaMvpActiva}".`; msgMvp.style.display = 'block'; } }
         }
 
         async function guardarVotMVP() {
-            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp'); let jornadaAVotar = numeroJornadaGlobal - 1;
-            const { data: cerrojo = {} } = await clienteSupabase.from('estado_porra').select('*').eq('id', 1).single();
-            if(cerrojo && cerrojo.bloqueado) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 El termini de votació de l\'MVP està tancat.'; msgMvp.style.display = 'block'; return; }
+            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp');
+            if(!selectMvp) return;
+            if(mvpBloquejat || !etiquetaMvpActiva) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 Les votacions de l\'MVP estan tancades ara mateix.'; msgMvp.style.display = 'block'; return; }
             const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
             msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
-            const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: jornadaAVotar, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
+            const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: etiquetaMvpActiva, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
             if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
         }
 

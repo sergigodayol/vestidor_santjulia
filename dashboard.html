@@ -433,6 +433,11 @@
                 <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7Z"/><path d="M5 19h14"/></svg></span> Rànquing de Trofeus MVP de la Temporada</h3>
                 <div id="tabla-ranking-mvp">Carregant el rànquing d'MVPs...</div>
             </div>
+
+            <div class="card">
+                <h3><span class="card-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Historial de Guanyadors MVP</h3>
+                <div id="tabla-historial-mvp">Carregant l'historial...</div>
+            </div>
         </div>
 
         <div id="tab-entrenos" class="tab-content">
@@ -1253,33 +1258,71 @@
             const { data: totsElsVots, error } = await clienteSupabase.from('vots_mvp').select('*');
             const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); 
             const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
+            const historialMvpEl = document.getElementById('tabla-historial-mvp');
             let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
-            if(error || !totsElsVots || totsElsVots.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
+            if(error || !totsElsVots || totsElsVots.length === 0) { 
+                if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; 
+                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; 
+                if(historialMvpEl) historialMvpEl.innerHTML = textoNoMvp;
+                return; 
+            }
             
             let votsPerJornada = {};
-            totsElsVots.forEach(v => { let jor = v.jornada; let nom = v.nominat.trim(); if(nom) { if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; } });
+            let minIdPerJornada = {};
+            totsElsVots.forEach(v => { 
+                let jor = v.jornada; let nom = v.nominat.trim(); 
+                if(nom) { 
+                    if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; 
+                    votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; 
+                    if (minIdPerJornada[jor] === undefined || v.id < minIdPerJornada[jor]) minIdPerJornada[jor] = v.id;
+                } 
+            });
             
             let palmaresTrofeus = {};
+            let guanyadorsPerJornada = {};
             Object.keys(votsPerJornada).forEach(jor => {
                 let votsDeLaSetmana = votsPerJornada[jor]; let maximVots = 0; let guanyadorsSetmana = [];
                 Object.keys(votsDeLaSetmana).forEach(nom => { if (votsDeLaSetmana[nom] > maximVots) { maximVots = votsDeLaSetmana[nom]; guanyadorsSetmana = [nom]; } else if (votsDeLaSetmana[nom] === maximVots) { guanyadorsSetmana.push(nom); } });
                 guanyadorsSetmana.forEach(guanyador => { palmaresTrofeus[guanyador] = (palmaresTrofeus[guanyador] || 0) + 1; });
+                guanyadorsPerJornada[jor] = guanyadorsSetmana;
             });
             
             let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
-            if(llistaPalmares.length === 0) { if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; return; }
-            
-            let htmlInicio = '';
-            let htmlFull = '';
-            
-            llistaPalmares.forEach((mvp, index) => { 
-                let fila = generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); 
-                htmlFull += fila;
-                if(index < 3) htmlInicio += fila;
-            });
-            
-            if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
-            if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
+            if(llistaPalmares.length === 0) { 
+                if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; 
+                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; 
+            } else {
+                let htmlInicio = '';
+                let htmlFull = '';
+                llistaPalmares.forEach((mvp, index) => { 
+                    let fila = generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); 
+                    htmlFull += fila;
+                    if(index < 3) htmlInicio += fila;
+                });
+                if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
+                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
+            }
+
+            if (historialMvpEl) {
+                let jornadesOrdenades = Object.keys(guanyadorsPerJornada).sort((a, b) => (minIdPerJornada[b] || 0) - (minIdPerJornada[a] || 0));
+                if (jornadesOrdenades.length === 0) {
+                    historialMvpEl.innerHTML = textoNoMvp;
+                } else {
+                    let htmlHistorial = '';
+                    jornadesOrdenades.forEach(jor => {
+                        let nomsGuanyadors = guanyadorsPerJornada[jor].map(nom => {
+                            let avatarHTML = getAvatar(nom, 26);
+                            return `<span style="display:inline-flex; align-items:center; gap:6px;">${avatarHTML}<strong>${nom}</strong></span>`;
+                        }).join(' i ');
+                        htmlHistorial += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding: 0.75rem 0; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+                                <span style="display:flex; align-items:center; gap:8px; font-size:0.95rem;">🏆 ${nomsGuanyadors}</span>
+                                <span style="color:var(--warning); font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.3px;">${jor}</span>
+                            </div>`;
+                    });
+                    historialMvpEl.innerHTML = htmlHistorial;
+                }
+            }
         }
 
         async function cargarVotMVPExistente() {

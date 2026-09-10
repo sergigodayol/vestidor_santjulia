@@ -2,175 +2,1803 @@
 <html lang="ca">
 <head>
     <meta charset="UTF-8">
-    <link rel="manifest" href="manifest.json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accés Vestidor - CF Sant Julià</title>
+    <title>Vestidor - CF Sant Julià</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vestidor CFSJ">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#060c18">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="escut.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #111827;
-            color: #f9fafb;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .login-card {
-            background-color: #1f2937;
-            padding: 2.5rem 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-            border: 1px solid #374151;
-        }
-        h2 { margin-top: 0; margin-bottom: 0.5rem; font-size: 1.5rem; }
-        p { color: #9ca3af; font-size: 0.85rem; margin-bottom: 2rem; }
-        
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            background-color: #111827;
-            border: 1px solid #374151;
-            border-radius: 8px;
-            color: white;
-            font-size: 0.95rem;
-            box-sizing: border-box;
-        }
-        input:focus { outline: none; border-color: #3b82f6; }
-        
-        .btn-primario {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 1rem;
-            transition: background 0.2s;
-        }
-        .btn-primario:hover { background-color: #2563eb; }
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
-        .btn-secundario {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: transparent;
-            color: #10b981;
-            border: 1px solid #10b981;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
+        :root {
+            /* Tema CF Sant Julià — "Marcador de partit": blau marí + daurat */
+            --primary: #2f6fed;
+            --primary-deep: #1c4bb8;
+            --primary-glow: rgba(47, 111, 237, 0.35);
+            --bg: #060c18;
+            --surface: rgba(13, 27, 48, 0.94);
+            --surface-hover: rgba(22, 48, 90, 0.95);
+            --text: #f4f6fa;
+            --text-muted: #8fa1bd;
+            --border: rgba(255, 255, 255, 0.10);
+            --border-strong: rgba(255, 255, 255, 0.18);
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #e3b23c; /* daurat — trofeus, preus, èmfasi */
+            --gold: #e3b23c;
+            --info: #38bdf8;
+            --purple: #8b6cf6;
         }
-        .btn-secundario:hover { background-color: rgba(16, 185, 129, 0.1); }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding-bottom: 110px; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- CLASSE PER A LES FOTOS DE PERFIL --- */
+        .avatar-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            background-color: var(--surface);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
         
-        #mensaje { margin-top: 1.5rem; font-size: 0.9rem; font-weight: bold; text-align: center; }
+        header { 
+            background: rgba(7, 14, 27, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 1.1rem 1.2rem; 
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6);
+        }
+        .header-logo { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+        .header-text { text-align: left; }
+        header h1 { 
+            margin: 0; 
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.15rem; 
+            font-weight: 600; 
+            letter-spacing: 0.3px; 
+            text-transform: uppercase;
+            color: var(--text);
+        }
+        .eyebrow {
+            display: inline-block;
+            margin-top: 5px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 1.1px;
+            text-transform: uppercase;
+            color: var(--gold);
+            padding: 3px 9px;
+            border: 1px solid rgba(227, 178, 60, 0.35);
+            background: rgba(227, 178, 60, 0.08);
+            border-radius: 5px;
+        }
+        
+        .container { padding: 1.2rem; max-width: 800px; margin: 0 auto; }
+
+        .card { 
+            position: relative;
+            background: var(--surface); 
+            border-radius: 14px; 
+            padding: 1.4rem; 
+            margin-bottom: 1rem; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 24px -16px rgba(0,0,0,0.6);
+        }
+        .card h3 { 
+            margin: 0 0 1.2rem 0; 
+            padding: 0;
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.92rem; 
+            font-weight: 600; 
+            letter-spacing: 0.4px; 
+            text-transform: uppercase;
+            color: var(--text);
+        }
+
+        .card-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            flex-shrink: 0;
+        }
+        .card-icon svg { width: 17px; height: 17px; }
+        .card-icon-sm { width: 25px; height: 25px; border-radius: 7px; }
+        .card-icon-sm svg { width: 13px; height: 13px; }
+        .icon-blue { background: rgba(47, 111, 237, 0.14); color: #6c9bff; }
+        .icon-gold { background: rgba(227, 178, 60, 0.14); color: var(--gold); }
+        .icon-danger { background: rgba(239, 68, 68, 0.14); color: #ff8080; }
+        .icon-success { background: rgba(34, 197, 94, 0.14); color: #5fe0a0; }
+        .icon-info { background: rgba(56, 189, 248, 0.14); color: #7fd8fb; }
+        .icon-purple { background: rgba(139, 108, 246, 0.14); color: #b0a0fc; }
+
+        .card-hero {
+            border-top: 3px solid var(--gold);
+        }
+
+        .tab-content { display: none; opacity: 0; }
+        .tab-content.active { 
+            display: block; 
+            animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .grid-rankings { display: grid; grid-template-columns: 1fr; gap: 1.1rem; }
+        @media(min-width: 650px) { .grid-rankings { grid-template-columns: 1fr 1fr; } }
+
+        .sub-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 1.4rem; padding: 4px; background: rgba(0,0,0,0.28); border: 1px solid var(--border); border-radius: 12px; }
+        .sub-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.65rem 0.5rem; cursor: pointer; font-family: 'Oswald', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; border-radius: 9px; transition: all 0.2s ease; text-align: center; }
+        .sub-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .sub-btn.active { color: #fff; background: var(--primary); box-shadow: 0 2px 10px var(--primary-glow); }
+
+        nav.bottom-nav { 
+            position: fixed; 
+            bottom: 14px; 
+            left: 8px; 
+            right: 8px; 
+            background: rgba(8, 16, 31, 0.97); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            display: flex; 
+            justify-content: space-between; 
+            border: 1px solid var(--border-strong); 
+            padding: 0.5rem 0.4rem; 
+            z-index: 100; 
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.45); 
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav-btn { 
+            background: none; 
+            border: none; 
+            color: #64748b; 
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.6rem; 
+            font-weight: 600; 
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            gap: 3px; 
+            flex: 1; 
+            padding: 0.4rem 0.1rem; 
+            border-radius: 10px;
+            transition: all 0.2s ease; 
+            position: relative; 
+        }
+        
+        .nav-btn.active { color: var(--primary); background: rgba(47, 111, 237, 0.14); }
+        .nav-btn svg { width: 19px; height: 19px; fill: currentColor; transition: transform 0.2s ease; }
+        .nav-btn.active svg { transform: scale(1.08); }
+
+        .partido-fila { display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
+        .partido-fila:last-child { border-bottom: none; }
+        .equipos { font-size: 0.88rem; font-weight: 600; width: 45%; color: #e2e8f0; }
+        .botones-1x2 { display: flex; gap: 6px; }
+        .btn-pronostico { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text-muted); padding: 0.5rem 0.8rem; border-radius: 9px; cursor: pointer; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 0.9rem; min-width: 40px; text-align: center; transition: all 0.15s ease; }
+        .btn-pronostico:active { transform: scale(0.92); }
+        .btn-pronostico.selected { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 0 3px rgba(47,111,237,0.25); }
+        
+        .marcador-exacte { display:flex; align-items:center; gap:8px; }
+        .input-marcador { width:48px; background: rgba(0,0,0,0.35); border:1px solid var(--border); color:var(--text); padding:0.5rem 0.4rem; border-radius:9px; text-align:center; font-family:'Oswald', sans-serif; font-weight:700; font-size:1rem; }
+        .input-marcador:focus { outline:none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(227,178,60,0.25); }
+        .separador-marcador { font-weight:800; color: var(--text-muted); font-family:'Oswald', sans-serif; }
+        
+        .ranking-item { display: flex; flex-direction: column; padding: 0.95rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
+        .ranking-item:hover { background: rgba(255,255,255,0.02); border-radius: 10px; padding-left: 8px; padding-right: 8px; margin-left: -8px; margin-right: -8px; }
+        .ranking-item:last-child { border-bottom: none; }
+        .ranking-fila-principal { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .player-info { display: flex; align-items: center; gap: 12px; }
+        .medalla { 
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem; 
+            min-width: 28px;
+            height: 28px;
+            padding: 0 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        
+        .contenedor-rafaga { display: flex; gap: 6px; margin-top: 6px; margin-left: 42px; align-items: center; }
+        .circulo-rafaga { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .circulo-verd { background: var(--success); box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); }
+        .circulo-grog { background: var(--warning); box-shadow: 0 0 8px rgba(227, 178, 60, 0.6); }
+        .circulo-vermell { background: var(--danger); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+        
+        .bote-total { text-align: center; font-family: 'Oswald', sans-serif; font-size: 2.7rem; font-weight: 700; color: var(--danger); margin-top: 0.4rem; letter-spacing: -0.5px; }
+        .multa-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px dashed var(--border); font-size: 0.95rem; }
+        .multa-item:last-child { border-bottom: none; }
+
+        .tarifario-lista { display: flex; flex-direction: column; gap: 8px; }
+        .tarifa-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0.75rem 0.9rem; background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-radius: 10px; transition: background 0.2s; }
+        .tarifa-item:hover { background: rgba(0,0,0,0.32); }
+        .tarifa-concepto { font-size: 0.85rem; font-weight: 500; color: #e2e8f0; line-height: 1.35; }
+        .tarifa-concepto em { color: var(--text-muted); font-style: normal; font-weight: 400; }
+        .tarifa-precio { flex-shrink: 0; background: rgba(227, 178, 60, 0.12); color: var(--gold); border: 1px solid rgba(227, 178, 60, 0.32); font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 0.9rem; padding: 5px 12px; border-radius: 7px; white-space: nowrap; }
+        .btn-eliminar-multa { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.9rem; cursor: pointer; padding: 4px 10px; margin-left: 10px; border-radius: 6px; transition: all 0.2s; }
+        .btn-eliminar-multa:hover { background: var(--danger); color: white; }
+
+        .btn-cta {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        .btn-cta:active { transform: scale(0.98); }
+        .btn-cta-primary { background: linear-gradient(135deg, #3b82f6, var(--primary-deep)); color: #fff; box-shadow: 0 10px 24px -8px rgba(47,111,237,0.55); }
+        .btn-cta-gold { background: linear-gradient(135deg, #f0c766, var(--gold)); color: #1a1305; box-shadow: 0 10px 24px -8px rgba(227,178,60,0.45); }
+        .btn-cta-success { background: linear-gradient(135deg, #34d67f, var(--success)); color: #06280f; box-shadow: 0 10px 24px -8px rgba(34,197,94,0.4); }
+
+        input.input-jornada { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 9px; width: 65px; text-align: center; font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-weight: 700; }
+        input.input-text-mvp, select.select-text-mvp, .input-admin-multa { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); padding: 0.85rem; border-radius: 10px; width: 100%; box-sizing: border-box; font-size: 0.95rem; margin-bottom: 1rem; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; }
+        input.input-text-mvp:focus, select.select-text-mvp:focus, .input-admin-multa:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); background: rgba(0,0,0,0.5); }
+        
+        .table-wrapper { overflow-x: auto; position: relative; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.18); }
+        table { width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        th { padding: 12px 8px; font-family: 'Oswald', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+        td { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h2>Vestidor Digital</h2>
-        <p>CF Sant Julià - Temporada 26/27</p>
-
-        <!-- CAMPS D'ACCÉS -->
-        <input type="email" id="email" placeholder="Correu electrònic">
-        <input type="password" id="password" placeholder="Contrasenya">
-        
-        <!-- CAMPO NUEVO VISIBLE SÓLO PARA EL REGISTRO -->
-        <div id="seccio-nom-real" style="display: none; border-top: 1px dashed #4b5563; margin-top: 1rem; padding-top: 1rem;">
-            <p style="margin-bottom: 0.5rem; color:#10b981;">⚠️ Requisit nou de la lliga:</p>
-            <input type="text" id="nom_real" placeholder="Nom i Cognom Real (Ex: Sergi Godayol)">
+    <header>
+        <img src="escut.png" alt="Escut CF Sant Julià" class="header-logo" onerror="this.style.display='none'">
+        <div class="header-text" style="display:flex; align-items:center; gap:10px;">
+            <span id="avatar-usuario-header"></span>
+            <div>
+                <h1 id="saludo-usuario">Carregant el vestidor...</h1>
+                <p class="eyebrow">CF Sant Julià - Temporada 26/27</p>
+            </div>
         </div>
-        
-        <!-- BOTONS D'ACCIÓ -->
-        <button class="btn-primario" id="btn-entrar" onclick="iniciarSesion()">Entrar al Vestidor</button>
-        <button class="btn-secundario" id="btn-registrar-mode" onclick="activarModoRegistro()">Registrar-se com a nou jugador</button>
+    </header>
 
-        <p id="mensaje" style="display:none;"></p>
-    </div>
+    <div class="container">
+        
+        <div id="card-completar-perfil" class="card" style="display:none; border:2px dashed var(--warning); background-color: rgba(245, 158, 11, 0.03);">
+            <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Configura el teu Perfil</h3>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-top:-0.5rem;">Per sortir correctament al rànquing oficial del vestidor, escriu el teu Nom i Cognom:</p>
+            <input type="text" id="input-migracion-nom" class="input-text-mvp" style="border-color:var(--warning);" placeholder="Ex: Sergi Godayol">
+            <button onclick="guardarNombreMigracion()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.8rem;">Assignar Nom Oficial</button>
+        </div>
+
+        <div id="tab-inicio" class="tab-content active">
+            <div class="card card-hero" style="text-align: center; padding: 1.6rem 1.4rem;">
+                <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Pròxim Partit Oficial</span>
+                <h2 id="txt-partido-cartel" style="margin: 8px 0; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; color:#fff;">-</h2>
+                <p id="txt-partido-detalles" style="margin: 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
+            </div>
+
+            <div class="card">
+                <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11"/><path d="M3 21h18"/><path d="M5 14c1-1 2-1 3 0s2 1 3 0 2-1 3 0 2 1 3 0 2-1 3 0"/></svg></span> Properes Pastes</h3>
+                <div id="lista-aniversarios-inicio" style="font-size: 0.95rem;">Carregant el calendari de pastes...</div>
+            </div>
+
+            <div class="grid-rankings">
+                <div class="card">
+                    <h3><span class="card-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h2a2 2 0 0 1 2 2v1a3 3 0 0 1-3 3h-1"/><path d="M7 5H5a2 2 0 0 0-2 2v1a3 3 0 0 0 3 3h1"/></svg></span> Top 3 Quiniela</h3>
+                    <div id="tabla-ranking">Carregant la classificació...</div>
+                </div>
+
+                <div class="card">
+                    <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7Z"/><path d="M5 19h14"/></svg></span> Top 3 MVPs</h3>
+                    <div id="tabla-ranking-mvp-inicio">Carregant els MVPs de la temporada...</div>
+                </div>
+
+                <div class="card">
+                    <h3><span class="card-icon icon-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Top 3 Entrenos</h3>
+                    <div id="tabla-ranking-entrenos-inicio">Carregant la lliga d'entrenaments...</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1rem; text-align: center;">
+                <h3 style="justify-content: center;"><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M17.5 5.5a7 7 0 1 0 0 13"/></svg></span> Total multes</h3>
+                <div class="bote-total" id="resumen-multas" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
+            </div>
+        </div>
+
+        <div id="tab-quiniela" class="tab-content">
+            <div class="sub-tabs">
+                <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">🎯 Pronòstics</button>
+                <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking();">📈 Rànquing</button>
+                <button class="sub-btn" onclick="cambiarSubTab('companys', this); cargarQuinielasCompanys();">👀 Vestidor</button>
+                <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">📂 Històric</button>
+            </div>
+
+            <div id="sub-jornada" class="sub-tab-content">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                        <h3><span class="card-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg></span> Pronòstics</h3>
+                        <div style="background: #111827; padding: 0.5rem 0.9rem; border-radius: 10px; border: 1px solid var(--border);">
+                            <span style="font-size:0.8rem; color:#94a3b8; font-weight:600;">Jornada Activa:</span>
+                            <span id="txt-jornada-jugador-titulo" style="font-weight:800; color:var(--primary); margin-left:5px;">-</span>
+                        </div>
+                    </div>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Marca el resultat de cada partit. El <strong style="color:var(--gold);">Partit 10 és de resultat exacte</strong> i val més punts si l'encertes!</p>
+                    
+                    <div id="lista-partidos">
+                        <script>
+                            for(let i=1; i<=10; i++) {
+                                if (i === 10) {
+                                    document.write(`
+                                        <div class="partido-fila" data-partido="p10">
+                                            <span class="equipos">Partit 10 <span style="display:block; color:var(--gold); font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span></span>
+                                            <div class="marcador-exacte">
+                                                <input type="number" min="0" max="20" class="input-marcador" id="p10-local" oninput="marcarExacte()">
+                                                <span class="separador-marcador">-</span>
+                                                <input type="number" min="0" max="20" class="input-marcador" id="p10-visitant" oninput="marcarExacte()">
+                                            </div>
+                                        </div>
+                                    `);
+                                } else {
+                                    document.write(`
+                                        <div class="partido-fila" data-partido="p${i}">
+                                            <span class="equipos">Partit ${i}</span>
+                                            <div class="botones-1x2">
+                                                <button class="btn-pronostico" onclick="marcar(this, '1')">1</button>
+                                                <button class="btn-pronostico" onclick="marcar(this, 'X')">X</button>
+                                                <button class="btn-pronostico" onclick="marcar(this, '2')">2</button>
+                                            </div>
+                                        </div>
+                                    `);
+                                }
+                            }
+                        </script>
+                    </div>
+                    <button id="btn-guardar-porra" onclick="guardarQuiniela()" class="btn-cta btn-cta-success" style="margin-top: 2rem; width: 100%; padding: 0.95rem; font-size: 0.95rem;">
+                        Desar la Quiniela
+                    </button>
+                    <p id="msg-quiniela" style="text-align:center; display:none; margin-top: 1rem; font-weight: bold;"></p>
+                </div>
+            </div>
+
+            <div id="sub-ranking-intern" class="sub-tab-content" style="display:none;">
+                <div class="card">
+                    <h3><span class="card-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Classificació de la Quiniela</h3>
+                    <div id="tabla-ranking-quiniela-pestana">Carregant la lliga de la porra...</div>
+                </div>
+            </div>
+
+            <div id="sub-companys" class="sub-tab-content" style="display:none;">
+                <div class="card">
+                    <h3><span class="card-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span> Bitllets de la Jornada <span id="txt-jornada-companys-titulo" style="color:var(--primary)">-</span></h3>
+                    <div id="lista-quinielas-companys">Carregant bitllets de l'equip...</div>
+                </div>
+            </div>
+
+            <div id="sub-historial" class="sub-tab-content" style="display:none;">
+                <div class="card">
+                    <h3><span class="card-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg></span> Els teus bitllets desats</h3>
+                    <div id="lista-historial">Carregant el teu històric...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-mvp" class="tab-content">
+            <div id="contenedor-votar-mvp" class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Vota l'MVP de la Jornada <span id="txt-jornada-mvp-titulo" style="color:var(--warning)">-</span></h3>
+                </div>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.2rem; margin-top:-0.5rem;">Selecciona a la llista el company que creus que ha estat el millor del partit passat.</p>
+                
+                <select id="select-nom-mvp" class="select-text-mvp">
+                    <option value="">-- Tria un jugador registrat --</option>
+                </select>
+
+                <button onclick="guardarVotMVP()" class="btn-cta btn-cta-gold" style="width: 100%; padding: 0.85rem;">
+                    Enviar el meu vot MVP
+                </button>
+                <p id="msg-mvp-votacio" style="text-align:center; display:none; margin-top: 1rem; font-weight: bold;"></p>
+            </div>
+
+            <div class="card">
+                <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7Z"/><path d="M5 19h14"/></svg></span> Rànquing de Trofeus MVP de la Temporada</h3>
+                <div id="tabla-ranking-mvp">Carregant el rànquing d'MVPs...</div>
+            </div>
+
+            <div class="card">
+                <h3><span class="card-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Historial de Guanyadors MVP</h3>
+                <div id="tabla-historial-mvp">Carregant l'historial...</div>
+            </div>
+        </div>
+
+        <div id="tab-entrenos" class="tab-content">
+            <div class="card">
+                <h3><span class="card-icon icon-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Lliga d'Entrenaments (Global)</h3>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Classificació global de punts d'entreno.</p>
+                <div id="tabla-ranking-entrenos-full">Carregant el rànquing complet...</div>
+            </div>
+        </div>
+
+        <div id="tab-stats" class="tab-content">
+            <div class="sub-tabs" style="display: flex;">
+                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)" style="flex-grow: 1;">🏆 Lliga (T 26-27)</button>
+                <button class="sub-btn" onclick="cambiarSubTabStats('historic', this)" style="flex-grow: 1;">📂 Globals Històrics</button>
+            </div>
+
+            <div id="sub-lliga" class="sub-tab-content-stats">
+                <div class="card">
+                    <h3><span class="card-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span> Estadístiques Oficials - Temporada 26/27</h3>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Dades generals obtingudes directament del sistema de control de l'equip.</p>
+                    <div id="tabla-stats-lliga">Carregant estadístiques des de Google Sheets...</div>
+                </div>
+            </div>
+
+            <div id="sub-historic" class="sub-tab-content-stats" style="display:none;">
+                <div class="card">
+                    <h3><span class="card-icon icon-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg></span> Històric Acumulat del Vestidor</h3>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Trajectòria global filtrada exclusivament per als membres actius de la plantilla actual.</p>
+                    <div id="tabla-stats-historic">Carregant historial des de Google Sheets...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-multas" class="tab-content">
+            <div class="card">
+                <h3><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M17.5 5.5a7 7 0 1 0 0 13"/></svg></span> Pot de Multes Pendents</h3>
+                <div class="bote-total" id="total-bote" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
+            </div>
+
+            <div class="card">
+                <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Llista de Sancions</h3>
+                <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.2rem; margin-top:-0.5rem;">Consulta aquí les multes vigents al vestidor.</p>
+                <div class="tarifario-lista">
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">⏰ Arribar tard a un entreno sense avisar <em>(a partir de les 19:46)</em></span>
+                        <span class="tarifa-precio">5 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">⏰ Arribar tard a una convocatòria sense avisar</span>
+                        <span class="tarifa-precio">5 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">🚫 No presentar-se a un entreno sense avisar</span>
+                        <span class="tarifa-precio">10 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">⚽ Posar-se a xutar entre exercicis en un entreno</span>
+                        <span class="tarifa-precio">1 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">👕 Arribar al partit sense la vestimenta de l'equip</span>
+                        <span class="tarifa-precio">3 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">🟨 Targeta groga evitable <em>(protestar, encarar-se amb el rival...)</em></span>
+                        <span class="tarifa-precio">3 €</span>
+                    </div>
+                    <div class="tarifa-item">
+                        <span class="tarifa-concepto">🟥 Targeta vermella evitable <em>(protestar, encarar-se amb el rival...)</em></span>
+                        <span class="tarifa-precio">10 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><path d="m9 14 2 2 4-4"/></svg></span> Llista de Sancions</h3>
+                <div id="lista-multas">Carregant les sancions...</div>
+            </div>
+        </div>
+
+        <div id="tab-gestio" class="tab-content">
+            <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.35); background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 45%), rgba(239, 68, 68, 0.04);">
+                <h3 id="admin-gestio-titol"><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span> Panell de Control Secret (Admin)</h3>
+                <p id="admin-gestio-desc" style="color: #94a3b8; font-size:0.85rem; margin-top:-0.5rem; margin-bottom:1.5rem;">Aquesta pantalla només la pots veure tu, Sergi.</p>
+                
+                <div id="admin-card-entrenos" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Sumar Punts d'Entreno</p>
+                    
+                    <select id="select-admin-entreno-nom" class="input-admin-multa" style="background: rgba(0,0,0,0.35); color: white;">
+                        <option value="">-- Selecciona el jugador (Equip Guanyador) --</option>
+                    </select>
+
+                    <button onclick="sumarPuntEntreno()" class="btn-cta" style="width:100%; padding:0.65rem; background-color:var(--info); color:#06222f;">Afegir +1 Punt</button>
+                    <p id="msg-admin-entreno" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
+                </div>
+
+                <div id="admin-card-cartellera" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Cartellera: Pròxim Partit</p>
+                    <input type="text" id="admin-input-partido-nombre" class="input-admin-multa" placeholder="Rival (Ex: CF Sant Julià - UD Taradell)">
+                    <input type="text" id="admin-input-partido-detalles" class="input-admin-multa" placeholder="Horari i Lloc (Ex: Dissabte 16:00h | Municipal)">
+                    <button onclick="actualizarCartelPartido()" class="btn-cta btn-cta-primary" style="width:100%; padding:0.65rem;">Publicar al Panell d'Inici</button>
+                </div>
+
+                <div id="admin-card-aniversaris" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11"/><path d="M3 21h18"/><path d="M5 14c1-1 2-1 3 0s2 1 3 0 2-1 3 0 2 1 3 0 2-1 3 0"/></svg></span> Afegir Aniversari / Pastes</p>
+                    <input type="text" id="admin-aniversario-nom" class="input-admin-multa" placeholder="Nom complet del jugador">
+                    <input type="date" id="admin-aniversario-data" class="input-admin-multa">
+                    <button onclick="crearAniversarioManual()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.65rem;">Registrar Aniversari</button>
+                </div>
+
+                <div id="admin-card-lock" class="card" style="text-align: center; margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; justify-content:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span> Control d'Admissió Setmanal</p>
+                    <div style="margin-bottom:1rem; font-size:0.9rem;">
+                        <span>Jornada actual: </span>
+                        <input type="number" id="admin-establecer-jornada-input" class="input-jornada" min="1">
+                        <button onclick="actualizarJornadaManual()" style="padding:0.4rem 0.8rem; background:var(--primary); color:white; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:bold; margin-left:5px;">Assignar</button>
+                    </div>
+                    <div style="display:flex; gap: 10px; justify-content: center;">
+                        <button onclick="cambiarEstadoPorra(true)" style="padding: 0.6rem 1rem; background: var(--danger); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔒 Bloquejar Tancament</button>
+                        <button onclick="cambiarEstadoPorra(false)" style="padding: 0.6rem 1rem; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔓 Obrir Tot</button>
+                    </div>
+                    <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
+                </div>
+
+                <div id="admin-card-partits" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span> Partits de la Jornada <span id="txt-jornada-admin-partits" style="color:var(--primary)">-</span></p>
+                    <p style="color:#94a3b8; font-size:0.8rem; margin-top:-0.6rem; margin-bottom:1rem;">Escriu els 10 partits en ordre (Ex: "CF Sant Julià - UD Taradell"). El Partit 10 sempre és de resultat exacte i val més punts.</p>
+                    <div id="admin-inputs-partits">
+                        <script>
+                            for (let i=1; i<=10; i++) {
+                                let etiqueta = (i === 10) ? `Partit 10 (resultat exacte)` : `Partit ${i}`;
+                                document.write(`<input type="text" id="admin-partit-nom-${i}" class="input-admin-multa" placeholder="${etiqueta}">`);
+                            }
+                        </script>
+                    </div>
+                    <button onclick="guardarPartitsJornada()" class="btn-cta btn-cta-primary" style="width:100%; padding:0.65rem; margin-top:0.2rem;">Desar Partits d'aquesta Jornada</button>
+                    <p id="msg-admin-partits" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
+                </div>
+                
+                <div id="admin-card-mvp" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Control de Votació MVP</p>
+                    <p style="color:#94a3b8; font-size:0.8rem; margin-top:-0.6rem; margin-bottom:1rem;">Independent de la quiniela. Escriu una etiqueta (Ex: "Jornada 12" o "Amistós Platja d'Aro") i obre la votació quan vulguis.</p>
+                    <input type="text" id="admin-mvp-etiqueta" class="input-admin-multa" placeholder="Etiqueta del partit (Ex: Amistós Platja d'Aro)">
+                    <div style="display:flex; gap: 10px; justify-content: center; margin-bottom: 0.8rem;">
+                        <button onclick="cambiarEstadoMVP(true)" style="flex:1; padding: 0.6rem 1rem; background: var(--success); color: #06280f; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔓 Obrir Votacions</button>
+                        <button onclick="cambiarEstadoMVP(false)" style="flex:1; padding: 0.6rem 1rem; background: var(--danger); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔒 Tancar Votacions</button>
+                    </div>
+                    <p id="txt-estado-mvp-actual" style="font-size: 0.8rem; color: var(--warning); margin: 0; text-align:center;">Carregant estat...</p>
+                </div>
+
+                <div id="admin-card-multes" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> Sancionar Jugador</p>
+                    
+                    <select id="select-admin-multa-nom" class="input-admin-multa" style="background: rgba(0,0,0,0.35); color: white;">
+                        <option value="">-- Selecciona el jugador culpable --</option>
+                    </select>
+
+                    <input type="text" id="multa-motiu" class="input-admin-multa" placeholder="Motiu de la multa (Ex: Arribar tard)">
+                    <input type="number" id="multa-import" class="input-admin-multa" placeholder="Import en euros (€) (Ex: 5)" min="1">
+                    <button onclick="crearMultaManual()" class="btn-cta" style="width:100%; padding:0.65rem; background-color:var(--danger); color:white;">Aplicar Sanció</button>
+                    <p id="msg-admin-multa" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
+                </div>
+                
+                <div id="admin-card-resultats" class="card">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span> Introduir Resultats Reals - Jornada <span id="txt-jornada-admin-evaluar" style="color:var(--danger)">-</span></p>
+                    <div id="lista-admin-partidos">
+                        <script>
+                            for(let i=1; i<=10; i++) {
+                                if (i === 10) {
+                                    document.write(`
+                                        <div class="partido-fila" data-admin-partido="p10">
+                                            <span class="equipos" style="font-size:0.85rem;">Partit 10 <span style="display:block; color:var(--gold); font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span></span>
+                                            <div class="marcador-exacte">
+                                                <input type="number" min="0" max="20" class="input-marcador" id="admin-p10-local" oninput="marcarExacteAdmin()">
+                                                <span class="separador-marcador">-</span>
+                                                <input type="number" min="0" max="20" class="input-marcador" id="admin-p10-visitant" oninput="marcarExacteAdmin()">
+                                            </div>
+                                        </div>
+                                    `);
+                                } else {
+                                    document.write(`
+                                        <div class="partido-fila" data-admin-partido="p${i}">
+                                            <span class="equipos" style="font-size:0.85rem;">Partit ${i}</span>
+                                            <div class="botones-1x2">
+                                                <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '1')">1</button>
+                                                <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, 'X')">X</button>
+                                                <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '2')">2</button>
+                                            </div>
+                                        </div>
+                                    `);
+                                }
+                            }
+                        </script>
+                    </div>
+                    <button onclick="guardarResultadosReales()" style="margin-top:1.5rem; width:100%; padding:0.8rem; background-color:var(--danger); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Calcular Punts i Avançar Setmana</button>
+                    <p id="msg-admin" style="text-align:center; display:none; font-weight:bold; margin-top: 1rem;"></p>
+                </div>
+            </div>
+        </div>
+
+
+    <nav class="bottom-nav" id="barra-navegacion-principal">
+        <button class="nav-btn active" onclick="cambiarPestaña('inicio', this)">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Inici
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('quiniela', this)">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Quiniela
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('mvp', this); cargarRankingMVP(); cargarVotMVPExistente();">
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> MVP
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('entrenos', this); cargarRankingEntrenosFull();">
+            <svg viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg> Entrenos
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('stats', this); cargarEstadisticas();">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg> Stats
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('multas', this)">
+            <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 0.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Multes
+        </button>
+    </nav>
 
     <script>
         const urlSupa = 'https://gfpnyxwjllljjxdcadfy.supabase.co';
         const keySupa = 'sb_publishable_F2oufPKZ4W3dkTbLGdGZBw_xDQ6UIxQ';
-        
+
         const clienteSupabase = window.supabase.createClient(urlSupa, keySupa, {
             auth: { storage: window.sessionStorage }
         });
 
-        let modoRegistroActivo = false;
+        let emailUsuario = '';
+        let pronosticosSeleccionados = {};
+        let resultadosRealesAdmin = {};
+        let porraBloqueadaActualmente = false;
+        let numeroJornadaGlobal = 1;
+        let dadesPerfilsMapejades = {}; 
+        let cacheHistoricaRafagues = {}; 
+        let etiquetaMvpActiva = '';
+        let mvpBloquejat = true;
+        let partitsPerJornada = {};
+        const PUNTS_BONUS_P10 = 3; // Punts que suma encertar el resultat exacte del Partit 10 (en lloc d'1)
 
-        function activarModoRegistro() {
-            modoRegistroActivo = true;
-            document.getElementById('seccio-nom-real').style.display = 'block';
-            document.getElementById('btn-entrar').textContent = 'Confirmar i Crear Compte';
-            document.getElementById('btn-entrar').setAttribute('onclick', 'registrarse()');
-            document.getElementById('btn-registrar-mode').style.display = 'none';
+        async function inicializarDashboard() {
+            try {
+                const { data: llistaPerfils } = await clienteSupabase.from('perfils').select('*').order('nom_real', { ascending: true });
+                const selectMvp = document.getElementById('select-nom-mvp');
+                const selectAdminMulta = document.getElementById('select-admin-multa-nom');
+                const selectAdminEntreno = document.getElementById('select-admin-entreno-nom');
+                
+                if(llistaPerfils) { 
+                    llistaPerfils.forEach(p => { 
+                        dadesPerfilsMapejades[p.id_jugador.trim().toLowerCase()] = p.nom_real; 
+                        if(selectMvp) {
+                            let opcio = document.createElement('option');
+                            opcio.value = p.nom_real.trim(); 
+                            opcio.textContent = p.nom_real;
+                            selectMvp.appendChild(opcio);
+                        }
+                        if(selectAdminMulta) {
+                            let opcioMulta = document.createElement('option');
+                            opcioMulta.value = p.nom_real.trim();
+                            opcioMulta.textContent = p.nom_real;
+                            selectAdminMulta.appendChild(opcioMulta);
+                        }
+                        if(selectAdminEntreno) {
+                            let opcioEntreno = document.createElement('option');
+                            opcioEntreno.value = p.nom_real.trim();
+                            opcioEntreno.textContent = p.nom_real;
+                            selectAdminEntreno.appendChild(opcioEntreno);
+                        }
+                    }); 
+                }
+            } catch(e) { console.error("Error perfils:", e); }
+
+            // Sense 'await' bloquejadors perquè l'App carregui de cop
+            Promise.all([consultarEstadoCerrojo(), carregarPartitsJornades()]).then(() => {
+                actualitzarNomsPartitsFormularis();
+            });
+            consultarEstadoMVP();
+            calcularMotorDeRafagues().then(() => { cargarRanking(); });
+            
+            cargarRankingMVP(); 
+            cargarRankingEntrenosInicio();
+            cargarMultas();
+            cargarCartelPartido(); 
+            cargarCalendariAniversaris();
+            verificarBoletoExistente();
+            cargarEstadisticas();
         }
 
-        // --- INICIAR SESSIÓ ---
-        async function iniciarSesion() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const msg = document.getElementById('mensaje');
+        async function guardarNombreMigracion() {
+            const nouNom = document.getElementById('input-migracion-nom').value.trim();
+            if(!nouNom) return;
+            await clienteSupabase.from('perfils').insert([{ id_jugador: emailUsuario, nom_real: nouNom }]);
+            location.reload();
+        }
 
-            if(!email || !password) {
-                msg.style.color = '#ef4444'; msg.textContent = "Introdueix el teu correu i contrasenya."; msg.style.display = 'block'; return;
+        async function calcularMotorDeRafagues() {
+            try {
+                const { data: reals } = await clienteSupabase.from('resultados_reales').select('*').order('jornada', { ascending: false });
+                const { data: quinieles } = await clienteSupabase.from('quinieles').select('*').neq('id_jugador', 'CARTEL');
+                if(!reals || reals.length === 0 || !quinieles || quinieles.length === 0) return;
+
+                let jornadesAValidar = reals.slice(0, 5).map(r => r.jornada);
+                quinieles.forEach(q => {
+                    let jor = q.jornada;
+                    if(jornadesAValidar.includes(jor)) {
+                        let jorReal = reals.find(r => r.jornada === jor);
+                        if(jorReal) {
+                            let encerts = 0;
+                            for(let i=1; i<=10; i++) { if(q[`p${i}`] && q[`p${i}`] === jorReal[`p${i}`]) encerts++; }
+                            let classeCercle = 'circulo-vermell';
+                            if(encerts >= 7) classeCercle = 'circulo-verd';
+                            else if(encerts >= 4 && encerts <= 6) classeCercle = 'circulo-grog';
+                            let userKey = q.id_jugador.trim().toLowerCase();
+                            if(!cacheHistoricaRafagues[userKey]) cacheHistoricaRafagues[userKey] = {};
+                            cacheHistoricaRafagues[userKey][jor] = `<span class="circulo-rafaga ${classeCercle}" title="Jornada ${jor}: ${encerts} encerts"></span>`;
+                        }
+                    }
+                });
+                Object.keys(cacheHistoricaRafagues).forEach(user => {
+                    let blocsJornada = cacheHistoricaRafagues[user]; let codiHTMLCerclets = '';
+                    let ordenades = Object.keys(blocsJornada).sort((a,b) => parseInt(a) - parseInt(b));
+                    ordenades.forEach(j => { codiHTMLCerclets += blocsJornada[j]; });
+                    cacheHistoricaRafagues[user] = codiHTMLCerclets;
+                });
+            } catch(e) { console.log(e); }
+        }
+
+       // Motor d'Avatars Intel·ligent
+        function getAvatar(nomJugador, mida) {
+            if (!nomJugador || nomJugador === '-') return '';
+            const alt = mida || 28;
+
+            // Treu accents/dièresis (Martí Solà -> marti sola) per no dependre de noms de fitxer amb tildes
+            const nomNormalitzat = nomJugador.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            // Converteix "Marti Sola" a "marti_sola.jpg"
+            const nomFitxer = nomNormalitzat.toLowerCase().replace(/\s+/g, '_') + '.jpg';
+            
+            // Si la foto no existeix, crea un cercle Blau i Blanc amb les inicials (Ex: "SE")
+            const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nomJugador)}&background=2563eb&color=fff&rounded=true&bold=true&size=128`;
+            
+            // Busca la foto a la carpeta "fotos". Si falla, carrega les inicials automàticament.
+            return `<img src="fotos/${nomFitxer}" onerror="this.onerror=null; this.src='${fallback}';" class="avatar-img" style="width:${alt}px; height:${alt}px;" alt="${nomJugador}">`;
+        }
+
+        function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
+            let correuNetejat = pos.id_jugador.trim().toLowerCase();
+            let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
+            
+            let medallaIcono = `${index + 1}.º`;
+            if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
+            
+            let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
+            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 70px;"><span style="font-size:0.7rem; color:#cbd5e1; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
+            
+            let avatarHTML = getAvatar(nomAMostrar); // Generem la foto
+            
+            return `
+            <div class="ranking-item">
+                <div class="ranking-fila-principal">
+                    <div class="player-info" style="display:flex; align-items:center; gap:10px;">
+                        <span class="medalla" style="width:25px;">${medallaIcono}</span> 
+                        ${avatarHTML} 
+                        <span style="font-weight: 700; color: var(--text); font-size: 1rem;">${nomAMostrar}</span>
+                    </div>
+                    <span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span>
+                </div>
+                ${mòdulFormatatRafaga}
+            </div>`;
+        }
+
+        async function cargarRanking() {
+            const { data: ranking, error } = await clienteSupabase.from('classificacio_quiniela').select('*').order('puntos_totales', { ascending: false });
+            const rankingEl = document.getElementById('tabla-ranking'); 
+            const rankingQuinielaPestanaEl = document.getElementById('tabla-ranking-quiniela-pestana');
+            if (error || !ranking || ranking.length === 0) { return; }
+            
+            let htmlInicio = '';
+            let htmlFull = '';
+            
+            ranking.forEach((pos, index) => { 
+                let fila = generarFilaRankingHTML({ id_jugador: pos.id_jugador, valor: pos.puntos_totales }, index, 'pts'); 
+                htmlFull += fila;
+                if(index < 3) htmlInicio += fila;
+            });
+            
+            if(rankingEl) rankingEl.innerHTML = htmlInicio; 
+            if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = htmlFull;
+        }
+
+        async function cargarRankingEntrenosInicio() {
+            const { data: ranking, error } = await clienteSupabase.from('punts_entreno').select('*').order('puntos_totales', { ascending: false }).limit(3);
+            const rankingEl = document.getElementById('tabla-ranking-entrenos-inicio');
+            if (error || !ranking || ranking.length === 0) { 
+                if(rankingEl) rankingEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha punts d\'entreno registrats.</p>'; 
+                return; 
+            }
+            let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.nom_jugador, valor: pos.puntos_totales }, index, 'pts', 'color:var(--info)'); });
+            if(rankingEl) rankingEl.innerHTML = html;
+        }
+
+        async function cargarRankingEntrenosFull() {
+            const { data: ranking, error } = await clienteSupabase.from('punts_entreno').select('*').order('puntos_totales', { ascending: false });
+            const rankingEl = document.getElementById('tabla-ranking-entrenos-full');
+            if (error || !ranking || ranking.length === 0) { 
+                if(rankingEl) rankingEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha punts d\'entreno registrats.</p>'; 
+                return; 
+            }
+            let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.nom_jugador, valor: pos.puntos_totales }, index, 'pts', 'color:var(--info)'); });
+            if(rankingEl) rankingEl.innerHTML = html;
+        }
+
+        async function sumarPuntEntreno() {
+            const nom = document.getElementById('select-admin-entreno-nom').value;
+            const msgEl = document.getElementById('msg-admin-entreno');
+            if(!nom) { msgEl.style.color='var(--danger)'; msgEl.textContent='Selecciona un jugador.'; msgEl.style.display='block'; return; }
+
+            const { data: filaRank } = await clienteSupabase.from('punts_entreno').select('*').eq('nom_jugador', nom).maybeSingle();
+            let puntsActuals = filaRank ? filaRank.puntos_totales : 0;
+
+            const { error } = await clienteSupabase.from('punts_entreno').upsert({ nom_jugador: nom, puntos_totales: puntsActuals + 1 }, { onConflict: 'nom_jugador' });
+
+            if(!error) {
+                msgEl.style.color = 'var(--success)';
+                msgEl.textContent = 'Punt afegit correctament! ✅';
+                msgEl.style.display = 'block';
+                document.getElementById('select-admin-entreno-nom').value = '';
+                cargarRankingEntrenosInicio();
+                if(document.getElementById('tab-entrenos').classList.contains('active')) {
+                    cargarRankingEntrenosFull();
+                }
+                setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
+            }
+        }
+
+        async function cargarCalendariAniversaris() {
+            const { data: llista, error } = await clienteSupabase.from('aniversaris').select('*');
+            const divAniversaris = document.getElementById('lista-aniversarios-inicio');
+            if(error || !llista || llista.length === 0) { divAniversaris.innerHTML = '<p style="color:#94a3b8; margin:0; font-size:0.9rem;">No hi ha cap aniversari registrat.</p>'; return; }
+            const avui = new Date(); const anyActual = avui.getFullYear();
+            let llistaProcessada = llista.map(aniv => {
+                let parts = aniv.data_naixement.split('-'); let mesAniv = parseInt(parts[1]) - 1; let diaAniv = parseInt(parts[2]);
+                let dataAnivAquestAny = new Date(anyActual, mesAniv, diaAniv);
+                if (dataAnivAquestAny < avui && dataAnivAquestAny.toDateString() !== avui.toDateString()) { dataAnivAquestAny.setFullYear(anyActual + 1); }
+                let diferenciaTemps = dataAnivAquestAny.getTime() - avui.getTime(); let diesRestants = Math.ceil(diferenciaTemps / (1000 * 60 * 60 * 24));
+                if (dataAnivAquestAny.toDateString() === avui.toDateString()) diesRestants = 0;
+                return { nom: aniv.nom_jugador, dia: diaAniv, mes: dataAnivAquestAny.toLocaleString('ca', { month: 'long' }), diesQueden: diesRestants };
+            });
+            llistaProcessada.sort((a, b) => a.diesQueden - b.diesQueden); let propersTres = llistaProcessada.slice(0, 3); let html = '';
+            propersTres.forEach(a => {
+                let avisPerill = ''; let estilText = 'color:#94a3b8;';
+                if (a.diesQueden === 0) { avisPerill = ' 🔥 <strong>AVUI PORTA LES PASTES!</strong>'; estilText = 'color:var(--danger); font-weight:bold;'; }
+                else if (a.diesQueden <= 7) { avisPerill = ' ⚠️ <strong>TOCA EL DIVENDRES!</strong>'; estilText = 'color:var(--warning); font-weight:bold;'; }
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 0; border-bottom:1px solid var(--border);"><span>🍰 <strong>${a.nom}</strong> (${a.dia} de ${a.mes})${avisPerill}</span><span style="${estilText}">${a.diesQueden === 0 ? 'Avui' : 'Queden ' + a.diesQueden + ' dies'}</span></div>`;
+            });
+            divAniversaris.innerHTML = html;
+        }
+
+        async function crearAniversarioManual() {
+            const nom = document.getElementById('admin-aniversario-nom').value.trim(); const dataA = document.getElementById('admin-aniversario-data').value;
+            if(!nom || !dataA) { alert("Omple el nom i data."); return; }
+            const { error } = await clienteSupabase.from('aniversaris').insert([{ nom_jugador: nom, data_naixement: dataA }]);
+            if(!error) { alert(`¡Aniversari de ${nom} afegit! 🎂`); location.reload(); }
+        }
+
+        async function carregarPartitsJornades() {
+            const { data } = await clienteSupabase.from('partits_jornada').select('*');
+            partitsPerJornada = {};
+            if (data) { data.forEach(fila => { partitsPerJornada[fila.jornada] = fila; }); }
+        }
+
+        function nomPartit(jornada, index) {
+            const fila = partitsPerJornada[jornada];
+            if (fila && fila[`nom_p${index}`] && fila[`nom_p${index}`].trim() !== '') return fila[`nom_p${index}`];
+            return `Partit ${index}`;
+        }
+
+        function actualitzarNomsPartitsFormularis() {
+            const spanTitolPartits = document.getElementById('txt-jornada-admin-partits');
+            if (spanTitolPartits) spanTitolPartits.textContent = numeroJornadaGlobal;
+
+            for (let i=1; i<=10; i++) {
+                const nom = nomPartit(numeroJornadaGlobal, i);
+                const esPersonalitzat = nom !== `Partit ${i}`;
+
+                const filaJugador = document.querySelector(`#lista-partidos [data-partido="p${i}"] .equipos`);
+                if (filaJugador) {
+                    if (i === 10) { filaJugador.innerHTML = `${nom} <span style="display:block; color:var(--gold); font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span>`; }
+                    else { filaJugador.textContent = nom; }
+                }
+
+                const filaAdmin = document.querySelector(`#lista-admin-partidos [data-admin-partido="p${i}"] .equipos`);
+                if (filaAdmin) {
+                    if (i === 10) { filaAdmin.innerHTML = `${nom} <span style="display:block; color:var(--gold); font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span>`; }
+                    else { filaAdmin.textContent = nom; }
+                }
+
+                const inputAdminNom = document.getElementById(`admin-partit-nom-${i}`);
+                if (inputAdminNom) { inputAdminNom.value = esPersonalitzat ? nom : ''; }
+            }
+        }
+
+        async function guardarPartitsJornada() {
+            const msgEl = document.getElementById('msg-admin-partits');
+            const dades = { jornada: numeroJornadaGlobal };
+            for (let i=1; i<=10; i++) {
+                const valor = document.getElementById(`admin-partit-nom-${i}`).value.trim();
+                dades[`nom_p${i}`] = valor || null;
+            }
+            const { error } = await clienteSupabase.from('partits_jornada').upsert(dades, { onConflict: 'jornada' });
+            if (error) {
+                msgEl.style.color = 'var(--danger)'; msgEl.textContent = '⚠️ Error: ' + error.message; msgEl.style.display = 'block';
+            } else {
+                msgEl.style.color = 'var(--success)'; msgEl.textContent = 'Partits desats correctament! ⚽'; msgEl.style.display = 'block';
+                await carregarPartitsJornades();
+                actualitzarNomsPartitsFormularis();
+                setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
+            }
+        }
+
+        async function consultarEstadoCerrojo() {
+            const { data } = await clienteSupabase.from('estado_porra').select('*').eq('id', 1).maybeSingle();
+            if(data) {
+                porraBloqueadaActualmente = data.bloqueado; numeroJornadaGlobal = data.jornada_activa || 1;
+                document.getElementById('txt-jornada-jugador-titulo').textContent = numeroJornadaGlobal; document.getElementById('txt-jornada-companys-titulo').textContent = numeroJornadaGlobal;
+                const spanAdmin = document.getElementById('txt-jornada-admin-evaluar'); if(spanAdmin) spanAdmin.textContent = numeroJornadaGlobal;
+                const inputManual = document.getElementById('admin-establecer-jornada-input'); if(inputManual) inputManual.value = numeroJornadaGlobal;
+                const txt = document.getElementById('txt-estado-actual'); if(txt) { txt.textContent = porraBloqueadaActualmente ? `Jornada ${numeroJornadaGlobal} | 🔒 TANCADA` : `Jornada ${numeroJornadaGlobal} | 🔓 OBERTA`; txt.style.color = porraBloqueadaActualmente ? "var(--danger)" : "var(--success)"; }
+            }
+        }
+
+        async function consultarEstadoMVP() {
+            const { data } = await clienteSupabase.from('estado_mvp').select('*').eq('id', 1).maybeSingle();
+            const spanMvpTitulo = document.getElementById('txt-jornada-mvp-titulo');
+            const divVotarMvp = document.getElementById('contenedor-votar-mvp');
+            const txtAdmin = document.getElementById('txt-estado-mvp-actual');
+            const inputEtiqueta = document.getElementById('admin-mvp-etiqueta');
+
+            if (!data || !data.etiqueta) {
+                etiquetaMvpActiva = '';
+                mvpBloquejat = true;
+                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>⭐ Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap votació d'MVP oberta.</p>`;
+                if (txtAdmin) { txtAdmin.textContent = 'Sense votació configurada.'; txtAdmin.style.color = 'var(--warning)'; }
+                return;
             }
 
-            const { data, error } = await clienteSupabase.auth.signInWithPassword({ email, password });
+            etiquetaMvpActiva = data.etiqueta;
+            mvpBloquejat = data.bloquejat;
+
+            if (spanMvpTitulo) spanMvpTitulo.textContent = etiquetaMvpActiva;
+            if (inputEtiqueta) inputEtiqueta.value = etiquetaMvpActiva;
+
+            if (mvpBloquejat) {
+                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>⭐ Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Les votacions per a <strong>${etiquetaMvpActiva}</strong> estan tancades ara mateix.</p>`;
+            }
+
+            if (txtAdmin) {
+                txtAdmin.textContent = mvpBloquejat ? `🔒 Tancat — "${etiquetaMvpActiva}"` : `🔓 Obert — "${etiquetaMvpActiva}"`;
+                txtAdmin.style.color = mvpBloquejat ? 'var(--danger)' : 'var(--success)';
+            }
+        }
+
+        async function cambiarEstadoMVP(obrir) {
+            let etiqueta = document.getElementById('admin-mvp-etiqueta').value.trim();
+            if (obrir && !etiqueta) { alert('Escriu una etiqueta abans d\'obrir les votacions (Ex: "Jornada 12" o "Amistós Platja d\'Aro").'); return; }
+            if (!etiqueta) etiqueta = etiquetaMvpActiva;
+
+            const { error } = await clienteSupabase.from('estado_mvp').upsert({ id: 1, etiqueta: etiqueta, bloquejat: !obrir });
 
             if (error) {
-                msg.style.color = '#ef4444'; msg.textContent = "Error: " + error.message; msg.style.display = 'block';
+                alert("⚠️ Error de Supabase: " + error.message);
             } else {
-                window.location.href = 'dashboard.html';
+                alert(obrir ? `¡Votacions MVP obertes per: ${etiqueta}! 🔓` : "¡Votacions MVP tancades! 🔒");
+                location.reload();
             }
         }
 
-        // --- REGISTRAR-SE AMB NOM REAL ---
-        async function registrarse() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const nomReal = document.getElementById('nom_real').value.trim();
-            const msg = document.getElementById('mensaje');
+        async function actualizarJornadaManual() {
+            const nuevaJor = parseInt(document.getElementById('admin-establecer-jornada-input').value);
+            if (isNaN(nuevaJor)) return;
 
-            if(!email || !password || !nomReal) {
-                msg.style.color = '#ef4444'; msg.textContent = "Omple tots els camps, inclòs el teu Nom i Cognom."; msg.style.display = 'block'; return;
+            const { error } = await clienteSupabase.from('estado_porra').upsert({ 
+                id: 1, 
+                jornada_activa: nuevaJor,
+                bloqueado: porraBloqueadaActualmente
+            });
+            
+            if (error) {
+                alert("⚠️ Error de Supabase: " + error.message);
+            } else {
+                alert(`Sistema configurat a la Jornada ${nuevaJor}`); 
+                location.reload();
+            }
+        }
+
+        async function cambiarEstadoPorra(nuevoEstado) {
+            const { error } = await clienteSupabase.from('estado_porra').upsert({ 
+                id: 1, 
+                bloqueado: nuevoEstado,
+                jornada_activa: numeroJornadaGlobal
+            });
+
+            if (error) {
+                alert("⚠️ Error de Supabase: " + error.message);
+            } else {
+                alert(nuevoEstado ? "¡Vestidor tancat! 🔒" : "¡Vestidor obert! 🔓"); 
+                location.reload();
+            }
+        }
+
+        async function cargarCartelPartido() {
+            const { data } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', 'CARTEL').eq('jornada', 99).maybeSingle();
+            if (data) { 
+                document.getElementById('txt-partido-cartel').textContent = data.p1 || "CF Sant Julià"; 
+                document.getElementById('txt-partido-detalles').textContent = data.p2 || "Consulta l'horari amb el delegat."; 
+                
+                obtenerStatsRivalHistorial(data.p1);
+            }
+        }
+
+        async function obtenerStatsRivalHistorial(partidoTexto) {
+            if (!partidoTexto) return;
+            
+            let rivalNet = partidoTexto.replace(/CF Sant Julià/gi, "").replace("-", "").trim().toUpperCase();
+            if (!rivalNet || rivalNet === "") return;
+
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const urlRivals = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=RIVALS%20(GLOBALS)`;
+
+            try {
+                const res = await fetch(urlRivals);
+                const csv = await res.text();
+                const dadesRivals = parsearCSV(csv);
+                if (dadesRivals.length === 0) return;
+
+                const headers = dadesRivals[0].map(h => h.trim().toUpperCase());
+                const idxRival = headers.indexOf('RESULTATS HISTÒRICS');
+                const idxPJ = headers.indexOf('PARTITS JUGATS');
+                const idxV = headers.indexOf('VICTÒRIES');
+                const idxE = headers.indexOf('EMPATS');
+                const idxD = headers.indexOf('DERROTES');
+                const idxGF = headers.indexOf('GOLS A FAVOR');
+                const idxGC = headers.indexOf('GOLS EN CONTRA');
+
+                let filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && fila[idxRival].trim().toUpperCase() === rivalNet);
+                
+                if (!filaRival) {
+                    filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && (fila[idxRival].trim().toUpperCase().includes(rivalNet) || rivalNet.includes(fila[idxRival].trim().toUpperCase())));
+                }
+
+                if (filaRival) {
+                    const pjs = filaRival[idxPJ] || '0';
+                    const v = filaRival[idxV] || '0';
+                    const e = filaRival[idxE] || '0';
+                    const d = filaRival[idxD] || '0';
+                    const gf = filaRival[idxGF] || '0';
+                    const gc = filaRival[idxGC] || '0';
+
+                    const contenedorCartel = document.getElementById('txt-partido-detalles').parentElement;
+                    const blocAntic = document.getElementById('historial-rival-bloc');
+                    if (blocAntic) blocAntic.remove();
+
+                    let htmlStatsRival = `
+                        <div id="historial-rival-bloc" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); text-align: center;">
+                            <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Històric des de 2011 vs ${filaRival[idxRival]}</span>
+                            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 0.9rem;">
+                                <div><strong>${pjs}</strong> <span style="color:#94a3b8; font-size:0.8rem;">PJ</span></div>
+                                <div style="color:var(--success)"><strong>${v}</strong> <span style="color:#94a3b8; font-size:0.8rem;">V</span></div>
+                                <div style="color:var(--warning)"><strong>${e}</strong> <span style="color:#94a3b8; font-size:0.8rem;">E</span></div>
+                                <div style="color:var(--danger)"><strong>${d}</strong> <span style="color:#94a3b8; font-size:0.8rem;">D</span></div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px; margin-bottom: 12px;">
+                                Gols: <span style="color:var(--text); font-weight:bold;">${gf}</span> favor / <span style="color:var(--text); font-weight:bold;">${gc}</span> contra
+                            </div>
+                            
+                            <div id="contenidor-detalls-partits">
+                                <button id="btn-veure-detalls" onclick="toggleDetallPartitsRival('${filaRival[idxRival].replace(/'/g, "\\'")}')" style="width:100%; padding:0.6rem; background-color:rgba(59, 130, 246, 0.1); color:var(--primary); border:1px solid var(--primary); border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
+                                    📊 Consultar estadístiques vs ${filaRival[idxRival]}
+                                </button>
+                                <div id="llista-detalls-partits" style="display:none; margin-top: 15px;"></div>
+                            </div>
+                        </div>
+                    `;
+                    contenedorCartel.insertAdjacentHTML('beforeend', htmlStatsRival);
+                }
+            } catch (error) {
+                console.error("Error carregant l'historial:", error);
+            }
+        }
+
+        async function toggleDetallPartitsRival(rivalExacte) {
+            const llistaEl = document.getElementById('llista-detalls-partits');
+            const btn = document.getElementById('btn-veure-detalls');
+            
+            if (llistaEl.style.display === 'block') {
+                llistaEl.style.display = 'none';
+                btn.innerHTML = `📊 Consultar estadístiques vs ${rivalExacte}`;
+                btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return;
             }
             
-            if(password.length < 6) {
-                msg.style.color = '#ef4444'; msg.textContent = "La contrasenya ha de tenir com a mínim 6 caràcters."; msg.style.display = 'block'; return;
+            if (llistaEl.innerHTML !== "") {
+                llistaEl.style.display = 'block';
+                btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
+                return;
+            }
+            
+            btn.innerHTML = '⏳ Escanejant els arxius històrics...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const temporades = [
+                'T 11-12', 'T 12-13', 'T 13-14', 'T 14-15', 'T 15-16', 
+                'T 16-17', 'T 17-18', 'T 18-19', 'T 19-20', 'T 20-21', 
+                'T 21-22', 'T 22-23', 'T 23-24', 'T 24-25', 'T 25-26', 'T 26-27'
+            ];
+
+            let partitsTrobats = [];
+
+            for (let i = 0; i < temporades.length; i += 4) {
+                const batch = temporades.slice(i, i + 4);
+                const promeses = batch.map(t => 
+                    fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${t}`)
+                    .then(res => res.text())
+                    .then(csv => ({ temp: t, dades: parsearCSV(csv) }))
+                    .catch(err => null)
+                );
+                
+                const resultats = await Promise.all(promeses);
+                
+                resultats.forEach(res => {
+                    if(!res || !res.dades || res.dades.length === 0) return;
+                    
+                    const dades = res.dades;
+                    const headers = dades[0].map(h => h.trim().toUpperCase());
+                    
+                    const idxRival = headers.indexOf('RIVAL');
+                    const idxLV = headers.indexOf('LOCAL/VISITANT') !== -1 ? headers.indexOf('LOCAL/VISITANT') : headers.indexOf('CAL/VISITANT');
+                    const idxRes = headers.indexOf('RESULTAT');
+                    
+                    if (idxRival === -1 || idxRes === -1) return;
+
+                    const golsIdx = [];
+                    const groguesIdx = [];
+                    const vermellesIdx = [];
+                    
+                    headers.forEach((h, idx) => {
+                        if (/^G\d+$/.test(h)) golsIdx.push(idx);
+                        if (/^TG\d+$/.test(h)) groguesIdx.push(idx);
+                        if (/^TV\d+$/.test(h)) vermellesIdx.push(idx);
+                    });
+
+                    for(let r=1; r<dades.length; r++) {
+                        const row = dades[r];
+                        if (!row[idxRival]) continue;
+                        
+                        if (row[idxRival].trim().toUpperCase() === rivalExacte) {
+                            let golejadors = golsIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
+                            let tg = groguesIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
+                            let tv = vermellesIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
+                            
+                            partitsTrobats.push({
+                                temporada: res.temp,
+                                lv: idxLV !== -1 ? (row[idxLV]||'') : '',
+                                resultat: row[idxRes] || '',
+                                gols: golejadors,
+                                tg: tg,
+                                tv: tv
+                            });
+                        }
+                    }
+                });
             }
 
-            msg.style.color = '#f59e0b'; msg.textContent = "Creant compte al sistema..."; msg.style.display = 'block';
-
-            // 1. Creem l'usuari a l'autenticació
-            const { data, error } = await clienteSupabase.auth.signUp({ email, password });
-
-            if (error) {
-                msg.style.color = '#ef4444'; msg.textContent = "Error: " + error.message; msg.style.display = 'block';
+            let htmlHTML = `<div style="text-align:left;">`;
+            if (partitsTrobats.length === 0) {
+                htmlHTML += `<p style="color:var(--warning); text-align:center; font-weight:bold; margin-top:15px;">No s'han trobat enfrontaments directes.</p>`;
             } else {
-                // 2. Insertem el nom real creuat amb el correu electrònic a la nova taula
-                await clienteSupabase.from('perfils').insert([{ id_jugador: email, nom_real: nomReal }]);
+                partitsTrobats.reverse();
                 
-                msg.style.color = '#10b981'; msg.textContent = "¡Compte creat! Inicia sessió ara mateix per comprovar-ho."; msg.style.display = 'block';
+                partitsTrobats.forEach(p => {
+                    let colorResultat = '#94a3b8';
+                    let bgResultat = 'rgba(255,255,255,0.05)';
+                    let lletraResultat = '-';
+                    let isLocal = p.lv.trim().toUpperCase() === 'LOCAL';
+
+                    if (p.resultat && p.resultat.includes('-')) {
+                        let parts = p.resultat.split('-');
+                        let golsLocal = parseInt(parts[0]);
+                        let golsVisitant = parseInt(parts[1]);
+
+                        if (!isNaN(golsLocal) && !isNaN(golsVisitant)) {
+                            if (golsLocal === golsVisitant) {
+                                colorResultat = 'var(--warning)';
+                                bgResultat = 'rgba(245, 158, 11, 0.15)';
+                                lletraResultat = 'E';
+                            } else if ((isLocal && golsLocal > golsVisitant) || (!isLocal && golsVisitant > golsLocal)) {
+                                colorResultat = 'var(--success)';
+                                bgResultat = 'rgba(16, 185, 129, 0.15)';
+                                lletraResultat = 'V';
+                            } else {
+                                colorResultat = 'var(--danger)';
+                                bgResultat = 'rgba(239, 68, 68, 0.15)';
+                                lletraResultat = 'D';
+                            }
+                        }
+                    }
+
+                    let iconaLV = isLocal ? '🏠 Casa' : '✈️ Fora';
+
+                    htmlHTML += `
+                    <div style="background: var(--surface); padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;">
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 10px;">
+                            <div style="display:flex; align-items:center; gap: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 2px 4px var(--primary-glow);">${p.temporada}</span>
+                                <span style="color:#94a3b8; font-weight:600; font-size:0.75rem; text-transform:uppercase;">${iconaLV}</span>
+                            </div>
+                            
+                            <div style="display:flex; align-items:center; gap: 8px;">
+                                <span style="color: ${colorResultat}; font-size: 0.8rem; font-weight: 800;">${lletraResultat}</span>
+                                <span style="color: ${colorResultat}; background: ${bgResultat}; border: 1px solid ${colorResultat}; font-weight:900; padding: 4px 10px; border-radius:8px; font-size: 1rem; letter-spacing: 1px;">${p.resultat}</span>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap: 5px;">
+                            ${p.gols.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">⚽</span> <span style="color:#cbd5e1; font-size: 0.85rem; font-weight:600;">${p.gols.join(', ')}</span></div>` : ''}
+                            ${p.tg.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟨</span> <span style="color:#94a3b8; font-size: 0.8rem;">${p.tg.join(', ')}</span></div>` : ''}
+                            ${p.tv.length > 0 ? `<div style="display:flex; align-items:baseline; gap: 6px;"><span style="font-size:0.9rem;">🟥</span> <span style="color:#ef4444; font-size: 0.8rem;">${p.tv.join(', ')}</span></div>` : ''}
+                            ${p.gols.length === 0 && p.tg.length === 0 && p.tv.length === 0 ? `<div style="color:#475569; font-style:italic; font-size: 0.8rem;">Sense registres individuals...</div>` : ''}
+                        </div>
+
+                    </div>`;
+                });
                 
-                // Resetegem el formulari a mode login
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
+                htmlHTML += `
+                    <button onclick="toggleDetallPartitsRival('${rivalExacte.replace(/'/g, "\\'")}')" style="width:100%; margin-top: 5px; padding:0.8rem; background: rgba(255,255,255,0.03); color:var(--text-muted); border:1px dashed var(--border); border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; transition: all 0.2s;">
+                        🔼 Amagar llistat de partits
+                    </button>
+                `;
+            }
+            htmlHTML += `</div>`;
+            
+            llistaEl.innerHTML = htmlHTML;
+            llistaEl.style.display = 'block';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = `❌ Amagar estadístiques vs ${rivalExacte}`;
+        }
+
+        async function actualizarCartelPartido() {
+            const rival = document.getElementById('admin-input-partido-nombre').value.trim(); const det = document.getElementById('admin-input-partido-detalles').value.trim();
+            if (!rival || !det) return;
+            const { error } = await clienteSupabase.from('quinieles').upsert({ id_jugador: 'CARTEL', jornada: 99, p1: rival, p2: det }, { onConflict: 'id_jugador,jornada' });
+            if(!error) { alert("¡Cartellera publicada!"); location.reload(); }
+        }
+
+        async function crearMultaManual() {
+            const nom = document.getElementById('select-admin-multa-nom').value; 
+            const motiu = document.getElementById('multa-motiu').value.trim(); 
+            const valImport = parseFloat(document.getElementById('multa-import').value); 
+            const msgM = document.getElementById('msg-admin-multa');
+
+            if(!nom || !motiu || isNaN(valImport) || valImport <= 0) {
+                msgM.style.color = 'var(--danger)'; msgM.textContent = 'Selecciona un jugador culpable i omple tots els camps.'; msgM.style.display = 'block'; return;
+            }
+            msgM.style.color = 'var(--warning)'; msgM.textContent = 'Sancionant...'; msgM.style.display = 'block';
+            
+            const { error } = await clienteSupabase.from('multas').insert([{ nom_jugador: nom, motiu: motiu, import: valImport }]);
+            if(!error) { 
+                msgM.style.color = 'var(--success)'; msgM.textContent = `¡Sanció aplicada! 💸`; 
+                document.getElementById('select-admin-multa-nom').value = ''; 
+                document.getElementById('multa-motiu').value = ''; 
+                document.getElementById('multa-import').value = ''; 
+                cargarMultas(); setTimeout(() => { msgM.style.display = 'none'; }, 3000); 
             }
         }
+
+        async function eliminarMultaBase(idMulta, nomJugador) {
+            if(confirm(`Estàs segur que vols eliminar la multa d'en ${nomJugador}?`)) {
+                const { error } = await clienteSupabase.from('multas').delete().eq('id', idMulta);
+                if (error) { alert("Error al eliminar: " + error.message); }
+                else { alert("Multa liquidada/eliminada correctament! 👍"); cargarMultas(); }
+            }
+        }
+
+        async function cargarQuinielasCompanys() {
+            const listaCompanysEl = document.getElementById('lista-quinielas-companys');
+            if (!porraBloqueadaActualmente) { listaCompanysEl.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--warning);"><p style="font-size:2rem; margin:0 0 0.5rem 0;">🔒</p><p style="margin:0; font-size:1rem; font-weight:bold;">Bitllets ocults temporandament</p></div>`; return; }
+            const { data: quinielas } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal).neq('id_jugador', 'CARTEL');
+            if(!quinielas || quinielas.length === 0) { listaCompanysEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap company ha enviat la quiniela encara.</p>'; return; }
+            let html = '';
+            quinielas.forEach(q => {
+                let nom = dadesPerfilsMapejades[q.id_jugador.trim().toLowerCase()] || q.id_jugador.split('@')[0];
+                let avatarHTML = getAvatar(nom, 24);
+                let linies = '';
+                for (let i=1; i<=10; i++) { linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>${nomPartit(numeroJornadaGlobal, i)}</span><strong style="color:var(--text); white-space:nowrap;">${q[`p${i}`] ?? '-'}</strong></div>`; }
+                html += `<div class="card" style="margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">${avatarHTML} ${nom}</p><div style="color:#94a3b8;">${linies}</div></div>`;
+            });
+            listaCompanysEl.innerHTML = html;
+        }
+
+        async function cargarRankingMVP() {
+            const { data: totsElsVots, error } = await clienteSupabase.from('vots_mvp').select('*');
+            const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); 
+            const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
+            const historialMvpEl = document.getElementById('tabla-historial-mvp');
+            let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
+            if(error || !totsElsVots || totsElsVots.length === 0) { 
+                if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; 
+                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; 
+                if(historialMvpEl) historialMvpEl.innerHTML = textoNoMvp;
+                return; 
+            }
+            
+            let votsPerJornada = {};
+            let minIdPerJornada = {};
+            totsElsVots.forEach(v => { 
+                let jor = v.jornada; let nom = v.nominat.trim(); 
+                if(nom) { 
+                    if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; 
+                    votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; 
+                    if (minIdPerJornada[jor] === undefined || v.id < minIdPerJornada[jor]) minIdPerJornada[jor] = v.id;
+                } 
+            });
+            
+            let palmaresTrofeus = {};
+            let guanyadorsPerJornada = {};
+            Object.keys(votsPerJornada).forEach(jor => {
+                let votsDeLaSetmana = votsPerJornada[jor]; let maximVots = 0; let guanyadorsSetmana = [];
+                Object.keys(votsDeLaSetmana).forEach(nom => { if (votsDeLaSetmana[nom] > maximVots) { maximVots = votsDeLaSetmana[nom]; guanyadorsSetmana = [nom]; } else if (votsDeLaSetmana[nom] === maximVots) { guanyadorsSetmana.push(nom); } });
+                guanyadorsSetmana.forEach(guanyador => { palmaresTrofeus[guanyador] = (palmaresTrofeus[guanyador] || 0) + 1; });
+                guanyadorsPerJornada[jor] = guanyadorsSetmana;
+            });
+            
+            let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
+            if(llistaPalmares.length === 0) { 
+                if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; 
+                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; 
+            } else {
+                let htmlInicio = '';
+                let htmlFull = '';
+                llistaPalmares.forEach((mvp, index) => { 
+                    let fila = generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); 
+                    htmlFull += fila;
+                    if(index < 3) htmlInicio += fila;
+                });
+                if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
+                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
+            }
+
+            if (historialMvpEl) {
+                let jornadesOrdenades = Object.keys(guanyadorsPerJornada).sort((a, b) => (minIdPerJornada[b] || 0) - (minIdPerJornada[a] || 0));
+                if (jornadesOrdenades.length === 0) {
+                    historialMvpEl.innerHTML = textoNoMvp;
+                } else {
+                    let htmlHistorial = '';
+                    jornadesOrdenades.forEach(jor => {
+                        let nomsGuanyadors = guanyadorsPerJornada[jor].map(nom => {
+                            let avatarHTML = getAvatar(nom, 26);
+                            return `<span style="display:inline-flex; align-items:center; gap:6px;">${avatarHTML}<strong>${nom}</strong></span>`;
+                        }).join(' i ');
+                        htmlHistorial += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding: 0.75rem 0; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+                                <span style="display:flex; align-items:center; gap:8px; font-size:0.95rem;">🏆 ${nomsGuanyadors}</span>
+                                <span style="color:var(--warning); font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.3px;">${jor}</span>
+                            </div>`;
+                    });
+                    historialMvpEl.innerHTML = htmlHistorial;
+                }
+            }
+        }
+
+        async function cargarVotMVPExistente() {
+            const selectMvp = document.getElementById('select-nom-mvp');
+            if(!selectMvp || mvpBloquejat || !etiquetaMvpActiva) return;
+            const msgMvp = document.getElementById('msg-mvp-votacio');
+            const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', etiquetaMvpActiva).maybeSingle();
+            if(votFet) { if(selectMvp) selectMvp.value = votFet.nominat; if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a "${etiquetaMvpActiva}".`; msgMvp.style.display = 'block'; } }
+        }
+
+        async function guardarVotMVP() {
+            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp');
+            if(!selectMvp) return;
+            if(mvpBloquejat || !etiquetaMvpActiva) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 Les votacions de l\'MVP estan tancades ara mateix.'; msgMvp.style.display = 'block'; return; }
+            const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
+            msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
+            const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: etiquetaMvpActiva, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
+            if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
+        }
+
+        async function guardarResultadosReales() {
+            const msgEl = document.getElementById('msg-admin'); if(Object.keys(resultadosRealesAdmin).length < 10) return;
+            msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
+            resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
+            const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
+            if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=9; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } if(q.p10 && resultadosRealesAdmin.p10 && q.p10 === resultadosRealesAdmin.p10) { aciertos += PUNTS_BONUS_P10; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
+            let seguent = numeroJornadaGlobal + 1; 
+            
+            await clienteSupabase.from('estado_porra').update({ bloqueado: false, jornada_activa: seguent }).eq('id', 1); 
+            location.reload();
+        }
+
+        async function cargarHistorial() {
+            const { data: misQuinielas } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).neq('jornada', 99).order('jornada', { ascending: false });
+            const historialEl = document.getElementById('lista-historial'); if (!misQuinielas || misQuinielas.length === 0) { historialEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap quiniela enviada.</p>'; return; }
+            let html = '';
+            misQuinielas.forEach((q) => {
+                let linies = '';
+                for (let i=1; i<=10; i++) { linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>${nomPartit(q.jornada, i)}</span><strong style="color:var(--text); white-space:nowrap;">${q[`p${i}`] ?? '-'}</strong></div>`; }
+                html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 8px 0;">Jornada ${q.jornada || 1}</p><div style="color:#94a3b8;">${linies}</div></div>`;
+            });
+            historialEl.innerHTML = html;
+        }
+
+        function parsearCSV(text) {
+            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
+            if (lineas.length === 0) return [];
+            
+            const primeraLinea = lineas[0];
+            const nComes = (primeraLinea.match(/,/g) || []).length;
+            const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
+            const separador = nPuntsComes > nComes ? ';' : ',';
+            
+            return lineas.map(linea => {
+                const r = []; let dins = false; let val = '';
+                for (let i = 0; i < linea.length; i++) {
+                    let c = linea[i];
+                    if (c === '"') { dins = !dins; } 
+                    else if (c === separador && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
+                    else { val += c; }
+                }
+                r.push(val.trim().replace(/^"|"$/g, ''));
+                return r;
+            }).filter(l => l.length > 0 && l.some(cel => cel !== ""));
+        }
+
+        function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
+        function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        function cambiarSubTabStats(subTabId, boton) { document.getElementById('tab-stats').querySelectorAll('.sub-tab-content-stats').forEach(st => st.style.display = 'none'); document.getElementById('tab-stats').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
+        
+        function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
+        function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
+        
+        function marcarExacte() {
+            const local = document.getElementById('p10-local').value;
+            const visitant = document.getElementById('p10-visitant').value;
+            if (local !== '' && visitant !== '') { pronosticosSeleccionados['p10'] = `${local}-${visitant}`; }
+            else { delete pronosticosSeleccionados['p10']; }
+        }
+
+        function marcarExacteAdmin() {
+            const local = document.getElementById('admin-p10-local').value;
+            const visitant = document.getElementById('admin-p10-visitant').value;
+            if (local !== '' && visitant !== '') { resultadosRealesAdmin['p10'] = `${local}-${visitant}`; }
+            else { delete resultadosRealesAdmin['p10']; }
+        }
+        
+        async function verificarBoletoExistente() { 
+            const msgEl = document.getElementById('msg-quiniela'); 
+            const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
+            if (bEx) { 
+                msgEl.style.color = 'var(--warning)'; 
+                msgEl.textContent = `Ja tens un bitllet desat. Pots canviar els pronòstics i desar per substituir-lo.`; 
+                msgEl.style.display = 'block'; 
+                for(let i=1; i<=10; i++) { 
+                    const valorAnterior = bEx[`p${i}`]; 
+                    pronosticosSeleccionados[`p${i}`] = valorAnterior; 
+                    if (i === 10) {
+                        if (valorAnterior && valorAnterior.includes('-')) {
+                            const [loc, vis] = valorAnterior.split('-');
+                            const inputLocal = document.getElementById('p10-local'); if (inputLocal) inputLocal.value = loc;
+                            const inputVisitant = document.getElementById('p10-visitant'); if (inputVisitant) inputVisitant.value = vis;
+                        }
+                        continue;
+                    }
+                    const fila = document.querySelector(`[data-partido="p${i}"]`); 
+                    if(fila) { 
+                        fila.querySelectorAll('.btn-pronostico').forEach(b => { 
+                            if(b.textContent === valorAnterior) b.classList.add('selected'); 
+                            else b.classList.remove('selected'); 
+                        }); 
+                    } 
+                } 
+            } else { 
+                msgEl.style.display = 'none'; 
+                pronosticosSeleccionados = {}; 
+                document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
+                const inputLocal = document.getElementById('p10-local'); if (inputLocal) inputLocal.value = '';
+                const inputVisitant = document.getElementById('p10-visitant'); if (inputVisitant) inputVisitant.value = '';
+            } 
+        }
+
+        async function guardarQuiniela() { 
+            const msgEl = document.getElementById('msg-quiniela'); 
+            const btn = document.getElementById('btn-guardar-porra');
+            
+            if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) {
+                msgEl.style.color = 'var(--danger)'; 
+                msgEl.textContent = 'Falten partits per marcar o la jornada està tancada.'; 
+                msgEl.style.display = 'block';
+                return;
+            } 
+
+            btn.innerHTML = '⏳ Desant...';
+            btn.style.opacity = '0.7';
+
+            pronosticosSeleccionados['id_jugador'] = emailUsuario; 
+            pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; 
+            const { error } = await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); 
+            
+            if(!error) {
+                btn.innerHTML = '✅ Guardat correctament!';
+                btn.style.opacity = '1';
+                btn.style.backgroundColor = 'var(--success)';
+                
+                msgEl.style.color = 'var(--success)'; 
+                msgEl.textContent = 'Quiniela desada! (Si fas més canvis, se substituirà).'; 
+                msgEl.style.display = 'block';
+                
+                setTimeout(() => { 
+                    btn.innerHTML = 'Desar la Quiniela';
+                    btn.style.backgroundColor = 'var(--success)';
+                    verificarBoletoExistente(); 
+                }, 3000); 
+            }
+        }
+
+        async function cargarMultas() {
+            const { data: multas } = await clienteSupabase.from('multas').select('*');
+            const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas');
+            if(!multas || multas.length === 0) { if(boteEl) boteEl.textContent = '0.00 €'; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = '0.00 €'; if(listaEl) listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>'; return; }
+            
+            let sum = 0; let htmlLista = '';
+            const usuarisAmbPermisEsborrar = ['sergigodayol@gmail.com', 'martiolisan@gmail.com', 'ericsoleponsa@hotmail.es'];
+            multas.forEach(m => {
+                sum += parseFloat(m.import);
+                let botoBorrarExclusiu = usuarisAmbPermisEsborrar.includes(emailUsuario) 
+                    ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
+                    : '';
+
+                htmlLista += `
+                    <div class="multa-item">
+                        <span><strong>${m.nom_jugador}</strong> (${m.motiu}) ${botoBorrarExclusiu}</span>
+                        <span style="color:var(--danger); font-weight:bold;">${m.import} €</span>
+                    </div>`;
+            });
+            let text = `${sum.toFixed(2)} €`;
+            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
+        }
+
+        async function cargarEstadisticas() {
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`;
+            const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
+
+            try {
+                const resLliga = await fetch(urlLliga);
+                const csvLliga = await resLliga.text();
+                const dadesLliga = parsearCSV(csvLliga);
+
+                const resGlobal = await fetch(urlGlobal);
+                const csvGlobal = await resGlobal.text();
+                const dadesGlobal = parsearCSV(csvGlobal);
+
+                if (dadesLliga.length === 0) {
+                    document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">El full de càrrec ha retornat un fitxer buit.</p>';
+                    return;
+                }
+
+                const headersLliga = dadesLliga[0].map(h => h.trim().toUpperCase());
+                const idxJugadorL = headersLliga.indexOf('JUGADOR');
+                const idxPartitsL = headersLliga.indexOf('PARTITS JUGATS');
+                const idxGolsL = headersLliga.indexOf('GOLS');
+                const idxTGL = headersLliga.indexOf('TG');
+                const idxTVL = headersLliga.indexOf('TV');
+
+                if (idxJugadorL === -1) {
+                    document.getElementById('tabla-stats-lliga').innerHTML = `<p style="color:var(--danger)">Error: No s'ha trobat la columna 'JUGADOR'. Revisa les capçaleres de l'Excel.</p>`;
+                    return;
+                }
+
+                const jugadorsActius = [];
+                let htmlLliga = `
+                    <div style="overflow-x: auto;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
+                                <th style="padding: 8px 4px;">JUGADOR</th>
+                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
+                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                for (let i = 1; i < dadesLliga.length; i++) {
+                    const fila = dadesLliga[i];
+                    const nom = fila[idxJugadorL] ? fila[idxJugadorL].trim() : "";
+
+                    if (nom.toUpperCase().includes('AMATEUR B') || nom.toUpperCase() === 'JUGADOR') {
+                        if (jugadorsActius.length > 0) break; 
+                        continue;
+                    }
+
+                    if (nom === "") {
+                        if (jugadorsActius.length > 0) break; 
+                        continue;
+                    }
+
+                    const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';
+                    const gols = fila[idxGolsL] ? fila[idxGolsL].trim() : '0';
+                    const tg = fila[idxTGL] ? fila[idxTGL].trim() : '0';
+                    const tv = fila[idxTVL] ? fila[idxTVL].trim() : '0';
+
+                    jugadorsActius.push(nom.toLowerCase());
+
+                    htmlLliga += `
+                        <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
+                            <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nom}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pj}</td>
+                            <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tg}</td>
+                            <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tv}</td>
+                        </tr>`;
+                }
+                htmlLliga += `</tbody></table></div>`;
+                document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
+
+                const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
+                const idxJugadorG = headersGlobal.indexOf('JUGADOR');
+                const idxPartitsG = headersGlobal.indexOf('PARTITS JUGATS');
+                const idxGolsG = headersGlobal.indexOf('GOLS');
+                const idxTGG = headersGlobal.indexOf('TG');
+                const idxTVG = headersGlobal.indexOf('TV');
+
+                let htmlHistoric = `
+                    <div style="overflow-x: auto;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
+                                <th style="padding: 8px 4px;">JUGADOR</th>
+                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
+                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
+                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                let hiHaHistoric = false;
+                for (let i = 1; i < dadesGlobal.length; i++) {
+                    const fila = dadesGlobal[i];
+                    if (!fila[idxJugadorG] || fila[idxJugadorG].trim() === "") continue;
+
+                    const nomG = fila[idxJugadorG].trim();
+                    
+                    if (jugadorsActius.includes(nomG.toLowerCase())) {
+                        hiHaHistoric = true;
+                        const pjG = fila[idxPartitsG] ? fila[idxPartitsG].trim() : '0';
+                        const golsG = fila[idxGolsG] ? fila[idxGolsG].trim() : '0';
+                        const tgG = fila[idxTGG] ? fila[idxTGG].trim() : '0';
+                        const tvG = fila[idxTVG] ? fila[idxTVG].trim() : '0';
+
+                        htmlHistoric += `
+                            <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
+                                <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nomG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pjG}</td>
+                                <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tgG}</td>
+                                <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tvG}</td>
+                            </tr>`;
+                    }
+                }
+
+                if (!hiHaHistoric) {
+                    htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
+                }
+
+                htmlHistoric += `</tbody></table></div>`;
+                document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
+
+            } catch (error) {
+                console.error("Error carregant fulls:", error);
+                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió amb Google Drive.</p>';
+            }
+        }
+
+        async function verificarSesion() {
+            try {
+                const { data: { session } } = await clienteSupabase.auth.getSession();
+                if (!session) { window.location.href = 'index.html'; return; }
+                emailUsuario = session.user.email;
+                
+                const { data: perfilPropi } = await clienteSupabase.from('perfils').select('*').eq('id_jugador', emailUsuario).maybeSingle();
+                if (!perfilPropi) { document.getElementById('card-completar-perfil').style.display = 'block'; }
+                
+                let nomHeader = perfilPropi ? perfilPropi.nom_real : emailUsuario.split('@')[0];
+                document.getElementById('saludo-usuario').textContent = `👋 Hola, ${nomHeader}!`;
+                document.getElementById('avatar-usuario-header').innerHTML = getAvatar(nomHeader, 42);
+                
+                const isMainAdmin = (emailUsuario === 'sergigodayol@gmail.com');
+                const isEntrenador = (emailUsuario === 'martiolisan@gmail.com' || emailUsuario === 'ericsoleponsa@hotmail.es');
+
+                if(isMainAdmin || isEntrenador) {
+                    const navBar = document.getElementById('barra-navegacion-principal');
+                    if(!document.getElementById('btn-gestio-admin')) {
+                        navBar.insertAdjacentHTML('beforeend', `
+                            <button id="btn-gestio-admin" class="nav-btn" style="color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
+                                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor; margin-bottom: 5px;">
+                                    <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                                </svg>
+                                Gestió
+                            </button>
+                        `);
+                    }
+
+                    if (isEntrenador && !isMainAdmin) {
+                        document.getElementById('admin-gestio-titol').textContent = "🏃‍♂️ Panell Tècnic";
+                        document.getElementById('admin-gestio-desc').textContent = "Aquesta pantalla és per gestionar en directe els punts dels entrenaments i les multes.";
+                        document.getElementById('admin-card-cartellera').style.display = 'none';
+                        document.getElementById('admin-card-aniversaris').style.display = 'none';
+                        document.getElementById('admin-card-lock').style.display = 'none';
+                        document.getElementById('admin-card-partits').style.display = 'none';
+                        document.getElementById('admin-card-resultats').style.display = 'none';
+                    }
+                }
+                
+                // Un cop verificat qui ets, cridem la resta
+                inicializarDashboard();
+
+            } catch (err) {
+                console.error("Error en iniciar sessió:", err);
+            }
+        }
+
+        // L'arrencada
+        verificarSesion();
+
     </script>
 </body>
 </html>

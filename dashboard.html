@@ -219,6 +219,11 @@
         .btn-pronostico:active { transform: scale(0.92); }
         .btn-pronostico.selected { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 0 3px rgba(47,111,237,0.25); }
         
+        .marcador-exacte { display:flex; align-items:center; gap:8px; }
+        .input-marcador { width:48px; background: rgba(0,0,0,0.35); border:1px solid var(--border); color:var(--text); padding:0.5rem 0.4rem; border-radius:9px; text-align:center; font-family:'Oswald', sans-serif; font-weight:700; font-size:1rem; }
+        .input-marcador:focus { outline:none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(227,178,60,0.25); }
+        .separador-marcador { font-weight:800; color: var(--text-muted); font-family:'Oswald', sans-serif; }
+        
         .ranking-item { display: flex; flex-direction: column; padding: 0.95rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
         .ranking-item:hover { background: rgba(255,255,255,0.02); border-radius: 10px; padding-left: 8px; padding-right: 8px; margin-left: -8px; margin-right: -8px; }
         .ranking-item:last-child { border-bottom: none; }
@@ -365,21 +370,34 @@
                             <span id="txt-jornada-jugador-titulo" style="font-weight:800; color:var(--primary); margin-left:5px;">-</span>
                         </div>
                     </div>
-                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Mira l'ordre dels partits enviat per WhatsApp abans de marcar.</p>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; margin-top:-0.5rem;">Marca el resultat de cada partit. El <strong style="color:var(--gold);">Partit 10 és de resultat exacte</strong> i val més punts si l'encertes!</p>
                     
                     <div id="lista-partidos">
                         <script>
                             for(let i=1; i<=10; i++) {
-                                document.write(`
-                                    <div class="partido-fila" data-partido="p${i}">
-                                        <span class="equipos">Partit ${i}</span>
-                                        <div class="botones-1x2">
-                                            <button class="btn-pronostico" onclick="marcar(this, '1')">1</button>
-                                            <button class="btn-pronostico" onclick="marcar(this, 'X')">X</button>
-                                            <button class="btn-pronostico" onclick="marcar(this, '2')">2</button>
+                                if (i === 10) {
+                                    document.write(`
+                                        <div class="partido-fila" data-partido="p10">
+                                            <span class="equipos">Partit 10 <span style="display:block; color:var(--gold); font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span></span>
+                                            <div class="marcador-exacte">
+                                                <input type="number" min="0" max="20" class="input-marcador" id="p10-local" oninput="marcarExacte()">
+                                                <span class="separador-marcador">-</span>
+                                                <input type="number" min="0" max="20" class="input-marcador" id="p10-visitant" oninput="marcarExacte()">
+                                            </div>
                                         </div>
-                                    </div>
-                                `);
+                                    `);
+                                } else {
+                                    document.write(`
+                                        <div class="partido-fila" data-partido="p${i}">
+                                            <span class="equipos">Partit ${i}</span>
+                                            <div class="botones-1x2">
+                                                <button class="btn-pronostico" onclick="marcar(this, '1')">1</button>
+                                                <button class="btn-pronostico" onclick="marcar(this, 'X')">X</button>
+                                                <button class="btn-pronostico" onclick="marcar(this, '2')">2</button>
+                                            </div>
+                                        </div>
+                                    `);
+                                }
                             }
                         </script>
                     </div>
@@ -561,6 +579,21 @@
                     </div>
                     <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
                 </div>
+
+                <div id="admin-card-partits" class="card" style="margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span> Partits de la Jornada <span id="txt-jornada-admin-partits" style="color:var(--primary)">-</span></p>
+                    <p style="color:#94a3b8; font-size:0.8rem; margin-top:-0.6rem; margin-bottom:1rem;">Escriu els 10 partits en ordre (Ex: "CF Sant Julià - UD Taradell"). El Partit 10 sempre és de resultat exacte i val més punts.</p>
+                    <div id="admin-inputs-partits">
+                        <script>
+                            for (let i=1; i<=10; i++) {
+                                let etiqueta = (i === 10) ? `Partit 10 (resultat exacte)` : `Partit ${i}`;
+                                document.write(`<input type="text" id="admin-partit-nom-${i}" class="input-admin-multa" placeholder="${etiqueta}">`);
+                            }
+                        </script>
+                    </div>
+                    <button onclick="guardarPartitsJornada()" class="btn-cta btn-cta-primary" style="width:100%; padding:0.65rem; margin-top:0.2rem;">Desar Partits d'aquesta Jornada</button>
+                    <p id="msg-admin-partits" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
+                </div>
                 
                 <div id="admin-card-mvp" class="card" style="margin-bottom: 1.2rem;">
                     <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Control de Votació MVP</p>
@@ -591,16 +624,29 @@
                     <div id="lista-admin-partidos">
                         <script>
                             for(let i=1; i<=10; i++) {
-                                document.write(`
-                                    <div class="partido-fila" data-admin-partido="p${i}">
-                                        <span class="equipos" style="font-size:0.85rem;">Partit ${i}</span>
-                                        <div class="botones-1x2">
-                                            <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '1')">1</button>
-                                            <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, 'X')">X</button>
-                                            <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '2')">2</button>
+                                if (i === 10) {
+                                    document.write(`
+                                        <div class="partido-fila" data-admin-partido="p10">
+                                            <span class="equipos" style="font-size:0.85rem;">Partit 10 <span style="display:block; color:var(--gold); font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span></span>
+                                            <div class="marcador-exacte">
+                                                <input type="number" min="0" max="20" class="input-marcador" id="admin-p10-local" oninput="marcarExacteAdmin()">
+                                                <span class="separador-marcador">-</span>
+                                                <input type="number" min="0" max="20" class="input-marcador" id="admin-p10-visitant" oninput="marcarExacteAdmin()">
+                                            </div>
                                         </div>
-                                    </div>
-                                `);
+                                    `);
+                                } else {
+                                    document.write(`
+                                        <div class="partido-fila" data-admin-partido="p${i}">
+                                            <span class="equipos" style="font-size:0.85rem;">Partit ${i}</span>
+                                            <div class="botones-1x2">
+                                                <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '1')">1</button>
+                                                <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, 'X')">X</button>
+                                                <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '2')">2</button>
+                                            </div>
+                                        </div>
+                                    `);
+                                }
                             }
                         </script>
                     </div>
@@ -649,6 +695,8 @@
         let cacheHistoricaRafagues = {}; 
         let etiquetaMvpActiva = '';
         let mvpBloquejat = true;
+        let partitsPerJornada = {};
+        const PUNTS_BONUS_P10 = 3; // Punts que suma encertar el resultat exacte del Partit 10 (en lloc d'1)
 
         async function inicializarDashboard() {
             try {
@@ -683,7 +731,9 @@
             } catch(e) { console.error("Error perfils:", e); }
 
             // Sense 'await' bloquejadors perquè l'App carregui de cop
-            consultarEstadoCerrojo();
+            Promise.all([consultarEstadoCerrojo(), carregarPartitsJornades()]).then(() => {
+                actualitzarNomsPartitsFormularis();
+            });
             consultarEstadoMVP();
             calcularMotorDeRafagues().then(() => { cargarRanking(); });
             
@@ -871,6 +921,61 @@
             if(!nom || !dataA) { alert("Omple el nom i data."); return; }
             const { error } = await clienteSupabase.from('aniversaris').insert([{ nom_jugador: nom, data_naixement: dataA }]);
             if(!error) { alert(`¡Aniversari de ${nom} afegit! 🎂`); location.reload(); }
+        }
+
+        async function carregarPartitsJornades() {
+            const { data } = await clienteSupabase.from('partits_jornada').select('*');
+            partitsPerJornada = {};
+            if (data) { data.forEach(fila => { partitsPerJornada[fila.jornada] = fila; }); }
+        }
+
+        function nomPartit(jornada, index) {
+            const fila = partitsPerJornada[jornada];
+            if (fila && fila[`nom_p${index}`] && fila[`nom_p${index}`].trim() !== '') return fila[`nom_p${index}`];
+            return `Partit ${index}`;
+        }
+
+        function actualitzarNomsPartitsFormularis() {
+            const spanTitolPartits = document.getElementById('txt-jornada-admin-partits');
+            if (spanTitolPartits) spanTitolPartits.textContent = numeroJornadaGlobal;
+
+            for (let i=1; i<=10; i++) {
+                const nom = nomPartit(numeroJornadaGlobal, i);
+                const esPersonalitzat = nom !== `Partit ${i}`;
+
+                const filaJugador = document.querySelector(`#lista-partidos [data-partido="p${i}"] .equipos`);
+                if (filaJugador) {
+                    if (i === 10) { filaJugador.innerHTML = `${nom} <span style="display:block; color:var(--gold); font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span>`; }
+                    else { filaJugador.textContent = nom; }
+                }
+
+                const filaAdmin = document.querySelector(`#lista-admin-partidos [data-admin-partido="p${i}"] .equipos`);
+                if (filaAdmin) {
+                    if (i === 10) { filaAdmin.innerHTML = `${nom} <span style="display:block; color:var(--gold); font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span>`; }
+                    else { filaAdmin.textContent = nom; }
+                }
+
+                const inputAdminNom = document.getElementById(`admin-partit-nom-${i}`);
+                if (inputAdminNom) { inputAdminNom.value = esPersonalitzat ? nom : ''; }
+            }
+        }
+
+        async function guardarPartitsJornada() {
+            const msgEl = document.getElementById('msg-admin-partits');
+            const dades = { jornada: numeroJornadaGlobal };
+            for (let i=1; i<=10; i++) {
+                const valor = document.getElementById(`admin-partit-nom-${i}`).value.trim();
+                dades[`nom_p${i}`] = valor || null;
+            }
+            const { error } = await clienteSupabase.from('partits_jornada').upsert(dades, { onConflict: 'jornada' });
+            if (error) {
+                msgEl.style.color = 'var(--danger)'; msgEl.textContent = '⚠️ Error: ' + error.message; msgEl.style.display = 'block';
+            } else {
+                msgEl.style.color = 'var(--success)'; msgEl.textContent = 'Partits desats correctament! ⚽'; msgEl.style.display = 'block';
+                await carregarPartitsJornades();
+                actualitzarNomsPartitsFormularis();
+                setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
+            }
         }
 
         async function consultarEstadoCerrojo() {
@@ -1249,7 +1354,9 @@
             quinielas.forEach(q => {
                 let nom = dadesPerfilsMapejades[q.id_jugador.trim().toLowerCase()] || q.id_jugador.split('@')[0];
                 let avatarHTML = getAvatar(nom, 24);
-                html += `<div class="card" style="margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">${avatarHTML} ${nom}</p><p style="margin:0; color:var(--text); letter-spacing: 2px; font-family: monospace;">1:${q.p1} | 2:${q.p2} | 3:${q.p3} | 4:${q.p4} | 5:${q.p5} <br>6:${q.p6} | 7:${q.p7} | 8:${q.p8} | 9:${q.p9} | 10:${q.p10}</p></div>`;
+                let linies = '';
+                for (let i=1; i<=10; i++) { linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>${nomPartit(numeroJornadaGlobal, i)}</span><strong style="color:var(--text); white-space:nowrap;">${q[`p${i}`] ?? '-'}</strong></div>`; }
+                html += `<div class="card" style="margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">${avatarHTML} ${nom}</p><div style="color:#94a3b8;">${linies}</div></div>`;
             });
             listaCompanysEl.innerHTML = html;
         }
@@ -1348,7 +1455,7 @@
             msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
             resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
             const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
-            if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=10; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
+            if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=9; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } if(q.p10 && resultadosRealesAdmin.p10 && q.p10 === resultadosRealesAdmin.p10) { aciertos += PUNTS_BONUS_P10; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
             let seguent = numeroJornadaGlobal + 1; 
             
             await clienteSupabase.from('estado_porra').update({ bloqueado: false, jornada_activa: seguent }).eq('id', 1); 
@@ -1358,7 +1465,13 @@
         async function cargarHistorial() {
             const { data: misQuinielas } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).neq('jornada', 99).order('jornada', { ascending: false });
             const historialEl = document.getElementById('lista-historial'); if (!misQuinielas || misQuinielas.length === 0) { historialEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap quiniela enviada.</p>'; return; }
-            let html = ''; misQuinielas.forEach((q) => { html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 5px 0;">Jornada ${q.jornada || 1}</p><p style="margin:0; color:#94a3b8;">[P1: ${q.p1}] [P2: ${q.p2}] [P3: ${q.p3}] [P4: ${q.p4}] [P5: ${q.p5}] <br>[P6: ${q.p6}] [P7: ${q.p7}] [P8: ${q.p8}] [P9: ${q.p9}] [P10: ${q.p10}]</p></div>`; }); historialEl.innerHTML = html;
+            let html = '';
+            misQuinielas.forEach((q) => {
+                let linies = '';
+                for (let i=1; i<=10; i++) { linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>${nomPartit(q.jornada, i)}</span><strong style="color:var(--text); white-space:nowrap;">${q[`p${i}`] ?? '-'}</strong></div>`; }
+                html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 8px 0;">Jornada ${q.jornada || 1}</p><div style="color:#94a3b8;">${linies}</div></div>`;
+            });
+            historialEl.innerHTML = html;
         }
 
         function parsearCSV(text) {
@@ -1390,6 +1503,20 @@
         function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
         function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
         
+        function marcarExacte() {
+            const local = document.getElementById('p10-local').value;
+            const visitant = document.getElementById('p10-visitant').value;
+            if (local !== '' && visitant !== '') { pronosticosSeleccionados['p10'] = `${local}-${visitant}`; }
+            else { delete pronosticosSeleccionados['p10']; }
+        }
+
+        function marcarExacteAdmin() {
+            const local = document.getElementById('admin-p10-local').value;
+            const visitant = document.getElementById('admin-p10-visitant').value;
+            if (local !== '' && visitant !== '') { resultadosRealesAdmin['p10'] = `${local}-${visitant}`; }
+            else { delete resultadosRealesAdmin['p10']; }
+        }
+        
         async function verificarBoletoExistente() { 
             const msgEl = document.getElementById('msg-quiniela'); 
             const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
@@ -1400,6 +1527,14 @@
                 for(let i=1; i<=10; i++) { 
                     const valorAnterior = bEx[`p${i}`]; 
                     pronosticosSeleccionados[`p${i}`] = valorAnterior; 
+                    if (i === 10) {
+                        if (valorAnterior && valorAnterior.includes('-')) {
+                            const [loc, vis] = valorAnterior.split('-');
+                            const inputLocal = document.getElementById('p10-local'); if (inputLocal) inputLocal.value = loc;
+                            const inputVisitant = document.getElementById('p10-visitant'); if (inputVisitant) inputVisitant.value = vis;
+                        }
+                        continue;
+                    }
                     const fila = document.querySelector(`[data-partido="p${i}"]`); 
                     if(fila) { 
                         fila.querySelectorAll('.btn-pronostico').forEach(b => { 
@@ -1412,6 +1547,8 @@
                 msgEl.style.display = 'none'; 
                 pronosticosSeleccionados = {}; 
                 document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
+                const inputLocal = document.getElementById('p10-local'); if (inputLocal) inputLocal.value = '';
+                const inputVisitant = document.getElementById('p10-visitant'); if (inputVisitant) inputVisitant.value = '';
             } 
         }
 
@@ -1646,6 +1783,7 @@
                         document.getElementById('admin-card-cartellera').style.display = 'none';
                         document.getElementById('admin-card-aniversaris').style.display = 'none';
                         document.getElementById('admin-card-lock').style.display = 'none';
+                        document.getElementById('admin-card-partits').style.display = 'none';
                         document.getElementById('admin-card-resultats').style.display = 'none';
                     }
                 }

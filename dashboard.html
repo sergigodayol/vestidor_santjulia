@@ -356,7 +356,7 @@
         <div id="tab-quiniela" class="tab-content">
             <div class="sub-tabs">
                 <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">🎯 Pronòstics</button>
-                <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking();">📈 Rànquing</button>
+                <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking(); cargarEvolucioQuiniela();">📈 Rànquing</button>
                 <button class="sub-btn" onclick="cambiarSubTab('companys', this); cargarQuinielasCompanys();">👀 Vestidor</button>
                 <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">📂 Històric</button>
             </div>
@@ -411,7 +411,12 @@
             <div id="sub-ranking-intern" class="sub-tab-content" style="display:none;">
                 <div class="card">
                     <h3><span class="card-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Classificació de la Quiniela</h3>
+                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:-0.6rem; margin-bottom:1.2rem;">En cas d'empat a punts, desempata primer qui tingui més plens (🎯) i després qui hagi encertat més cops el resultat exacte (⚡).</p>
                     <div id="tabla-ranking-quiniela-pestana">Carregant la lliga de la porra...</div>
+                </div>
+                <div class="card">
+                    <h3><span class="card-icon icon-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span> Evolució de Punts per Jornada</h3>
+                    <div id="taula-evolucio-quiniela">Carregant l'evolució...</div>
                 </div>
             </div>
 
@@ -578,6 +583,7 @@
                         <button onclick="cambiarEstadoPorra(false)" style="padding: 0.6rem 1rem; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">🔓 Obrir Tot</button>
                     </div>
                     <p id="txt-estado-actual" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; margin-top: 10px;">Carregant estat...</p>
+                    <div id="llista-pendents-quiniela" style="margin-top: 1rem; text-align: left; border-top: 1px dashed var(--border); padding-top: 1rem;"></div>
                 </div>
 
                 <div id="admin-card-partits" class="card" style="margin-bottom: 1.2rem;">
@@ -697,6 +703,7 @@
         let mvpBloquejat = true;
         let partitsPerJornada = {};
         const PUNTS_BONUS_P10 = 3; // Punts que suma encertar el resultat exacte del Partit 10 (en lloc d'1)
+        let resultatsRealsCache = {};
 
         async function inicializarDashboard() {
             try {
@@ -733,8 +740,10 @@
             // Sense 'await' bloquejadors perquè l'App carregui de cop
             Promise.all([consultarEstadoCerrojo(), carregarPartitsJornades()]).then(() => {
                 actualitzarNomsPartitsFormularis();
+                cargarPendentsQuiniela();
             });
             consultarEstadoMVP();
+            carregarResultatsReals();
             calcularMotorDeRafagues().then(() => { cargarRanking(); });
             
             cargarRankingMVP(); 
@@ -829,8 +838,42 @@
             </div>`;
         }
 
+        function generarFilaRankingQuiniela(pos, index) {
+            let correuNetejat = pos.id_jugador.trim().toLowerCase();
+            let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
+
+            let medallaIcono = `${index + 1}.º`;
+            if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
+
+            let avatarHTML = getAvatar(nomAMostrar);
+            let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
+            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 70px;"><span style="font-size:0.7rem; color:#cbd5e1; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
+
+            let badges = '';
+            if (pos.plens > 0) badges += `<span style="background:rgba(34,197,94,0.14); color:var(--success); font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; margin-right:5px; white-space:nowrap;">🎯 ${pos.plens} ple${pos.plens > 1 ? 'ns' : ''}</span>`;
+            if (pos.encerts_p10 > 0) badges += `<span style="background:rgba(227,178,60,0.14); color:var(--gold); font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; white-space:nowrap;">⚡ ${pos.encerts_p10} p10</span>`;
+            let mòdulBadges = badges ? `<div style="margin-left:70px; margin-top:6px; display:flex; flex-wrap:wrap;">${badges}</div>` : '';
+
+            return `
+            <div class="ranking-item">
+                <div class="ranking-fila-principal">
+                    <div class="player-info" style="display:flex; align-items:center; gap:10px;">
+                        <span class="medalla" style="width:25px;">${medallaIcono}</span> 
+                        ${avatarHTML} 
+                        <span style="font-weight: 700; color: var(--text); font-size: 1rem;">${nomAMostrar}</span>
+                    </div>
+                    <span><strong>${pos.puntos_totales} pts</strong></span>
+                </div>
+                ${mòdulFormatatRafaga}
+                ${mòdulBadges}
+            </div>`;
+        }
+
         async function cargarRanking() {
-            const { data: ranking, error } = await clienteSupabase.from('classificacio_quiniela').select('*').order('puntos_totales', { ascending: false });
+            const { data: ranking, error } = await clienteSupabase.from('classificacio_quiniela').select('*')
+                .order('puntos_totales', { ascending: false })
+                .order('plens', { ascending: false })
+                .order('encerts_p10', { ascending: false });
             const rankingEl = document.getElementById('tabla-ranking'); 
             const rankingQuinielaPestanaEl = document.getElementById('tabla-ranking-quiniela-pestana');
             if (error || !ranking || ranking.length === 0) { return; }
@@ -839,7 +882,7 @@
             let htmlFull = '';
             
             ranking.forEach((pos, index) => { 
-                let fila = generarFilaRankingHTML({ id_jugador: pos.id_jugador, valor: pos.puntos_totales }, index, 'pts'); 
+                let fila = generarFilaRankingQuiniela(pos, index); 
                 htmlFull += fila;
                 if(index < 3) htmlInicio += fila;
             });
@@ -935,6 +978,12 @@
             return `Partit ${index}`;
         }
 
+        function colorLiniaPronostic(jornada, index, valorJugador) {
+            const real = resultatsRealsCache[jornada];
+            if (!real || !real[`p${index}`] || !valorJugador) return 'color:var(--text);';
+            return (valorJugador === real[`p${index}`]) ? 'color:var(--success); font-weight:700;' : 'color:var(--danger);';
+        }
+
         function actualitzarNomsPartitsFormularis() {
             const spanTitolPartits = document.getElementById('txt-jornada-admin-partits');
             if (spanTitolPartits) spanTitolPartits.textContent = numeroJornadaGlobal;
@@ -976,6 +1025,67 @@
                 actualitzarNomsPartitsFormularis();
                 setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
             }
+        }
+
+        async function carregarResultatsReals() {
+            const { data } = await clienteSupabase.from('resultados_reales').select('*');
+            resultatsRealsCache = {};
+            if (data) { data.forEach(r => { resultatsRealsCache[r.jornada] = r; }); }
+        }
+
+        async function cargarPendentsQuiniela() {
+            const cont = document.getElementById('llista-pendents-quiniela');
+            if (!cont) return;
+            const { data: perfils } = await clienteSupabase.from('perfils').select('*');
+            const { data: quinielesJornada } = await clienteSupabase.from('quinieles').select('id_jugador').eq('jornada', numeroJornadaGlobal).neq('id_jugador', 'CARTEL');
+            if (!perfils) { cont.innerHTML = ''; return; }
+
+            let enviats = new Set((quinielesJornada || []).map(q => q.id_jugador.trim().toLowerCase()));
+            let pendents = perfils.filter(p => !enviats.has(p.id_jugador.trim().toLowerCase()));
+
+            if (pendents.length === 0) {
+                cont.innerHTML = `<p style="color:var(--success); font-size:0.85rem; margin:0; font-weight:600;">✅ Tothom ha enviat la quiniela d'aquesta jornada!</p>`;
+            } else {
+                let etiquetesHTML = pendents.map(p => `<span style="display:inline-block; background:rgba(239,68,68,0.12); color:#ff8080; border:1px solid rgba(239,68,68,0.25); padding:4px 10px; border-radius:7px; font-size:0.78rem; font-weight:600; margin:2px 4px 2px 0;">${p.nom_real}</span>`).join('');
+                cont.innerHTML = `<p style="color:var(--warning); font-size:0.82rem; margin:0 0 8px 0; font-weight:700;">⏳ Falten per enviar (${pendents.length}):</p>${etiquetesHTML}`;
+            }
+        }
+
+        async function cargarEvolucioQuiniela() {
+            const cont = document.getElementById('taula-evolucio-quiniela');
+            if (!cont) return;
+            const { data: files } = await clienteSupabase.from('punts_jornada_quiniela').select('*');
+            if (!files || files.length === 0) { cont.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Encara no hi ha jornades resoltes.</p>'; return; }
+
+            let jornadesSet = new Set();
+            let jugadorsMap = {};
+            files.forEach(f => {
+                jornadesSet.add(f.jornada);
+                if (!jugadorsMap[f.id_jugador]) jugadorsMap[f.id_jugador] = {};
+                jugadorsMap[f.id_jugador][f.jornada] = f.punts;
+            });
+            let jornadesOrdenades = Array.from(jornadesSet).sort((a, b) => a - b);
+
+            let jugadorsOrdenats = Object.keys(jugadorsMap).map(email => {
+                let total = jornadesOrdenades.reduce((sum, j) => sum + (jugadorsMap[email][j] || 0), 0);
+                return { email, total };
+            }).sort((a, b) => b.total - a.total);
+
+            let html = `<div class="table-wrapper"><table><thead><tr><th>Jugador</th>`;
+            jornadesOrdenades.forEach(j => { html += `<th style="text-align:center;">J${j}</th>`; });
+            html += `<th style="text-align:center; color:var(--gold);">Total</th></tr></thead><tbody>`;
+
+            jugadorsOrdenats.forEach(jug => {
+                let nom = dadesPerfilsMapejades[jug.email.trim().toLowerCase()] || jug.email.split('@')[0];
+                html += `<tr><td style="font-weight:700; white-space:nowrap;">${nom}</td>`;
+                jornadesOrdenades.forEach(j => {
+                    let punts = jugadorsMap[jug.email][j];
+                    html += `<td style="text-align:center; color:${punts !== undefined ? '#cbd5e1' : '#475569'};">${punts !== undefined ? punts : '-'}</td>`;
+                });
+                html += `<td style="text-align:center; font-weight:800; color:var(--gold);">${jug.total}</td></tr>`;
+            });
+            html += `</tbody></table></div>`;
+            cont.innerHTML = html;
         }
 
         async function consultarEstadoCerrojo() {
@@ -1349,456 +1459,4 @@
             const listaCompanysEl = document.getElementById('lista-quinielas-companys');
             if (!porraBloqueadaActualmente) { listaCompanysEl.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--warning);"><p style="font-size:2rem; margin:0 0 0.5rem 0;">🔒</p><p style="margin:0; font-size:1rem; font-weight:bold;">Bitllets ocults temporandament</p></div>`; return; }
             const { data: quinielas } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal).neq('id_jugador', 'CARTEL');
-            if(!quinielas || quinielas.length === 0) { listaCompanysEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap company ha enviat la quiniela encara.</p>'; return; }
-            let html = '';
-            quinielas.forEach(q => {
-                let nom = dadesPerfilsMapejades[q.id_jugador.trim().toLowerCase()] || q.id_jugador.split('@')[0];
-                let avatarHTML = getAvatar(nom, 24);
-                let linies = '';
-                for (let i=1; i<=10; i++) { linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>${nomPartit(numeroJornadaGlobal, i)}</span><strong style="color:var(--text); white-space:nowrap;">${q[`p${i}`] ?? '-'}</strong></div>`; }
-                html += `<div class="card" style="margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">${avatarHTML} ${nom}</p><div style="color:#94a3b8;">${linies}</div></div>`;
-            });
-            listaCompanysEl.innerHTML = html;
-        }
-
-        async function cargarRankingMVP() {
-            const { data: totsElsVots, error } = await clienteSupabase.from('vots_mvp').select('*');
-            const rankingMvpEl = document.getElementById('tabla-ranking-mvp'); 
-            const rankingMvpInicioEl = document.getElementById('tabla-ranking-mvp-inicio');
-            const historialMvpEl = document.getElementById('tabla-historial-mvp');
-            let textoNoMvp = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap trofeu MVP registrat.</p>';
-            if(error || !totsElsVots || totsElsVots.length === 0) { 
-                if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; 
-                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; 
-                if(historialMvpEl) historialMvpEl.innerHTML = textoNoMvp;
-                return; 
-            }
-            
-            let votsPerJornada = {};
-            let minIdPerJornada = {};
-            totsElsVots.forEach(v => { 
-                let jor = v.jornada; let nom = v.nominat.trim(); 
-                if(nom) { 
-                    if (!votsPerJornada[jor]) votsPerJornada[jor] = {}; 
-                    votsPerJornada[jor][nom] = (votsPerJornada[jor][nom] || 0) + 1; 
-                    if (minIdPerJornada[jor] === undefined || v.id < minIdPerJornada[jor]) minIdPerJornada[jor] = v.id;
-                } 
-            });
-            
-            let palmaresTrofeus = {};
-            let guanyadorsPerJornada = {};
-            Object.keys(votsPerJornada).forEach(jor => {
-                let votsDeLaSetmana = votsPerJornada[jor]; let maximVots = 0; let guanyadorsSetmana = [];
-                Object.keys(votsDeLaSetmana).forEach(nom => { if (votsDeLaSetmana[nom] > maximVots) { maximVots = votsDeLaSetmana[nom]; guanyadorsSetmana = [nom]; } else if (votsDeLaSetmana[nom] === maximVots) { guanyadorsSetmana.push(nom); } });
-                guanyadorsSetmana.forEach(guanyador => { palmaresTrofeus[guanyador] = (palmaresTrofeus[guanyador] || 0) + 1; });
-                guanyadorsPerJornada[jor] = guanyadorsSetmana;
-            });
-            
-            let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
-            if(llistaPalmares.length === 0) { 
-                if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; 
-                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = textoNoMvp; 
-            } else {
-                let htmlInicio = '';
-                let htmlFull = '';
-                llistaPalmares.forEach((mvp, index) => { 
-                    let fila = generarFilaRankingHTML({ id_jugador: mvp.id_jugador, valor: mvp.valor }, index, '🏆', 'color:var(--warning)'); 
-                    htmlFull += fila;
-                    if(index < 3) htmlInicio += fila;
-                });
-                if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
-                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
-            }
-
-            if (historialMvpEl) {
-                let jornadesOrdenades = Object.keys(guanyadorsPerJornada).sort((a, b) => (minIdPerJornada[b] || 0) - (minIdPerJornada[a] || 0));
-                if (jornadesOrdenades.length === 0) {
-                    historialMvpEl.innerHTML = textoNoMvp;
-                } else {
-                    let htmlHistorial = '';
-                    jornadesOrdenades.forEach(jor => {
-                        let nomsGuanyadors = guanyadorsPerJornada[jor].map(nom => {
-                            let avatarHTML = getAvatar(nom, 26);
-                            return `<span style="display:inline-flex; align-items:center; gap:6px;">${avatarHTML}<strong>${nom}</strong></span>`;
-                        }).join(' i ');
-                        htmlHistorial += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding: 0.75rem 0; border-bottom:1px solid var(--border); flex-wrap:wrap;">
-                                <span style="display:flex; align-items:center; gap:8px; font-size:0.95rem;">🏆 ${nomsGuanyadors}</span>
-                                <span style="color:var(--warning); font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.3px;">${jor}</span>
-                            </div>`;
-                    });
-                    historialMvpEl.innerHTML = htmlHistorial;
-                }
-            }
-        }
-
-        async function cargarVotMVPExistente() {
-            const selectMvp = document.getElementById('select-nom-mvp');
-            if(!selectMvp || mvpBloquejat || !etiquetaMvpActiva) return;
-            const msgMvp = document.getElementById('msg-mvp-votacio');
-            const { data: votFet } = await clienteSupabase.from('vots_mvp').select('*').eq('id_jugador', emailUsuario).eq('jornada', etiquetaMvpActiva).maybeSingle();
-            if(votFet) { if(selectMvp) selectMvp.value = votFet.nominat; if(msgMvp) { msgMvp.style.color = 'var(--warning)'; msgMvp.textContent = `Ja has votat a en ${votFet.nominat} per a "${etiquetaMvpActiva}".`; msgMvp.style.display = 'block'; } }
-        }
-
-        async function guardarVotMVP() {
-            const msgMvp = document.getElementById('msg-mvp-votacio'); const selectMvp = document.getElementById('select-nom-mvp');
-            if(!selectMvp) return;
-            if(mvpBloquejat || !etiquetaMvpActiva) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 Les votacions de l\'MVP estan tancades ara mateix.'; msgMvp.style.display = 'block'; return; }
-            const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
-            msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
-            const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: etiquetaMvpActiva, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
-            if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
-        }
-
-        async function guardarResultadosReales() {
-            const msgEl = document.getElementById('msg-admin'); if(Object.keys(resultadosRealesAdmin).length < 10) return;
-            msgEl.style.color = 'var(--warning)'; msgEl.textContent = 'Calculant encerts...'; msgEl.style.display = 'block';
-            resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
-            const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
-            if(quinielasJornada) { for (let q of quinielasJornada) { let aciertos = 0; for(let i=1; i<=9; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertos++; } if(q.p10 && resultadosRealesAdmin.p10 && q.p10 === resultadosRealesAdmin.p10) { aciertos += PUNTS_BONUS_P10; } const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).single(); if (filaRank) { await clienteSupabase.from('classificacio_quiniela').update({ puntos_totales: filaRank.puntos_totales + aciertos }).eq('id_jugador', q.id_jugador); } else { await clienteSupabase.from('classificacio_quiniela').insert([{ id_jugador: q.id_jugador, puntos_totales: aciertos }]); } } }
-            let seguent = numeroJornadaGlobal + 1; 
-            
-            await clienteSupabase.from('estado_porra').update({ bloqueado: false, jornada_activa: seguent }).eq('id', 1); 
-            location.reload();
-        }
-
-        async function cargarHistorial() {
-            const { data: misQuinielas } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).neq('jornada', 99).order('jornada', { ascending: false });
-            const historialEl = document.getElementById('lista-historial'); if (!misQuinielas || misQuinielas.length === 0) { historialEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap quiniela enviada.</p>'; return; }
-            let html = '';
-            misQuinielas.forEach((q) => {
-                let linies = '';
-                for (let i=1; i<=10; i++) { linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>${nomPartit(q.jornada, i)}</span><strong style="color:var(--text); white-space:nowrap;">${q[`p${i}`] ?? '-'}</strong></div>`; }
-                html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 8px 0;">Jornada ${q.jornada || 1}</p><div style="color:#94a3b8;">${linies}</div></div>`;
-            });
-            historialEl.innerHTML = html;
-        }
-
-        function parsearCSV(text) {
-            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== "");
-            if (lineas.length === 0) return [];
-            
-            const primeraLinea = lineas[0];
-            const nComes = (primeraLinea.match(/,/g) || []).length;
-            const nPuntsComes = (primeraLinea.match(/;/g) || []).length;
-            const separador = nPuntsComes > nComes ? ';' : ',';
-            
-            return lineas.map(linea => {
-                const r = []; let dins = false; let val = '';
-                for (let i = 0; i < linea.length; i++) {
-                    let c = linea[i];
-                    if (c === '"') { dins = !dins; } 
-                    else if (c === separador && !dins) { r.push(val.trim().replace(/^"|"$/g, '')); val = ''; } 
-                    else { val += c; }
-                }
-                r.push(val.trim().replace(/^"|"$/g, ''));
-                return r;
-            }).filter(l => l.length > 0 && l.some(cel => cel !== ""));
-        }
-
-        function cambiarPestaña(tabId, boton) { document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); boton.classList.add('active'); }
-        function cambiarSubTab(subTabId, boton) { document.getElementById('tab-quiniela').querySelectorAll('.sub-tab-content').forEach(st => st.style.display = 'none'); document.getElementById('tab-quiniela').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
-        function cambiarSubTabStats(subTabId, boton) { document.getElementById('tab-stats').querySelectorAll('.sub-tab-content-stats').forEach(st => st.style.display = 'none'); document.getElementById('tab-stats').querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active')); document.getElementById(`sub-${subTabId}`).style.display = 'block'; boton.classList.add('active'); }
-        
-        function marcar(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); pronosticosSeleccionados[idPartido] = valor; }
-        function marcarAdmin(boton, valor) { const fila = boton.closest('.partido-fila'); const idPartido = fila.getAttribute('data-admin-partido'); fila.querySelectorAll('.btn-pronostico').forEach(b => b.classList.remove('selected')); boton.classList.add('selected'); resultadosRealesAdmin[idPartido] = valor; }
-        
-        function marcarExacte() {
-            const local = document.getElementById('p10-local').value;
-            const visitant = document.getElementById('p10-visitant').value;
-            if (local !== '' && visitant !== '') { pronosticosSeleccionados['p10'] = `${local}-${visitant}`; }
-            else { delete pronosticosSeleccionados['p10']; }
-        }
-
-        function marcarExacteAdmin() {
-            const local = document.getElementById('admin-p10-local').value;
-            const visitant = document.getElementById('admin-p10-visitant').value;
-            if (local !== '' && visitant !== '') { resultadosRealesAdmin['p10'] = `${local}-${visitant}`; }
-            else { delete resultadosRealesAdmin['p10']; }
-        }
-        
-        async function verificarBoletoExistente() { 
-            const msgEl = document.getElementById('msg-quiniela'); 
-            const { data: bEx } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', emailUsuario).eq('jornada', numeroJornadaGlobal).maybeSingle(); 
-            if (bEx) { 
-                msgEl.style.color = 'var(--warning)'; 
-                msgEl.textContent = `Ja tens un bitllet desat. Pots canviar els pronòstics i desar per substituir-lo.`; 
-                msgEl.style.display = 'block'; 
-                for(let i=1; i<=10; i++) { 
-                    const valorAnterior = bEx[`p${i}`]; 
-                    pronosticosSeleccionados[`p${i}`] = valorAnterior; 
-                    if (i === 10) {
-                        if (valorAnterior && valorAnterior.includes('-')) {
-                            const [loc, vis] = valorAnterior.split('-');
-                            const inputLocal = document.getElementById('p10-local'); if (inputLocal) inputLocal.value = loc;
-                            const inputVisitant = document.getElementById('p10-visitant'); if (inputVisitant) inputVisitant.value = vis;
-                        }
-                        continue;
-                    }
-                    const fila = document.querySelector(`[data-partido="p${i}"]`); 
-                    if(fila) { 
-                        fila.querySelectorAll('.btn-pronostico').forEach(b => { 
-                            if(b.textContent === valorAnterior) b.classList.add('selected'); 
-                            else b.classList.remove('selected'); 
-                        }); 
-                    } 
-                } 
-            } else { 
-                msgEl.style.display = 'none'; 
-                pronosticosSeleccionados = {}; 
-                document.querySelectorAll('#lista-partidos .btn-pronostico').forEach(b => b.classList.remove('selected')); 
-                const inputLocal = document.getElementById('p10-local'); if (inputLocal) inputLocal.value = '';
-                const inputVisitant = document.getElementById('p10-visitant'); if (inputVisitant) inputVisitant.value = '';
-            } 
-        }
-
-        async function guardarQuiniela() { 
-            const msgEl = document.getElementById('msg-quiniela'); 
-            const btn = document.getElementById('btn-guardar-porra');
-            
-            if(porraBloqueadaActualmente || Object.keys(pronosticosSeleccionados).length < 10) {
-                msgEl.style.color = 'var(--danger)'; 
-                msgEl.textContent = 'Falten partits per marcar o la jornada està tancada.'; 
-                msgEl.style.display = 'block';
-                return;
-            } 
-
-            btn.innerHTML = '⏳ Desant...';
-            btn.style.opacity = '0.7';
-
-            pronosticosSeleccionados['id_jugador'] = emailUsuario; 
-            pronosticosSeleccionados['jornada'] = numeroJornadaGlobal; 
-            const { error } = await clienteSupabase.from('quinieles').upsert(pronosticosSeleccionados, { onConflict: 'id_jugador,jornada' }); 
-            
-            if(!error) {
-                btn.innerHTML = '✅ Guardat correctament!';
-                btn.style.opacity = '1';
-                btn.style.backgroundColor = 'var(--success)';
-                
-                msgEl.style.color = 'var(--success)'; 
-                msgEl.textContent = 'Quiniela desada! (Si fas més canvis, se substituirà).'; 
-                msgEl.style.display = 'block';
-                
-                setTimeout(() => { 
-                    btn.innerHTML = 'Desar la Quiniela';
-                    btn.style.backgroundColor = 'var(--success)';
-                    verificarBoletoExistente(); 
-                }, 3000); 
-            }
-        }
-
-        async function cargarMultas() {
-            const { data: multas } = await clienteSupabase.from('multas').select('*');
-            const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas');
-            if(!multas || multas.length === 0) { if(boteEl) boteEl.textContent = '0.00 €'; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = '0.00 €'; if(listaEl) listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>'; return; }
-            
-            let sum = 0; let htmlLista = '';
-            const usuarisAmbPermisEsborrar = ['sergigodayol@gmail.com', 'martiolisan@gmail.com', 'ericsoleponsa@hotmail.es'];
-            multas.forEach(m => {
-                sum += parseFloat(m.import);
-                let botoBorrarExclusiu = usuarisAmbPermisEsborrar.includes(emailUsuario) 
-                    ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
-                    : '';
-
-                htmlLista += `
-                    <div class="multa-item">
-                        <span><strong>${m.nom_jugador}</strong> (${m.motiu}) ${botoBorrarExclusiu}</span>
-                        <span style="color:var(--danger); font-weight:bold;">${m.import} €</span>
-                    </div>`;
-            });
-            let text = `${sum.toFixed(2)} €`;
-            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
-        }
-
-        async function cargarEstadisticas() {
-            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
-            const urlLliga = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`;
-            const urlGlobal = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=JUGADORS%20(GLOBALS)`;
-
-            try {
-                const resLliga = await fetch(urlLliga);
-                const csvLliga = await resLliga.text();
-                const dadesLliga = parsearCSV(csvLliga);
-
-                const resGlobal = await fetch(urlGlobal);
-                const csvGlobal = await resGlobal.text();
-                const dadesGlobal = parsearCSV(csvGlobal);
-
-                if (dadesLliga.length === 0) {
-                    document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">El full de càrrec ha retornat un fitxer buit.</p>';
-                    return;
-                }
-
-                const headersLliga = dadesLliga[0].map(h => h.trim().toUpperCase());
-                const idxJugadorL = headersLliga.indexOf('JUGADOR');
-                const idxPartitsL = headersLliga.indexOf('PARTITS JUGATS');
-                const idxGolsL = headersLliga.indexOf('GOLS');
-                const idxTGL = headersLliga.indexOf('TG');
-                const idxTVL = headersLliga.indexOf('TV');
-
-                if (idxJugadorL === -1) {
-                    document.getElementById('tabla-stats-lliga').innerHTML = `<p style="color:var(--danger)">Error: No s'ha trobat la columna 'JUGADOR'. Revisa les capçaleres de l'Excel.</p>`;
-                    return;
-                }
-
-                const jugadorsActius = [];
-                let htmlLliga = `
-                    <div style="overflow-x: auto;">
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border); color: var(--primary);">
-                                <th style="padding: 8px 4px;">JUGADOR</th>
-                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
-                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                for (let i = 1; i < dadesLliga.length; i++) {
-                    const fila = dadesLliga[i];
-                    const nom = fila[idxJugadorL] ? fila[idxJugadorL].trim() : "";
-
-                    if (nom.toUpperCase().includes('AMATEUR B') || nom.toUpperCase() === 'JUGADOR') {
-                        if (jugadorsActius.length > 0) break; 
-                        continue;
-                    }
-
-                    if (nom === "") {
-                        if (jugadorsActius.length > 0) break; 
-                        continue;
-                    }
-
-                    const pj = fila[idxPartitsL] ? fila[idxPartitsL].trim() : '0';
-                    const gols = fila[idxGolsL] ? fila[idxGolsL].trim() : '0';
-                    const tg = fila[idxTGL] ? fila[idxTGL].trim() : '0';
-                    const tv = fila[idxTVL] ? fila[idxTVL].trim() : '0';
-
-                    jugadorsActius.push(nom.toLowerCase());
-
-                    htmlLliga += `
-                        <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                            <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nom}</td>
-                            <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pj}</td>
-                            <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${gols}</td>
-                            <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tg}</td>
-                            <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tv}</td>
-                        </tr>`;
-                }
-                htmlLliga += `</tbody></table></div>`;
-                document.getElementById('tabla-stats-lliga').innerHTML = htmlLliga;
-
-                const headersGlobal = dadesGlobal[0].map(h => h.trim().toUpperCase());
-                const idxJugadorG = headersGlobal.indexOf('JUGADOR');
-                const idxPartitsG = headersGlobal.indexOf('PARTITS JUGATS');
-                const idxGolsG = headersGlobal.indexOf('GOLS');
-                const idxTGG = headersGlobal.indexOf('TG');
-                const idxTVG = headersGlobal.indexOf('TV');
-
-                let htmlHistoric = `
-                    <div style="overflow-x: auto;">
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border); color: var(--success);">
-                                <th style="padding: 8px 4px;">JUGADOR</th>
-                                <th style="padding: 8px 4px; text-align:center;">PJ</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--warning);">GOLS</th>
-                                <th style="padding: 8px 4px; text-align:center; color:#eab308;">TG</th>
-                                <th style="padding: 8px 4px; text-align:center; color:var(--danger);">TV</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                let hiHaHistoric = false;
-                for (let i = 1; i < dadesGlobal.length; i++) {
-                    const fila = dadesGlobal[i];
-                    if (!fila[idxJugadorG] || fila[idxJugadorG].trim() === "") continue;
-
-                    const nomG = fila[idxJugadorG].trim();
-                    
-                    if (jugadorsActius.includes(nomG.toLowerCase())) {
-                        hiHaHistoric = true;
-                        const pjG = fila[idxPartitsG] ? fila[idxPartitsG].trim() : '0';
-                        const golsG = fila[idxGolsG] ? fila[idxGolsG].trim() : '0';
-                        const tgG = fila[idxTGG] ? fila[idxTGG].trim() : '0';
-                        const tvG = fila[idxTVG] ? fila[idxTVG].trim() : '0';
-
-                        htmlHistoric += `
-                            <tr style="border-bottom: 1px solid var(--border); background-color: rgba(255,255,255, 0.01)">
-                                <td style="padding: 10px 4px; font-weight:bold; color:#f1f5f9; max-width: 140px; white-space: normal; line-height: 1.2; word-wrap: break-word;">${nomG}</td>
-                                <td style="padding: 10px 4px; text-align:center; color:#cbd5e1;">${pjG}</td>
-                                <td style="padding: 10px 4px; text-align:center; font-weight:bold; color:var(--warning);">${golsG}</td>
-                                <td style="padding: 10px 4px; text-align:center; color:#eab308;">${tgG}</td>
-                                <td style="padding: 10px 4px; text-align:center; color:var(--danger);">${tvG}</td>
-                            </tr>`;
-                    }
-                }
-
-                if (!hiHaHistoric) {
-                    htmlHistoric += `<tr><td colspan="5" style="padding: 20px; text-align:center; color:#94a3b8;">No s'han trobat dades històriques coincidents.</td></tr>`;
-                }
-
-                htmlHistoric += `</tbody></table></div>`;
-                document.getElementById('tabla-stats-historic').innerHTML = htmlHistoric;
-
-            } catch (error) {
-                console.error("Error carregant fulls:", error);
-                document.getElementById('tabla-stats-lliga').innerHTML = '<p style="color:var(--danger)">Error de connexió amb Google Drive.</p>';
-            }
-        }
-
-        async function verificarSesion() {
-            try {
-                const { data: { session } } = await clienteSupabase.auth.getSession();
-                if (!session) { window.location.href = 'index.html'; return; }
-                emailUsuario = session.user.email;
-                
-                const { data: perfilPropi } = await clienteSupabase.from('perfils').select('*').eq('id_jugador', emailUsuario).maybeSingle();
-                if (!perfilPropi) { document.getElementById('card-completar-perfil').style.display = 'block'; }
-                
-                let nomHeader = perfilPropi ? perfilPropi.nom_real : emailUsuario.split('@')[0];
-                document.getElementById('saludo-usuario').textContent = `👋 Hola, ${nomHeader}!`;
-                document.getElementById('avatar-usuario-header').innerHTML = getAvatar(nomHeader, 42);
-                
-                const isMainAdmin = (emailUsuario === 'sergigodayol@gmail.com');
-                const isEntrenador = (emailUsuario === 'martiolisan@gmail.com' || emailUsuario === 'ericsoleponsa@hotmail.es');
-
-                if(isMainAdmin || isEntrenador) {
-                    const navBar = document.getElementById('barra-navegacion-principal');
-                    if(!document.getElementById('btn-gestio-admin')) {
-                        navBar.insertAdjacentHTML('beforeend', `
-                            <button id="btn-gestio-admin" class="nav-btn" style="color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
-                                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor; margin-bottom: 5px;">
-                                    <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
-                                </svg>
-                                Gestió
-                            </button>
-                        `);
-                    }
-
-                    if (isEntrenador && !isMainAdmin) {
-                        document.getElementById('admin-gestio-titol').textContent = "🏃‍♂️ Panell Tècnic";
-                        document.getElementById('admin-gestio-desc').textContent = "Aquesta pantalla és per gestionar en directe els punts dels entrenaments i les multes.";
-                        document.getElementById('admin-card-cartellera').style.display = 'none';
-                        document.getElementById('admin-card-aniversaris').style.display = 'none';
-                        document.getElementById('admin-card-lock').style.display = 'none';
-                        document.getElementById('admin-card-partits').style.display = 'none';
-                        document.getElementById('admin-card-resultats').style.display = 'none';
-                    }
-                }
-                
-                // Un cop verificat qui ets, cridem la resta
-                inicializarDashboard();
-
-            } catch (err) {
-                console.error("Error en iniciar sessió:", err);
-            }
-        }
-
-        // L'arrencada
-        verificarSesion();
-
-    </script>
-</body>
-</html>
+            if(!quinielas || quinielas.length === 0) { listaCompanysEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Cap company ha envi

@@ -1190,9 +1190,8 @@ async function carregarPartitsResums() {
 
         partitsLligaCache = [];
 
-        for (let i = 1; i < dades.length; i++) {
-
-            const row = dades[i];
+        for (let i = 1; i < dadesAmateurA.length; i++) {
+            const row = dadesAmateurA[i];
 
             if (!row[idxJornada] || !row[idxRival]) continue;
 
@@ -2198,9 +2197,22 @@ async function eliminarResumPartit() {
 
             const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
             const temporades = [
-                'T 11-12', 'T 12-13', 'T 13-14', 'T 14-15', 'T 15-16', 
-                'T 16-17', 'T 17-18', 'T 18-19', 'T 19-20', 'T 20-21', 
-                'T 21-22', 'T 22-23', 'T 23-24', 'T 24-25', 'T 25-26', 'T 26-27'
+                { nom: 'T 11-12', ultimaFilaA: 33 },
+                { nom: 'T 12-13', ultimaFilaA: 31 },
+                { nom: 'T 13-14', ultimaFilaA: 31 },
+                { nom: 'T 14-15', ultimaFilaA: 31 },
+                { nom: 'T 15-16', ultimaFilaA: 31 },
+                { nom: 'T 16-17', ultimaFilaA: 35 },
+                { nom: 'T 17-18', ultimaFilaA: 35 },
+                { nom: 'T 18-19', ultimaFilaA: 37 },
+                { nom: 'T 19-20', ultimaFilaA: 24 },
+                { nom: 'T 20-21', ultimaFilaA: 10 },
+                { nom: 'T 21-22', ultimaFilaA: 31 },
+                { nom: 'T 22-23', ultimaFilaA: 35 },
+                { nom: 'T 23-24', ultimaFilaA: 31 },
+                { nom: 'T 24-25', ultimaFilaA: 31 },
+                { nom: 'T 25-26', ultimaFilaA: 34 },
+                { nom: 'T 26-27', ultimaFilaA: 31 }
             ];
 
             let partitsTrobats = [];
@@ -2208,10 +2220,10 @@ async function eliminarResumPartit() {
             for (let i = 0; i < temporades.length; i += 4) {
                 const batch = temporades.slice(i, i + 4);
                 const promeses = batch.map(t => 
-                    fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${t}`)
-                    .then(res => res.text())
-                    .then(csv => ({ temp: t, dades: parsearCSV(csv) }))
-                    .catch(err => null)
+                    fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${t.nom}`)
+                        .then(res => res.text())
+                        .then(csv => ({ temp: t, dades: parsearCSV(csv) }))
+                        .catch(err => null)
                 );
                 
                 const resultats = await Promise.all(promeses);
@@ -2220,7 +2232,14 @@ async function eliminarResumPartit() {
                     if(!res || !res.dades || res.dades.length === 0) return;
                     
                     const dades = res.dades;
-                    const headers = dades[0].map(h => h.trim().toUpperCase());
+
+                    // SOLO AMATEUR A
+                    // res.temp.ultimaFilaA es la última fila de Google Sheets que pertenece al A.
+                    // Como dades[0] son las cabeceras (fila 1), la fila N de Sheets
+                    // corresponde al índice N-1 del array.
+                    const dadesAmateurA = dades.slice(0, res.temp.ultimaFilaA);
+                    
+                    const headers = dadesAmateurA[0].map(h => h.trim().toUpperCase());
                     
                     const idxRival = headers.indexOf('RIVAL');
                     const idxLV = headers.indexOf('LOCAL/VISITANT') !== -1 ? headers.indexOf('LOCAL/VISITANT') : headers.indexOf('CAL/VISITANT');

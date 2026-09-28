@@ -463,6 +463,32 @@
             </div>
         </div>
 
+        <div id="tab-partits" class="tab-content">
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <h3>
+                <span class="card-icon icon-blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
+                        <polygon points="10 8 16 12 10 16 10 8"/>
+                    </svg>
+                </span>
+                Partits
+            </h3>
+        </div>
+
+        <p style="color:#94a3b8; font-size:0.85rem; margin-top:-0.4rem; margin-bottom:1.2rem;">
+            Resultats de la temporada i resums dels partits.
+        </p>
+
+        <div id="llista-partits">
+            Carregant partits...
+        </div>
+    </div>
+
+</div>
+
         <div id="tab-entrenos" class="tab-content">
             <div class="card">
                 <h3><span class="card-icon icon-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span> Lliga d'Entrenaments (Global)</h3>
@@ -600,7 +626,60 @@
                     <button onclick="guardarPartitsJornada()" class="btn-cta btn-cta-primary" style="width:100%; padding:0.65rem; margin-top:0.2rem;">Desar Partits d'aquesta Jornada</button>
                     <p id="msg-admin-partits" style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;"></p>
                 </div>
-                
+                <div id="admin-card-resums" class="card" style="margin-bottom:1.2rem;">
+
+    <p style="font-size:0.9rem; margin:0 0 0.8rem 0; display:flex; align-items:center; gap:9px; font-weight:600;">
+        <span class="card-icon card-icon-sm icon-danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+        </span>
+        Gestionar Resums dels Partits
+    </p>
+
+    <p style="color:#94a3b8; font-size:0.8rem; margin-top:-0.4rem; margin-bottom:1rem;">
+        Selecciona una jornada i afegeix o modifica el vídeo de YouTube del resum.
+    </p>
+
+    <select
+        id="admin-resum-jornada"
+        class="input-admin-multa"
+        style="background:rgba(0,0,0,0.35); color:white;"
+        onchange="carregarResumJornadaAdmin()">
+        <option value="">-- Selecciona una jornada --</option>
+    </select>
+
+    <div
+        id="admin-resum-partit-info"
+        style="display:none; margin:0.8rem 0; padding:0.8rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; text-align:center;">
+    </div>
+
+    <input
+        type="url"
+        id="admin-resum-url"
+        class="input-admin-multa"
+        placeholder="Enllaç de YouTube (https://youtu.be/...)">
+
+    <button
+        onclick="guardarResumPartit()"
+        class="btn-cta"
+        style="width:100%; padding:0.65rem; background-color:var(--danger); color:white;">
+        🎬 Desar Resum
+    </button>
+
+    <button
+        onclick="eliminarResumPartit()"
+        style="width:100%; margin-top:0.5rem; padding:0.55rem; background:rgba(239,68,68,0.08); color:#ff8080; border:1px solid rgba(239,68,68,0.25); border-radius:8px; font-weight:600; cursor:pointer;">
+        🗑️ Eliminar Resum
+    </button>
+
+    <p
+        id="msg-admin-resum"
+        style="text-align:center; display:none; font-weight:bold; margin-top:0.8rem; font-size:0.85rem;">
+    </p>
+
+</div>
                 <div id="admin-card-mvp" class="card" style="margin-bottom: 1.2rem;">
                     <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Control de Votació MVP</p>
                     <p style="color:#94a3b8; font-size:0.8rem; margin-top:-0.6rem; margin-bottom:1rem;">Independent de la quiniela. Escriu una etiqueta (Ex: "Jornada 12" o "Amistós Platja d'Aro") i obre la votació quan vulguis.</p>
@@ -676,6 +755,13 @@
         <button class="nav-btn" onclick="cambiarPestaña('entrenos', this); cargarRankingEntrenosFull();">
             <svg viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg> Entrenos
         </button>
+        <button class="nav-btn" onclick="cambiarPestaña('partits', this); carregarPartitsResums();">
+    <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <polygon points="10 8 16 12 10 16 10 8"/>
+    </svg>
+    Partits
+</button>
         <button class="nav-btn" onclick="cambiarPestaña('stats', this); cargarEstadisticas();">
             <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg> Stats
         </button>
@@ -753,6 +839,7 @@
             cargarCalendariAniversaris();
             verificarBoletoExistente();
             cargarEstadisticas();
+            carregarJornadesAdminResums();
         }
 
         async function guardarNombreMigracion() {
@@ -1026,6 +1113,836 @@
                 setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
             }
         }
+        // ============================================================
+// PARTITS + RESUMS YOUTUBE
+// ============================================================
+
+let partitsLligaCache = [];
+let resumsPartitsCache = {};
+
+async function carregarPartitsResums() {
+
+    const cont = document.getElementById('llista-partits');
+    if (!cont) return;
+
+    cont.innerHTML = `
+        <p style="text-align:center; color:#94a3b8;">
+            Carregant partits...
+        </p>
+    `;
+
+    const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+
+    try {
+
+        // ----------------------------------------------------
+        // 1. GOOGLE SHEETS: calendari/resultats
+        // ----------------------------------------------------
+
+        const url =
+            `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`;
+
+        const res = await fetch(url);
+        const csv = await res.text();
+
+        const dades = parsearCSV(csv);
+
+        if (!dades || dades.length < 2) {
+            cont.innerHTML = `
+                <p style="color:var(--warning); text-align:center;">
+                    No s'han trobat partits.
+                </p>
+            `;
+            return;
+        }
+
+        const headers = dades[0].map(h =>
+            h.trim().toUpperCase()
+        );
+
+        const idxJornada = headers.indexOf('JORNADA');
+        const idxRival = headers.indexOf('RIVAL');
+
+        let idxLocalVisitant =
+            headers.indexOf('LOCAL/VISITA');
+
+        if (idxLocalVisitant === -1) {
+            idxLocalVisitant =
+                headers.indexOf('LOCAL/VISITANT');
+        }
+
+        const idxResultat =
+            headers.indexOf('RESULTAT');
+
+        if (
+            idxJornada === -1 ||
+            idxRival === -1 ||
+            idxLocalVisitant === -1 ||
+            idxResultat === -1
+        ) {
+            cont.innerHTML = `
+                <p style="color:var(--danger); text-align:center;">
+                    Error: no s'han trobat les columnes del calendari.
+                </p>
+            `;
+            return;
+        }
+
+        partitsLligaCache = [];
+
+        for (let i = 1; i < dades.length; i++) {
+
+            const row = dades[i];
+
+            if (!row[idxJornada] || !row[idxRival]) continue;
+
+            const jornadaTexto =
+                row[idxJornada].trim();
+
+            const rival =
+                row[idxRival].trim();
+
+            const localVisitant =
+                row[idxLocalVisitant].trim().toUpperCase();
+
+            const resultat =
+                row[idxResultat]
+                    ? row[idxResultat].trim()
+                    : '';
+
+            const jornadaNumero =
+                parseInt(
+                    jornadaTexto.replace(/\D/g, ''),
+                    10
+                );
+
+            if (isNaN(jornadaNumero)) continue;
+
+            const esLocal =
+                localVisitant === 'LOCAL';
+
+            partitsLligaCache.push({
+                jornada: jornadaNumero,
+                jornadaTexto: jornadaTexto,
+                rival: rival,
+                localVisitant: localVisitant,
+                resultat: resultat,
+                esLocal: esLocal
+            });
+        }
+
+        // ----------------------------------------------------
+        // 2. SUPABASE: resums
+        // ----------------------------------------------------
+
+        const { data: resums, error } =
+            await clienteSupabase
+                .from('partits_jornada')
+                .select('jornada,resum_url');
+
+        if (error) {
+            console.error(
+                'Error carregant resums:',
+                error
+            );
+        }
+
+        resumsPartitsCache = {};
+
+        if (resums) {
+            resums.forEach(r => {
+                resumsPartitsCache[r.jornada] =
+                    r.resum_url || '';
+            });
+        }
+
+        // ----------------------------------------------------
+        // 3. RENDER
+        // ----------------------------------------------------
+
+        renderitzarPartitsResums();
+
+    } catch (error) {
+
+        console.error(
+            'Error carregant partits:',
+            error
+        );
+
+        cont.innerHTML = `
+            <p style="color:var(--danger); text-align:center;">
+                Error carregant els partits.
+            </p>
+        `;
+    }
+}
+
+
+function renderitzarPartitsResums() {
+
+    const cont =
+        document.getElementById('llista-partits');
+
+    if (!cont) return;
+
+    if (
+        !partitsLligaCache ||
+        partitsLligaCache.length === 0
+    ) {
+        cont.innerHTML = `
+            <p style="color:#94a3b8; text-align:center;">
+                No hi ha partits disponibles.
+            </p>
+        `;
+        return;
+    }
+
+    let html = '';
+
+    partitsLligaCache
+        .sort((a, b) => a.jornada - b.jornada)
+        .forEach(partit => {
+
+            const videoUrl =
+                resumsPartitsCache[partit.jornada] || '';
+
+            const resultat =
+                partit.resultat || '';
+
+            let estat = 'PRÒXIM PARTIT';
+            let color = '#94a3b8';
+            let bg = 'rgba(255,255,255,0.04)';
+
+            if (resultat && resultat.includes('-')) {
+
+                const parts =
+                    resultat.split('-');
+
+                const gols1 =
+                    parseInt(parts[0]);
+
+                const gols2 =
+                    parseInt(parts[1]);
+
+                if (
+                    !isNaN(gols1) &&
+                    !isNaN(gols2)
+                ) {
+
+                    if (gols1 === gols2) {
+
+                        estat = 'EMPAT';
+                        color = 'var(--warning)';
+                        bg = 'rgba(245,158,11,0.12)';
+
+                    } else {
+
+                        const guanya =
+                            partit.esLocal
+                                ? gols1 > gols2
+                                : gols2 > gols1;
+
+                        if (guanya) {
+
+                            estat = 'VICTÒRIA';
+                            color = 'var(--success)';
+                            bg = 'rgba(16,185,129,0.12)';
+
+                        } else {
+
+                            estat = 'DERROTA';
+                            color = 'var(--danger)';
+                            bg = 'rgba(239,68,68,0.12)';
+                        }
+                    }
+                }
+            }
+
+            const equipLocal =
+                partit.esLocal
+                    ? 'CF Sant Julià'
+                    : partit.rival;
+
+            const equipVisitant =
+                partit.esLocal
+                    ? partit.rival
+                    : 'CF Sant Julià';
+
+            const botonVideo = videoUrl
+                ? `
+                    <button
+                        onclick="obrirResumYoutube(${partit.jornada})"
+                        style="
+                            width:100%;
+                            margin-top:14px;
+                            padding:0.75rem;
+                            border:none;
+                            border-radius:9px;
+                            background:var(--primary);
+                            color:white;
+                            font-weight:800;
+                            cursor:pointer;
+                            font-size:0.85rem;
+                        ">
+                        ▶ VEURE RESUM
+                    </button>
+                `
+                : '';
+
+            html += `
+
+                <div
+                    style="
+                        background:var(--surface);
+                        border:1px solid var(--border);
+                        border-radius:14px;
+                        padding:14px;
+                        margin-bottom:12px;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.18);
+                    ">
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:center;
+                            margin-bottom:12px;
+                        ">
+
+                        <span
+                            style="
+                                background:var(--primary);
+                                color:white;
+                                padding:4px 9px;
+                                border-radius:6px;
+                                font-size:0.72rem;
+                                font-weight:800;
+                            ">
+                            ${partit.jornadaTexto}
+                        </span>
+
+                        <span
+                            style="
+                                color:${color};
+                                background:${bg};
+                                border:1px solid ${color};
+                                padding:4px 9px;
+                                border-radius:7px;
+                                font-size:0.7rem;
+                                font-weight:800;
+                            ">
+                            ${estat}
+                        </span>
+
+                    </div>
+
+                    <div
+                        style="
+                            display:grid;
+                            grid-template-columns:1fr auto 1fr;
+                            align-items:center;
+                            gap:10px;
+                        ">
+
+                        <div
+                            style="
+                                text-align:right;
+                                font-weight:700;
+                                font-size:0.88rem;
+                            ">
+                            ${equipLocal}
+                        </div>
+
+                        <div
+                            style="
+                                font-size:1.45rem;
+                                font-weight:900;
+                                letter-spacing:1px;
+                                white-space:nowrap;
+                            ">
+                            ${resultat || '-'}
+                        </div>
+
+                        <div
+                            style="
+                                text-align:left;
+                                font-weight:700;
+                                font-size:0.88rem;
+                            ">
+                            ${equipVisitant}
+                        </div>
+
+                    </div>
+
+                    ${botonVideo}
+
+                </div>
+            `;
+        });
+
+    cont.innerHTML = html;
+}
+
+
+function normalitzarYoutubeUrl(url) {
+
+    if (!url) return null;
+
+    url = url.trim();
+
+    let videoId = '';
+
+    // youtu.be/XXXXXXXX
+    const shortMatch =
+        url.match(/youtu\.be\/([^?&/]+)/);
+
+    if (shortMatch) {
+        videoId = shortMatch[1];
+    }
+
+    // youtube.com/watch?v=XXXXXXXX
+    const watchMatch =
+        url.match(/[?&]v=([^&]+)/);
+
+    if (watchMatch) {
+        videoId = watchMatch[1];
+    }
+
+    // youtube.com/shorts/XXXXXXXX
+    const shortsMatch =
+        url.match(/youtube\.com\/shorts\/([^?&/]+)/);
+
+    if (shortsMatch) {
+        videoId = shortsMatch[1];
+    }
+
+    if (!videoId) return null;
+
+    return videoId;
+}
+
+
+function obrirResumYoutube(jornada) {
+
+    const url =
+        resumsPartitsCache[jornada];
+
+    const videoId =
+        normalitzarYoutubeUrl(url);
+
+    if (!videoId) {
+        alert('Aquest partit no té un vídeo de YouTube vàlid.');
+        return;
+    }
+
+    const partit =
+        partitsLligaCache.find(
+            p => p.jornada === jornada
+        );
+
+    if (!partit) return;
+
+    const modal =
+        document.createElement('div');
+
+    modal.id = 'modal-resum-youtube';
+
+    modal.style.cssText = `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.88);
+        z-index:9999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+    `;
+
+    modal.innerHTML = `
+
+        <div
+            style="
+                width:100%;
+                max-width:850px;
+                background:#08101f;
+                border:1px solid var(--border-strong);
+                border-radius:16px;
+                overflow:hidden;
+                box-shadow:0 20px 60px rgba(0,0,0,0.5);
+            ">
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    padding:12px 14px;
+                    border-bottom:1px solid var(--border);
+                ">
+
+                <div
+                    style="
+                        font-weight:800;
+                        font-size:0.9rem;
+                    ">
+                    ${partit.jornadaTexto} · ${partit.rival}
+                </div>
+
+                <button
+                    onclick="document.getElementById('modal-resum-youtube').remove()"
+                    style="
+                        border:none;
+                        background:transparent;
+                        color:#94a3b8;
+                        font-size:1.4rem;
+                        cursor:pointer;
+                    ">
+                    ✕
+                </button>
+
+            </div>
+
+            <div
+                style="
+                    position:relative;
+                    width:100%;
+                    padding-top:56.25%;
+                    background:#000;
+                ">
+
+                <iframe
+                    src="https://www.youtube.com/embed/${videoId}?rel=0"
+                    title="Resum ${partit.jornadaTexto}"
+                    style="
+                        position:absolute;
+                        inset:0;
+                        width:100%;
+                        height:100%;
+                        border:0;
+                    "
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen>
+                </iframe>
+
+            </div>
+
+        </div>
+    `;
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    document.body.appendChild(modal);
+}
+
+
+// ============================================================
+// GESTIÓ: RESUMS
+// ============================================================
+
+async function carregarJornadesAdminResums() {
+
+    const select =
+        document.getElementById('admin-resum-jornada');
+
+    if (!select) return;
+
+    const sheetId =
+        '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+
+    try {
+
+        const url =
+            `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`;
+
+        const res = await fetch(url);
+        const csv = await res.text();
+
+        const dades = parsearCSV(csv);
+
+        if (!dades || dades.length < 2) return;
+
+        const headers =
+            dades[0].map(h =>
+                h.trim().toUpperCase()
+            );
+
+        const idxJornada =
+            headers.indexOf('JORNADA');
+
+        const idxRival =
+            headers.indexOf('RIVAL');
+
+        let idxLV =
+            headers.indexOf('LOCAL/VISITA');
+
+        if (idxLV === -1) {
+            idxLV =
+                headers.indexOf('LOCAL/VISITANT');
+        }
+
+        const idxResultat =
+            headers.indexOf('RESULTAT');
+
+        if (
+            idxJornada === -1 ||
+            idxRival === -1 ||
+            idxLV === -1
+        ) return;
+
+        select.innerHTML =
+            '<option value="">-- Selecciona una jornada --</option>';
+
+        for (let i = 1; i < dades.length; i++) {
+
+            const row = dades[i];
+
+            if (!row[idxJornada] || !row[idxRival]) {
+                continue;
+            }
+
+            const jornadaTexto =
+                row[idxJornada].trim();
+
+            const jornada =
+                parseInt(
+                    jornadaTexto.replace(/\D/g, ''),
+                    10
+                );
+
+            if (isNaN(jornada)) continue;
+
+            const rival =
+                row[idxRival].trim();
+
+            const lv =
+                row[idxLV]
+                    ? row[idxLV].trim()
+                    : '';
+
+            const resultat =
+                idxResultat !== -1 && row[idxResultat]
+                    ? row[idxResultat].trim()
+                    : '';
+
+            const option =
+                document.createElement('option');
+
+            option.value = jornada;
+
+            option.textContent =
+                `${jornadaTexto} · ${lv === 'LOCAL' ? 'CF Sant Julià' : rival} - ${lv === 'LOCAL' ? rival : 'CF Sant Julià'}${resultat ? ' · ' + resultat : ''}`;
+
+            option.dataset.rival = rival;
+            option.dataset.lv = lv;
+            option.dataset.resultat = resultat;
+
+            select.appendChild(option);
+        }
+
+    } catch (error) {
+
+        console.error(
+            'Error carregant jornades per Gestió:',
+            error
+        );
+    }
+}
+
+
+async function carregarResumJornadaAdmin() {
+
+    const select =
+        document.getElementById('admin-resum-jornada');
+
+    const info =
+        document.getElementById('admin-resum-partit-info');
+
+    const input =
+        document.getElementById('admin-resum-url');
+
+    if (!select || !info || !input) return;
+
+    const jornada =
+        parseInt(select.value);
+
+    if (isNaN(jornada)) {
+
+        info.style.display = 'none';
+        input.value = '';
+        return;
+    }
+
+    const option =
+        select.options[select.selectedIndex];
+
+    info.innerHTML = `
+        <strong>${option.textContent}</strong>
+    `;
+
+    info.style.display = 'block';
+
+    const { data, error } =
+        await clienteSupabase
+            .from('partits_jornada')
+            .select('resum_url')
+            .eq('jornada', jornada)
+            .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            'Error carregant resum:',
+            error
+        );
+
+        input.value = '';
+        return;
+    }
+
+    input.value =
+        data?.resum_url || '';
+}
+
+
+async function guardarResumPartit() {
+
+    const select =
+        document.getElementById('admin-resum-jornada');
+
+    const input =
+        document.getElementById('admin-resum-url');
+
+    const msg =
+        document.getElementById('msg-admin-resum');
+
+    const jornada =
+        parseInt(select.value);
+
+    const url =
+        input.value.trim();
+
+    if (isNaN(jornada)) {
+
+        msg.style.color = 'var(--danger)';
+        msg.textContent =
+            'Selecciona una jornada.';
+        msg.style.display = 'block';
+        return;
+    }
+
+    if (!url) {
+
+        msg.style.color = 'var(--danger)';
+        msg.textContent =
+            'Introdueix un enllaç de YouTube.';
+        msg.style.display = 'block';
+        return;
+    }
+
+    if (!normalitzarYoutubeUrl(url)) {
+
+        msg.style.color = 'var(--danger)';
+        msg.textContent =
+            'L\'enllaç no sembla un vídeo de YouTube vàlid.';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const { error } =
+        await clienteSupabase
+            .from('partits_jornada')
+            .upsert(
+                {
+                    jornada: jornada,
+                    resum_url: url
+                },
+                {
+                    onConflict: 'jornada'
+                }
+            );
+
+    if (error) {
+
+        console.error(error);
+
+        msg.style.color = 'var(--danger)';
+        msg.textContent =
+            '⚠️ Error: ' + error.message;
+        msg.style.display = 'block';
+
+        return;
+    }
+
+    msg.style.color = 'var(--success)';
+    msg.textContent =
+        '🎬 Resum desat correctament!';
+    msg.style.display = 'block';
+
+    resumsPartitsCache[jornada] = url;
+
+    setTimeout(() => {
+        msg.style.display = 'none';
+    }, 2500);
+}
+
+
+async function eliminarResumPartit() {
+
+    const select =
+        document.getElementById('admin-resum-jornada');
+
+    const msg =
+        document.getElementById('msg-admin-resum');
+
+    const jornada =
+        parseInt(select.value);
+
+    if (isNaN(jornada)) {
+
+        msg.style.color = 'var(--danger)';
+        msg.textContent =
+            'Selecciona una jornada.';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const { error } =
+        await clienteSupabase
+            .from('partits_jornada')
+            .update({
+                resum_url: null
+            })
+            .eq('jornada', jornada);
+
+    if (error) {
+
+        msg.style.color = 'var(--danger)';
+        msg.textContent =
+            '⚠️ Error: ' + error.message;
+        msg.style.display = 'block';
+
+        return;
+    }
+
+    document.getElementById(
+        'admin-resum-url'
+    ).value = '';
+
+    resumsPartitsCache[jornada] = '';
+
+    msg.style.color = 'var(--success)';
+    msg.textContent =
+        '🗑️ Resum eliminat.';
+    msg.style.display = 'block';
+
+    setTimeout(() => {
+        msg.style.display = 'none';
+    }, 2500);
+}
 
         async function carregarResultatsReals() {
             const { data } = await clienteSupabase.from('resultados_reales').select('*');

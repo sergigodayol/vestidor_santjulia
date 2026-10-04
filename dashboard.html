@@ -219,6 +219,9 @@
         .btn-pronostico:active { transform: scale(0.92); }
         .btn-pronostico.selected { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 0 3px rgba(47,111,237,0.25); }
         
+        .btn-anulat { font-size: 0.65rem !important; letter-spacing: 0.2px; }
+        .btn-anulat.selected { background: #475569; border-color: #475569; box-shadow: 0 0 0 3px rgba(148,163,184,0.25); }
+        #lista-admin-partidos .botones-1x2 { flex-wrap: wrap; justify-content: flex-end; }
         .marcador-exacte { display:flex; align-items:center; gap:8px; }
         .input-marcador { width:48px; background: rgba(0,0,0,0.35); border:1px solid var(--border); color:var(--text); padding:0.5rem 0.4rem; border-radius:9px; text-align:center; font-family:'Oswald', sans-serif; font-weight:700; font-size:1rem; }
         .input-marcador:focus { outline:none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(227,178,60,0.25); }
@@ -349,7 +352,7 @@
 
             <div class="card" style="margin-top: 1rem; text-align: center;">
                 <h3 style="justify-content: center;"><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M17.5 5.5a7 7 0 1 0 0 13"/></svg></span> Total multes</h3>
-                <div class="bote-total" id="en-multas" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
+                <div class="bote-total" id="resumen-multas" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
             </div>
         </div>
 
@@ -706,6 +709,7 @@
                 
                 <div id="admin-card-resultats" class="card">
                     <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span> Introduir Resultats Reals - Jornada <span id="txt-jornada-admin-evaluar" style="color:var(--danger)">-</span></p>
+                    <p style="color:#94a3b8; font-size:0.78rem; margin:-0.4rem 0 1rem 0;">Si un partit s'ha suspès, marca <strong>Anul·lat</strong>: no compta per a ningú (ni suma ni resta punts).</p>
                     <div id="lista-admin-partidos">
                         <script>
                             for(let i=1; i<=10; i++) {
@@ -714,6 +718,7 @@
                                         <div class="partido-fila" data-admin-partido="p10">
                                             <span class="equipos" style="font-size:0.85rem;">Partit 10 <span style="display:block; color:var(--gold); font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-top:2px;">Resultat exacte</span></span>
                                             <div class="marcador-exacte">
+                                                <button id="admin-p10-anulat" class="btn-pronostico btn-anulat" style="padding:0.4rem 0.6rem;" onclick="marcarAnulatP10Admin()">Anul·lat</button>
                                                 <input type="number" min="0" max="20" class="input-marcador" id="admin-p10-local" oninput="marcarExacteAdmin()">
                                                 <span class="separador-marcador">-</span>
                                                 <input type="number" min="0" max="20" class="input-marcador" id="admin-p10-visitant" oninput="marcarExacteAdmin()">
@@ -728,6 +733,7 @@
                                                 <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '1')">1</button>
                                                 <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, 'X')">X</button>
                                                 <button class="btn-pronostico" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="marcarAdmin(this, '2')">2</button>
+                                                <button class="btn-pronostico btn-anulat" style="padding:0.4rem 0.6rem;" onclick="marcarAdmin(this, 'A')">Anul·lat</button>
                                             </div>
                                         </div>
                                     `);
@@ -790,6 +796,7 @@
         let partitsPerJornada = {};
         const PUNTS_BONUS_P10 = 3; // Punts que suma encertar el resultat exacte del Partit 10 (en lloc d'1)
         let resultatsRealsCache = {};
+        const RESULTAT_ANULAT = 'A'; // Valor que es guarda a resultados_reales quan un partit s'ha suspès
 
         async function inicializarDashboard() {
             try {
@@ -861,14 +868,14 @@
                     if(jornadesAValidar.includes(jor)) {
                         let jorReal = reals.find(r => r.jornada === jor);
                         if(jorReal) {
-                            let encerts = 0;
-                            for(let i=1; i<=10; i++) { if(q[`p${i}`] && q[`p${i}`] === jorReal[`p${i}`]) encerts++; }
+                            let encerts = 0; let jugats = 0;
+                            for(let i=1; i<=10; i++) { if(jorReal[`p${i}`] === RESULTAT_ANULAT) continue; jugats++; if(q[`p${i}`] && q[`p${i}`] === jorReal[`p${i}`]) encerts++; }
                             let classeCercle = 'circulo-vermell';
-                            if(encerts >= 7) classeCercle = 'circulo-verd';
-                            else if(encerts >= 4 && encerts <= 6) classeCercle = 'circulo-grog';
+                            if(jugats > 0 && encerts >= Math.ceil(jugats * 7 / 10)) classeCercle = 'circulo-verd';
+                            else if(jugats > 0 && encerts >= Math.ceil(jugats * 4 / 10)) classeCercle = 'circulo-grog';
                             let userKey = q.id_jugador.trim().toLowerCase();
                             if(!cacheHistoricaRafagues[userKey]) cacheHistoricaRafagues[userKey] = {};
-                            cacheHistoricaRafagues[userKey][jor] = `<span class="circulo-rafaga ${classeCercle}" title="Jornada ${jor}: ${encerts} encerts"></span>`;
+                            cacheHistoricaRafagues[userKey][jor] = `<span class="circulo-rafaga ${classeCercle}" title="Jornada ${jor}: ${encerts}/${jugats} encerts"></span>`;
                         }
                     }
                 });
@@ -1065,8 +1072,14 @@
             return `Partit ${index}`;
         }
 
+        function etiquetaAnulat(jornada, index) {
+            const real = resultatsRealsCache[jornada];
+            return (real && real[`p${index}`] === RESULTAT_ANULAT) ? ' <em style="color:#64748b; font-size:0.72rem; font-style:normal;">(anul·lat)</em>' : '';
+        }
+
         function colorLiniaPronostic(jornada, index, valorJugador) {
             const real = resultatsRealsCache[jornada];
+            if (real && real[`p${index}`] === RESULTAT_ANULAT) return 'color:#64748b; text-decoration:line-through;';
             if (!real || !real[`p${index}`] || !valorJugador) return 'color:var(--text);';
             return (valorJugador === real[`p${index}`]) ? 'color:var(--success); font-weight:700;' : 'color:var(--danger);';
         }
@@ -2382,7 +2395,7 @@ async function eliminarResumPartit() {
                 let nom = dadesPerfilsMapejades[q.id_jugador.trim().toLowerCase()] || q.id_jugador.split('@')[0];
                 let avatarHTML = getAvatar(nom, 24);
                 let linies = '';
-                for (let i=1; i<=10; i++) { const valorJugador = q[`p${i}`] ?? '-'; linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span style="color:#94a3b8;">${nomPartit(numeroJornadaGlobal, i)}</span><strong style="${colorLiniaPronostic(numeroJornadaGlobal, i, q[`p${i}`])} white-space:nowrap;">${valorJugador}</strong></div>`; }
+                for (let i=1; i<=10; i++) { const valorJugador = q[`p${i}`] ?? '-'; linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span style="color:#94a3b8;">${nomPartit(numeroJornadaGlobal, i)}${etiquetaAnulat(numeroJornadaGlobal, i)}</span><strong style="${colorLiniaPronostic(numeroJornadaGlobal, i, q[`p${i}`])} white-space:nowrap;">${valorJugador}</strong></div>`; }
                 html += `<div class="card" style="margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--success); font-weight:bold; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">${avatarHTML} ${nom}</p><div style="color:#94a3b8;">${linies}</div></div>`;
             });
             listaCompanysEl.innerHTML = html;
@@ -2483,12 +2496,18 @@ async function eliminarResumPartit() {
             resultadosRealesAdmin['jornada'] = numeroJornadaGlobal; await clienteSupabase.from('resultados_reales').insert([resultadosRealesAdmin]);
             const { data: quinielasJornada } = await clienteSupabase.from('quinieles').select('*').eq('jornada', numeroJornadaGlobal);
             if(quinielasJornada) {
+                // Partits 1-9 que sí s'han jugat (els anul·lats no compten per a ningú)
+                const partitsJugats = [];
+                for(let i=1; i<=9; i++) { if(resultadosRealesAdmin[`p${i}`] !== RESULTAT_ANULAT) partitsJugats.push(i); }
+                const p10Anulat = (resultadosRealesAdmin.p10 === RESULTAT_ANULAT);
+                const totalJugats = partitsJugats.length + (p10Anulat ? 0 : 1);
+
                 for (let q of quinielasJornada) {
                     let aciertosBase = 0;
-                    for(let i=1; i<=9; i++) { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertosBase++; }
-                    let p10Correcte = !!(q.p10 && resultadosRealesAdmin.p10 && q.p10 === resultadosRealesAdmin.p10);
+                    partitsJugats.forEach(i => { if(q[`p${i}`] === resultadosRealesAdmin[`p${i}`]) aciertosBase++; });
+                    let p10Correcte = !p10Anulat && !!(q.p10 && resultadosRealesAdmin.p10 && q.p10 === resultadosRealesAdmin.p10);
                     let aciertos = aciertosBase + (p10Correcte ? PUNTS_BONUS_P10 : 0);
-                    let esPle = (aciertosBase === 9 && p10Correcte);
+                    let esPle = (totalJugats > 0 && aciertosBase === partitsJugats.length && (p10Anulat || p10Correcte));
 
                     const { data: filaRank } = await clienteSupabase.from('classificacio_quiniela').select('*').eq('id_jugador', q.id_jugador).maybeSingle();
                     const nousPunts = (filaRank ? filaRank.puntos_totales : 0) + aciertos;
@@ -2511,7 +2530,7 @@ async function eliminarResumPartit() {
             let html = '';
             misQuinielas.forEach((q) => {
                 let linies = '';
-                for (let i=1; i<=10; i++) { const valorJugador = q[`p${i}`] ?? '-'; linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span style="color:#94a3b8;">${nomPartit(q.jornada, i)}</span><strong style="${colorLiniaPronostic(q.jornada, i, q[`p${i}`])} white-space:nowrap;">${valorJugador}</strong></div>`; }
+                for (let i=1; i<=10; i++) { const valorJugador = q[`p${i}`] ?? '-'; linies += `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span style="color:#94a3b8;">${nomPartit(q.jornada, i)}${etiquetaAnulat(q.jornada, i)}</span><strong style="${colorLiniaPronostic(q.jornada, i, q[`p${i}`])} white-space:nowrap;">${valorJugador}</strong></div>`; }
                 html += `<div class="card" style="background:#111827; margin-bottom:10px; font-size:0.85rem;"><p style="color:var(--primary); font-weight:bold; margin:0 0 8px 0;">Jornada ${q.jornada || 1}</p><div style="color:#94a3b8;">${linies}</div></div>`;
             });
             historialEl.innerHTML = html;
@@ -2556,8 +2575,23 @@ async function eliminarResumPartit() {
         function marcarExacteAdmin() {
             const local = document.getElementById('admin-p10-local').value;
             const visitant = document.getElementById('admin-p10-visitant').value;
+            const btnAnulat = document.getElementById('admin-p10-anulat');
+            if (btnAnulat) btnAnulat.classList.remove('selected');
             if (local !== '' && visitant !== '') { resultadosRealesAdmin['p10'] = `${local}-${visitant}`; }
             else { delete resultadosRealesAdmin['p10']; }
+        }
+
+        function marcarAnulatP10Admin() {
+            const btn = document.getElementById('admin-p10-anulat');
+            if (resultadosRealesAdmin['p10'] === RESULTAT_ANULAT) {
+                delete resultadosRealesAdmin['p10'];
+                btn.classList.remove('selected');
+            } else {
+                resultadosRealesAdmin['p10'] = RESULTAT_ANULAT;
+                btn.classList.add('selected');
+                document.getElementById('admin-p10-local').value = '';
+                document.getElementById('admin-p10-visitant').value = '';
+            }
         }
         
         async function verificarBoletoExistente() { 

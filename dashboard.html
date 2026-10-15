@@ -258,6 +258,16 @@
         .multa-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px dashed var(--border); font-size: 0.95rem; }
         .multa-item:last-child { border-bottom: none; }
 
+        .grup-multes { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .grup-multes:last-child { border-bottom: none; }
+        .grup-multes-cap { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 0.85rem 0; cursor: pointer; -webkit-user-select: none; user-select: none; }
+        .grup-multes-cap small { display: block; color: var(--text-muted); font-size: 0.72rem; font-weight: 500; margin-top: 2px; }
+        .grup-multes-total { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--danger); white-space: nowrap; }
+        .grup-multes-fletxa { color: var(--text-muted); font-size: 0.8rem; transition: transform 0.2s ease; }
+        .grup-multes.obert .grup-multes-fletxa { transform: rotate(180deg); }
+        .grup-multes-detall { margin: 0 0 0.7rem 0; padding: 0 0.8rem; background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-radius: 10px; }
+        .grup-multes-detall .multa-item { padding: 0.7rem 0; font-size: 0.88rem; }
+
         .tarifario-lista { display: flex; flex-direction: column; gap: 8px; }
         .tarifa-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0.75rem 0.9rem; background: rgba(0,0,0,0.22); border: 1px solid var(--border); border-radius: 10px; transition: background 0.2s; }
         .tarifa-item:hover { background: rgba(0,0,0,0.32); }
@@ -565,7 +575,11 @@
             </div>
 
             <div class="card">
-                <h3><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><path d="m9 14 2 2 4-4"/></svg></span> Llista de Sancions</h3>
+                <h3><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><path d="m9 14 2 2 4-4"/></svg></span> Detall de Multes</h3>
+                <div class="sub-tabs">
+                    <button class="sub-btn active" onclick="canviarVistaMultes('jugador', this)">👤 Per jugador</button>
+                    <button class="sub-btn" onclick="canviarVistaMultes('cronologic', this)">🕒 Més recents</button>
+                </div>
                 <div id="lista-multas">Carregant les sancions...</div>
             </div>
         </div>
@@ -2664,27 +2678,111 @@ async function eliminarResumPartit() {
             }
         }
 
-        async function cargarMultas() {
-            const { data: multas } = await clienteSupabase.from('multas').select('*');
-            const listaEl = document.getElementById('lista-multas'); const boteEl = document.getElementById('total-bote'); const resumenInicioBoteEl = document.getElementById('resumen-multas');
-            if(!multas || multas.length === 0) { if(boteEl) boteEl.textContent = '0.00 €'; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = '0.00 €'; if(listaEl) listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>'; return; }
-            
-            let sum = 0; let htmlLista = '';
-            const usuarisAmbPermisEsborrar = ['sergigodayol@gmail.com', 'martiolisan@gmail.com', 'ericsoleponsa@hotmail.es'];
-            multas.forEach(m => {
-                sum += parseFloat(m.import);
-                let botoBorrarExclusiu = usuarisAmbPermisEsborrar.includes(emailUsuario) 
-                    ? `<button class="btn-eliminar-multa" onclick="eliminarMultaBase(${m.id}, '${m.nom_jugador}')" title="Esborrar multa de forma permanent">❌</button>` 
-                    : '';
+        // ---------- MULTES: vista per jugador / més recents ----------
+        let multesCache = [];
+        let vistaMultes = 'jugador';
+        let jugadorsObertsMultes = new Set();
+        const USUARIS_AMB_PERMIS_ESBORRAR = ['sergigodayol@gmail.com', 'martiolisan@gmail.com', 'ericsoleponsa@hotmail.es'];
 
-                htmlLista += `
-                    <div class="multa-item">
-                        <span><strong>${m.nom_jugador}</strong> (${m.motiu}) ${botoBorrarExclusiu}</span>
-                        <span style="color:var(--danger); font-weight:bold;">${m.import} €</span>
+        function escHTML(valor) {
+            return String(valor ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function htmlFilaMulta(m, mostrarNom) {
+            const potEsborrar = USUARIS_AMB_PERMIS_ESBORRAR.includes(emailUsuario);
+            const botoBorrar = potEsborrar
+                ? `<button class="btn-eliminar-multa" data-nom="${escHTML(m.nom_jugador)}" onclick="event.stopPropagation(); eliminarMultaBase(${Number(m.id)}, this.dataset.nom)" title="Esborrar multa de forma permanent">❌</button>`
+                : '';
+            const titol = mostrarNom
+                ? `<strong>${escHTML(m.nom_jugador)}</strong> (${escHTML(m.motiu)})`
+                : escHTML(m.motiu);
+            return `
+                <div class="multa-item">
+                    <span>${titol} ${botoBorrar}</span>
+                    <span style="color:var(--danger); font-weight:bold; white-space:nowrap;">${escHTML(m.import)} €</span>
+                </div>`;
+        }
+
+        function renderitzarMultes() {
+            const listaEl = document.getElementById('lista-multas');
+            if (!listaEl) return;
+
+            if (!multesCache || multesCache.length === 0) {
+                listaEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">No hi ha cap sanció registrada de moment.</p>';
+                return;
+            }
+
+            if (vistaMultes === 'cronologic') {
+                const recents = [...multesCache].sort((a, b) => b.id - a.id);
+                listaEl.innerHTML = recents.map(m => htmlFilaMulta(m, true)).join('');
+                return;
+            }
+
+            // Vista per jugador: subtotal per persona, de qui deu més a qui deu menys
+            const grups = {};
+            multesCache.forEach(m => {
+                const clau = (m.nom_jugador || '').trim();
+                if (!grups[clau]) grups[clau] = { nom: clau, total: 0, multes: [] };
+                grups[clau].total += parseFloat(m.import) || 0;
+                grups[clau].multes.push(m);
+            });
+            const llista = Object.values(grups).sort((a, b) => b.total - a.total || a.nom.localeCompare(b.nom, 'ca'));
+
+            let html = `<p style="color:#94a3b8; font-size:0.78rem; margin:-0.4rem 0 0.6rem 0;">${llista.length} jugador${llista.length === 1 ? '' : 's'} amb multes · ${multesCache.length} multa${multesCache.length === 1 ? '' : 's'} en total. Toca un nom per veure el detall.</p>`;
+            llista.forEach((g, idx) => {
+                const obert = jugadorsObertsMultes.has(g.nom);
+                const detall = obert
+                    ? `<div class="grup-multes-detall">${[...g.multes].sort((a, b) => b.id - a.id).map(m => htmlFilaMulta(m, false)).join('')}</div>`
+                    : '';
+                html += `
+                    <div class="grup-multes${obert ? ' obert' : ''}">
+                        <div class="grup-multes-cap" data-nom="${escHTML(g.nom)}" onclick="toggleJugadorMultes(this.dataset.nom)">
+                            <div class="player-info" style="gap:10px;">
+                                <span class="medalla" style="width:25px;">${idx + 1}.º</span>
+                                ${getAvatar(g.nom, 28)}
+                                <div>
+                                    <strong style="font-size:0.98rem;">${escHTML(g.nom)}</strong>
+                                    <small>${g.multes.length} multa${g.multes.length === 1 ? '' : 's'}</small>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span class="grup-multes-total">${g.total.toFixed(2)} €</span>
+                                <span class="grup-multes-fletxa">▼</span>
+                            </div>
+                        </div>
+                        ${detall}
                     </div>`;
             });
-            let text = `${sum.toFixed(2)} €`;
-            if(boteEl) boteEl.textContent = text; if(resumenInicioBoteEl) resumenInicioBoteEl.textContent = text; if(listaEl) listaEl.innerHTML = htmlLista;
+            listaEl.innerHTML = html;
+        }
+
+        function toggleJugadorMultes(nom) {
+            if (jugadorsObertsMultes.has(nom)) jugadorsObertsMultes.delete(nom);
+            else jugadorsObertsMultes.add(nom);
+            renderitzarMultes();
+        }
+
+        function canviarVistaMultes(vista, boto) {
+            vistaMultes = vista;
+            if (boto && boto.parentElement) {
+                boto.parentElement.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+                boto.classList.add('active');
+            }
+            renderitzarMultes();
+        }
+
+        async function cargarMultas() {
+            const { data: multas } = await clienteSupabase.from('multas').select('*');
+            const boteEl = document.getElementById('total-bote');
+            const resumenInicioBoteEl = document.getElementById('resumen-multas');
+
+            multesCache = multas || [];
+            const suma = multesCache.reduce((total, m) => total + (parseFloat(m.import) || 0), 0);
+            const text = `${suma.toFixed(2)} €`;
+            if (boteEl) boteEl.textContent = text;
+            if (resumenInicioBoteEl) resumenInicioBoteEl.textContent = text;
+
+            renderitzarMultes();
         }
 
         async function cargarEstadisticas() {

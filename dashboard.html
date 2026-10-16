@@ -182,6 +182,8 @@
             border-radius: 16px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.45); 
             max-width: 600px;
+            overflow-x: auto;
+            scrollbar-width: none;
             margin: 0 auto;
         }
 
@@ -200,7 +202,8 @@
             align-items: center; 
             justify-content: center;
             gap: 3px; 
-            flex: 1; 
+            flex: 1 0 auto; 
+            min-width: 50px; 
             padding: 0.4rem 0.1rem; 
             border-radius: 10px;
             transition: all 0.2s ease; 
@@ -584,6 +587,71 @@
             </div>
         </div>
 
+        <div id="tab-amic" class="tab-content">
+            <div class="card">
+                <h3><span class="card-icon icon-gold">🎁</span> Amic Invisible de Samarretes</h3>
+                <p style="color:#94a3b8; font-size:0.88rem; margin-top:-0.5rem; line-height:1.5;">
+                    Cadascú regala una samarreta de futbol (retro o actual, tant és) al company que li toqui al sorteig.
+                    Quan sàpigues a qui li has de regalar, triràs tu la samarreta al catàleg i indicaràs el dorsal.
+                    <strong>Només s'accepten enllaços de minkang.x.yupoo.com.</strong>
+                </p>
+                <a href="https://minkang.x.yupoo.com/categories" target="_blank" rel="noopener noreferrer" class="btn-cta btn-cta-primary" style="display:block; text-align:center; text-decoration:none; padding:0.8rem; box-sizing:border-box;">Obrir el catàleg de samarretes ↗</a>
+            </div>
+
+            <div id="amic-carregant" class="card">Carregant...</div>
+
+            <div id="amic-form" class="card" style="display:none;">
+                <h3 id="amic-form-titol">Apunta't</h3>
+                <p id="amic-form-desc" style="color:#94a3b8; font-size:0.85rem; margin-top:-0.5rem;">Indica la teva talla perquè el teu amic invisible sàpiga quina samarreta demanar.</p>
+                <select id="amic-select-talla" class="select-text-mvp">
+                    <option value="">-- La meva talla --</option>
+                    <option>XS</option><option>S</option><option>M</option><option>L</option>
+                    <option>XL</option><option>XXL</option><option>3XL</option><option>4XL</option>
+                </select>
+                <button id="amic-btn-guardar" onclick="guardarTallaAmic()" class="btn-cta btn-cta-success" style="width:100%; padding:0.85rem;">Participar</button>
+                <button id="amic-btn-sortir" onclick="desapuntarAmic()" class="btn-cta" style="display:none; width:100%; padding:0.7rem; margin-top:0.6rem; background:transparent; border:1px solid var(--border); color:var(--text-muted);">Treure'm del sorteig</button>
+                <p id="amic-msg" style="text-align:center; display:none; margin-top:1rem; font-weight:bold;"></p>
+            </div>
+
+            <div id="amic-revelar" class="card" style="display:none;">
+                <h3 style="justify-content:center;">🤫 El teu Amic Invisible</h3>
+                <p style="color:#94a3b8; font-size:0.88rem; text-align:center;">El sorteig ja està fet. Només tu pots veure a qui li has de regalar.</p>
+                <button id="amic-btn-revelar" onclick="revelarAmic()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.85rem;">Descobrir a qui li regalo</button>
+                <div id="amic-resultat" style="display:none; margin-top:1rem;">
+                    <p style="margin:0 0 4px 0; color:#94a3b8; text-align:center;">Li has de regalar una samarreta a:</p>
+                    <p id="amic-nom-amic" style="font-family:'Oswald',sans-serif; font-size:1.8rem; margin:0 0 4px 0; color:var(--warning); text-align:center;"></p>
+                    <p style="margin:0 0 16px 0; text-align:center;">Talla: <strong id="amic-talla-amic"></strong></p>
+
+                    <label style="font-size:0.8rem; color:#94a3b8;">Enllaç de la samarreta (minkang.x.yupoo.com)</label>
+                    <input type="url" id="amic-input-enllac" class="input-text-mvp" placeholder="https://minkang.x.yupoo.com/albums/...">
+                    <label style="font-size:0.8rem; color:#94a3b8;">Número del dorsal (opcional)</label>
+                    <input type="number" id="amic-input-dorsal-num" class="input-text-mvp" min="0" max="99" placeholder="Ex: 10">
+                    <label style="font-size:0.8rem; color:#94a3b8;">Nom al dorsal (opcional, màx. 15 lletres)</label>
+                    <input type="text" id="amic-input-dorsal-nom" class="input-text-mvp" maxlength="15" placeholder="Ex: BIEL">
+                    <button onclick="guardarCamisetaAmic()" class="btn-cta btn-cta-success" style="width:100%; padding:0.85rem;">Desar la samarreta</button>
+                    <p id="amic-msg-camiseta" style="text-align:center; display:none; margin-top:1rem; font-weight:bold;"></p>
+                </div>
+            </div>
+
+            <div id="amic-admin" class="card" style="display:none; border:1px solid rgba(239,68,68,0.35);">
+                <h3>🎲 Sorteig i comandes (només admin)</h3>
+                <p id="amic-admin-desc" style="color:#94a3b8; font-size:0.85rem; margin-top:-0.5rem;"></p>
+                <button id="amic-btn-sorteig" onclick="ferSorteigAmic()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.85rem;">Fer el sorteig</button>
+                <p id="amic-admin-msg" style="text-align:center; display:none; margin-top:1rem; font-weight:bold;"></p>
+                <div id="amic-comandes" style="display:none; margin-top:1.2rem;">
+                    <p style="font-weight:600; margin:0 0 8px 0;">Comandes per al proveïdor <span id="amic-comandes-comptador" style="color:var(--warning)"></span></p>
+                    <div id="amic-comandes-taula"></div>
+                    <p id="amic-pendents" style="font-size:0.85rem; color:#94a3b8; margin-top:10px;"></p>
+                    <button onclick="descarregarComandesAmic()" class="btn-cta btn-cta-primary" style="width:100%; padding:0.75rem; margin-top:8px;">Descarregar CSV</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>👥 Participants <span id="amic-comptador" style="color:var(--warning)"></span></h3>
+                <div id="amic-llista" style="color:#94a3b8; font-size:0.9rem;">-</div>
+            </div>
+        </div>
+
         <div id="tab-gestio" class="tab-content">
             <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.35); background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 45%), rgba(239, 68, 68, 0.04);">
                 <h3 id="admin-gestio-titol"><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span> Panell de Control Secret (Admin)</h3>
@@ -787,6 +855,9 @@
         </button>
         <button class="nav-btn" onclick="cambiarPestaña('multas', this)">
             <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 0.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Multes
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('amic', this); carregarAmicInvisible();">
+            <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8h5.08v6z"/></svg> Amic
         </button>
     </nav>
 
@@ -2969,6 +3040,187 @@ async function eliminarResumPartit() {
             } catch (err) {
                 console.error("Error en iniciar sessió:", err);
             }
+        }
+
+        // ===== AMIC INVISIBLE =====
+        let estatAmic = null;
+        let comandesAmic = null;
+
+        function enllacYupooValid(text) {
+            try {
+                const u = new URL(String(text || '').trim());
+                return u.protocol === 'https:' && u.hostname.toLowerCase() === 'minkang.x.yupoo.com' && !u.username && !u.password;
+            } catch (e) { return false; }
+        }
+
+        function missatgeAmic(id, text, ok) {
+            const el = document.getElementById(id);
+            el.style.display = 'block';
+            el.style.color = ok ? 'var(--success)' : 'var(--danger)';
+            el.textContent = text;
+        }
+
+        function netejaErrorRPC(err) {
+            return (err && err.message) ? err.message : 'Error desconegut';
+        }
+
+        async function carregarAmicInvisible() {
+            document.getElementById('amic-carregant').style.display = 'block';
+            const { data, error } = await clienteSupabase.rpc('amic_estat');
+            document.getElementById('amic-carregant').style.display = 'none';
+            if (error) {
+                document.getElementById('amic-llista').textContent = 'No s\'ha pogut carregar (has executat el SQL de l\'amic invisible?).';
+                console.error(error); return;
+            }
+            estatAmic = data;
+            pintarAmicInvisible();
+            if (emailUsuario === 'sergigodayol@gmail.com' && data.sorteig_fet) carregarComandesAmic();
+        }
+
+        function pintarAmicInvisible() {
+            const e = estatAmic;
+            const fet = e.sorteig_fet;
+            const isAdmin = (emailUsuario === 'sergigodayol@gmail.com');
+
+            // Apuntar-se / talla
+            const form = document.getElementById('amic-form');
+            if (!fet || e.participa) {
+                form.style.display = 'block';
+                document.getElementById('amic-form-titol').textContent = e.participa ? 'Estàs apuntat ✅' : 'Apunta\'t';
+                document.getElementById('amic-form-desc').textContent = e.participa
+                    ? (fet ? 'Si t\'has equivocat de talla, la pots corregir aquí.' : 'Pots canviar la talla mentre no es faci el sorteig.')
+                    : 'Indica la teva talla perquè el teu amic invisible sàpiga quina samarreta demanar.';
+                document.getElementById('amic-select-talla').value = e.la_meva_talla || '';
+                document.getElementById('amic-btn-guardar').textContent = e.participa ? 'Actualitzar la talla' : 'Participar';
+                document.getElementById('amic-btn-sortir').style.display = (e.participa && !fet) ? 'block' : 'none';
+            } else {
+                form.style.display = 'none';
+            }
+
+            // A qui regalo
+            document.getElementById('amic-revelar').style.display = (fet && e.participa) ? 'block' : 'none';
+            if (fet && e.participa) {
+                const amic = e.el_meu_amic;
+                if (document.getElementById('amic-resultat').style.display === 'block' && amic) pintarAmic(amic);
+            }
+
+            // Admin
+            const adm = document.getElementById('amic-admin');
+            adm.style.display = isAdmin ? 'block' : 'none';
+            if (isAdmin) {
+                const n = e.participants.length;
+                document.getElementById('amic-btn-sorteig').textContent = fet ? 'Repetir el sorteig (esborra l\'anterior)' : `Fer el sorteig (${n} participants)`;
+                document.getElementById('amic-admin-desc').textContent = fet
+                    ? 'El sorteig ja està fet. Repetir-lo canvia totes les parelles i esborra les samarretes triades.'
+                    : 'El sorteig es fa a la base de dades: ni tu veuràs les parelles. Calen almenys 3 participants.';
+                if (!fet) document.getElementById('amic-comandes').style.display = 'none';
+            }
+
+            document.getElementById('amic-comptador').textContent = `(${e.participants.length})`;
+            document.getElementById('amic-llista').innerHTML = e.participants.length
+                ? e.participants.map(p => `<span style="display:inline-block; margin:3px 6px 3px 0; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,0.06); color:var(--text);">${escHTML(p.nom)}</span>`).join('')
+                : 'Encara no s\'ha apuntat ningú.';
+        }
+
+        async function guardarTallaAmic() {
+            const talla = document.getElementById('amic-select-talla').value;
+            if (!talla) { missatgeAmic('amic-msg', 'Tria la teva talla', false); return; }
+            const { error } = await clienteSupabase.rpc('amic_apuntar', { p_talla: talla });
+            if (error) { missatgeAmic('amic-msg', netejaErrorRPC(error), false); return; }
+            await carregarAmicInvisible();
+            missatgeAmic('amic-msg', 'Desat! ✅', true);
+        }
+
+        async function desapuntarAmic() {
+            if (!confirm('Segur que et vols treure del sorteig?')) return;
+            const { error } = await clienteSupabase.rpc('amic_desapuntar');
+            if (error) { missatgeAmic('amic-msg', netejaErrorRPC(error), false); return; }
+            await carregarAmicInvisible();
+        }
+
+        async function ferSorteigAmic() {
+            const repetir = !!(estatAmic && estatAmic.sorteig_fet);
+            const n = estatAmic ? estatAmic.participants.length : 0;
+            const pregunta = repetir
+                ? 'Això ESBORRA el sorteig anterior i les samarretes ja triades. Tothom tindrà un altre amic invisible. Continuar?'
+                : `Es farà el sorteig amb ${n} participants. Un cop fet ja no s'hi podrà entrar. Continuar?`;
+            if (!confirm(pregunta)) return;
+            const { data, error } = await clienteSupabase.rpc('amic_fer_sorteig', { p_repetir: repetir });
+            if (error) { missatgeAmic('amic-admin-msg', netejaErrorRPC(error), false); return; }
+            document.getElementById('amic-resultat').style.display = 'none';
+            await carregarAmicInvisible();
+            missatgeAmic('amic-admin-msg', `Sorteig fet amb ${data} participants 🎉`, true);
+        }
+
+        function pintarAmic(amic) {
+            document.getElementById('amic-nom-amic').textContent = amic.nom;
+            document.getElementById('amic-talla-amic').textContent = amic.talla || 'sense indicar';
+            document.getElementById('amic-input-enllac').value = amic.enllac || '';
+            document.getElementById('amic-input-dorsal-num').value = (amic.dorsal_num ?? '');
+            document.getElementById('amic-input-dorsal-nom').value = amic.dorsal_nom || '';
+        }
+
+        function revelarAmic() {
+            const amic = estatAmic && estatAmic.el_meu_amic;
+            if (!amic) { alert('No s\'ha trobat el teu amic invisible.'); return; }
+            pintarAmic(amic);
+            document.getElementById('amic-resultat').style.display = 'block';
+            document.getElementById('amic-btn-revelar').style.display = 'none';
+        }
+
+        async function guardarCamisetaAmic() {
+            const enllac = document.getElementById('amic-input-enllac').value.trim();
+            const numTxt = document.getElementById('amic-input-dorsal-num').value.trim();
+            const nom = document.getElementById('amic-input-dorsal-nom').value.trim();
+            if (!enllacYupooValid(enllac)) {
+                missatgeAmic('amic-msg-camiseta', 'L\'enllaç ha de començar per https://minkang.x.yupoo.com/', false); return;
+            }
+            let num = null;
+            if (numTxt !== '') {
+                num = Number(numTxt);
+                if (!Number.isInteger(num) || num < 0 || num > 99) { missatgeAmic('amic-msg-camiseta', 'El dorsal ha de ser un número entre 0 i 99', false); return; }
+            }
+            const { error } = await clienteSupabase.rpc('amic_guardar_camiseta', { p_enllac: enllac, p_dorsal_num: num, p_dorsal_nom: nom || null });
+            if (error) { missatgeAmic('amic-msg-camiseta', netejaErrorRPC(error), false); return; }
+            // refresquem l'estat sense tornar a amagar el bloc
+            const { data } = await clienteSupabase.rpc('amic_estat');
+            if (data) estatAmic = data;
+            missatgeAmic('amic-msg-camiseta', 'Samarreta desada! ✅ Pots tornar-la a canviar quan vulguis.', true);
+        }
+
+        async function carregarComandesAmic() {
+            const { data, error } = await clienteSupabase.rpc('amic_comandes');
+            if (error) { console.error(error); return; }
+            comandesAmic = data;
+            document.getElementById('amic-comandes').style.display = 'block';
+            document.getElementById('amic-comandes-comptador').textContent = `(${data.comandes.length})`;
+            const files = data.comandes.map(c => `
+                <tr>
+                    <td>${escHTML(c.per_a)}</td>
+                    <td>${escHTML(c.talla || '-')}</td>
+                    <td>${c.dorsal_num ?? '-'}</td>
+                    <td>${escHTML(c.dorsal_nom || '-')}</td>
+                    <td>${enllacYupooValid(c.enllac) ? `<a href="${escHTML(c.enllac)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);">Veure ↗</a>` : '-'}</td>
+                </tr>`).join('');
+            document.getElementById('amic-comandes-taula').innerHTML = data.comandes.length
+                ? `<div class="table-wrapper"><table><thead><tr><th>Per a</th><th>Talla</th><th>Núm.</th><th>Nom</th><th>Samarreta</th></tr></thead><tbody>${files}</tbody></table></div>`
+                : '<p style="color:#94a3b8;">Encara no hi ha cap samarreta triada.</p>';
+            document.getElementById('amic-pendents').textContent = data.pendents.length
+                ? `Encara no han triat samarreta (${data.pendents.length}): ${data.pendents.join(', ')}`
+                : 'Tothom ha triat ja la samarreta 🎉';
+        }
+
+        function descarregarComandesAmic() {
+            if (!comandesAmic || !comandesAmic.comandes.length) { alert('Encara no hi ha comandes.'); return; }
+            const cel = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+            const files = [['Per a', 'Talla', 'Dorsal num', 'Dorsal nom', 'Enllac']].concat(
+                comandesAmic.comandes.map(c => [c.per_a, c.talla, c.dorsal_num, c.dorsal_nom, c.enllac]));
+            const csv = '\ufeff' + files.map(f => f.map(cel).join(';')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+            const a = document.createElement('a');
+            a.href = url; a.download = 'comandes_amic_invisible.csv';
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
         }
 
         // L'arrencada

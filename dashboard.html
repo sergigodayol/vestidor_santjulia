@@ -2982,6 +2982,116 @@ async function eliminarResumPartit() {
             }
         }
 
+        // ===== NOVETATS A LA PORTADA =====
+        let nomUsuariActual = '';
+        let instantaniaNovetats = null;
+
+        function clauNovetats() { return 'novetats_vistes_' + String(emailUsuario || '').trim().toLowerCase(); }
+        function llegirVistes() { try { const r = localStorage.getItem(clauNovetats()); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+        function escriureVistes(o) { try { localStorage.setItem(clauNovetats(), JSON.stringify(o)); return true; } catch (e) { return false; } }
+
+        function anarAPestanya(tabId) {
+            const btn = document.querySelector(`.nav-btn[onclick*="cambiarPestaña('${tabId}'"]`);
+            if (btn) btn.click();
+        }
+
+        async function carregarNovetats() {
+            const card = document.getElementById('card-novetats');
+            if (!card || !emailUsuario) return;
+            const correu = emailUsuario.trim().toLowerCase();
+            const nom = (nomUsuariActual || '').trim().toLowerCase();
+            try {
+                const [rEstat, rQuin, rMvpEst, rMultes, rEntreno, rPunts] = await Promise.all([
+                    clienteSupabase.from('estado_porra').select('*').eq('id', 1).maybeSingle(),
+                    clienteSupabase.from('quinieles').select('id_jugador, jornada').eq('id_jugador', emailUsuario),
+                    clienteSupabase.from('estado_mvp').select('*').eq('id', 1).maybeSingle(),
+                    clienteSupabase.from('multas').select('*'),
+                    clienteSupabase.from('punts_entreno').select('*'),
+                    clienteSupabase.from('punts_jornada_quiniela').select('*')
+                ]);
+
+                const items = [];
+
+                // 1) Quiniela pendent (avís permanent fins que l'enviïs)
+                const estat = rEstat.data;
+                if (estat && !estat.bloqueado) {
+                    const jornada = estat.jornada_activa || 1;
+                    const jaFeta = (rQuin.data || []).some(q => Number(q.jornada) === Number(jornada));
+                    if (!jaFeta) items.push({ icona: '📝', text: `Encara no has enviat la quiniela de la jornada ${jornada}.`, tab: 'quiniela', boto: 'Fer-la' });
+                }
+
+                // 2) Votació MVP oberta i sense votar (avís permanent fins que votis)
+                const mvp = rMvpEst.data;
+                if (mvp && mvp.etiqueta && !mvp.bloquejat) {
+                    const { data: vot } = await clienteSupabase.from('vots_mvp').select('id_jugador').eq('id_jugador', emailUsuario).eq('jornada', mvp.etiqueta).maybeSingle();
+                    if (!vot) items.push({ icona: '⭐', text: `Hi ha una votació MVP oberta (${mvp.etiqueta}) i encara no has votat.`, tab: 'mvp', boto: 'Votar' });
+                }
+
+                // Instantània del que ja has vist (multes, punts d'entreno, punts de quiniela)
+                const meves = nom ? (rMultes.data || []).filter(m => String(m.nom_jugador || '').trim().toLowerCase() === nom) : [];
+                const filaEntreno = nom ? (rEntreno.data || []).find(p => String(p.nom_jugador || '').trim().toLowerCase() === nom) : null;
+                const meusPunts = (rPunts.data || []).filter(p => String(p.id_jugador || '').trim().toLowerCase() === correu);
+                const actual = {
+                    multes: meves.map(m => String(m.id)),
+                    entreno: filaEntreno ? Number(filaEntreno.puntos_totales) || 0 : 0,
+                    jornadaPunts: meusPunts.reduce((mx, p) => Math.max(mx, Number(p.jornada) || 0), 0)
+                };
+                instantaniaNovetats = actual;
+
+                let vistes = llegirVistes();
+                if (!vistes) {
+                    // Primera vegada en aquest dispositiu: no avisem de res antic, només guardem el punt de partida
+                    escriureVistes(actual);
+                    vistes = null;
+                }
+
+                let hiHaNoves = false;
+                if (vistes) {
+                    // 3) Multes noves
+                    const noves = meves.filter(m => !(vistes.multes || []).includes(String(m.id)));
+                    if (noves.length) {
+                        hiHaNoves = true;
+                        const detall = noves.slice(0, 3).map(m => `${escHTML(m.motiu || 'sense motiu')} (${(parseFloat(m.import) || 0).toFixed(2)} €)`).join('; ');
+                        items.push({ icona: '💸', text: `${noves.length === 1 ? 'Tens una multa nova' : 'Tens ' + noves.length + ' multes noves'}: ${detall}`, html: true, tab: 'multas', boto: 'Veure-ho' });
+                    }
+                    // 4) Punts d'entreno nous
+                    if (actual.entreno > (vistes.entreno || 0)) {
+                        hiHaNoves = true;
+                        const dif = actual.entreno - (vistes.entreno || 0);
+                        items.push({ icona: '🏃', text: `Has sumat ${dif} punt${dif === 1 ? '' : 's'} d'entreno nou${dif === 1 ? '' : 's'} (total: ${actual.entreno}).`, tab: 'entrenos', boto: 'Veure-ho' });
+                    }
+                    // 5) Punts de quiniela corregits
+                    if (actual.jornadaPunts > (vistes.jornadaPunts || 0)) {
+                        hiHaNoves = true;
+                        const fila = meusPunts.find(p => Number(p.jornada) === actual.jornadaPunts);
+                        items.push({ icona: '🏆', text: `Ja pots consultar els punts de la quiniela de la jornada ${actual.jornadaPunts}${fila ? ': has fet ' + fila.punts + ' punts' : ''}.`, tab: 'quiniela', boto: 'Veure-ho' });
+                    }
+                    // també s'ha d'avançar el punt de partida si ha baixat algun valor (p. ex. multa esborrada o punts reiniciats)
+                    if (!hiHaNoves && (actual.entreno < (vistes.entreno || 0) || actual.multes.length < (vistes.multes || []).length)) escriureVistes(actual);
+                }
+
+                const llista = document.getElementById('llista-novetats');
+                llista.innerHTML = items.map(it => `
+                    <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:1.3rem;">${it.icona}</span>
+                        <span style="flex:1; font-size:0.9rem; line-height:1.35;">${it.html ? it.text : escHTML(it.text)}</span>
+                        <button onclick="anarAPestanya('${it.tab}')" class="btn-cta btn-cta-primary" style="padding:0.45rem 0.8rem; font-size:0.78rem; white-space:nowrap;">${it.boto}</button>
+                    </div>`).join('');
+                document.getElementById('btn-novetats-vistes').style.display = hiHaNoves ? 'block' : 'none';
+                card.style.display = items.length ? 'block' : 'none';
+            } catch (e) {
+                console.error('Error novetats:', e);
+                card.style.display = 'none';
+            }
+        }
+
+        function marcarNovetatsVistes() {
+            if (instantaniaNovetats) escriureVistes(instantaniaNovetats);
+            carregarNovetats();
+        }
+
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') carregarNovetats(); });
+
         // L'arrencada
         verificarSesion();
 

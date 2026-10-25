@@ -83,9 +83,10 @@
         <h2>Vestidor Digital</h2>
         <p>CF Sant Julià - Temporada 26/27</p>
 
+        <form id="form-login" onsubmit="enviarFormulari(event)">
         <!-- CAMPS D'ACCÉS -->
-        <input type="email" id="email" placeholder="Correu electrònic">
-        <input type="password" id="password" placeholder="Contrasenya">
+        <input type="email" id="email" name="email" autocomplete="username" placeholder="Correu electrònic">
+        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Contrasenya">
         
         <!-- CAMPO NUEVO VISIBLE SÓLO PARA EL REGISTRO -->
         <div id="seccio-nom-real" style="display: none; border-top: 1px dashed #4b5563; margin-top: 1rem; padding-top: 1rem;">
@@ -93,9 +94,14 @@
             <input type="text" id="nom_real" placeholder="Nom i Cognom Real (Ex: Sergi Godayol)">
         </div>
         
+        <label style="display:flex; align-items:center; gap:8px; margin:0.2rem 0 1rem 0; font-size:0.85rem; color:#9ca3af; cursor:pointer; text-align:left;">
+            <input type="checkbox" id="recorda" checked style="width:auto; margin:0; padding:0;"> Mantenir la sessió iniciada en aquest dispositiu
+        </label>
+
         <!-- BOTONS D'ACCIÓ -->
-        <button class="btn-primario" id="btn-entrar" onclick="iniciarSesion()">Entrar al Vestidor</button>
-        <button class="btn-secundario" id="btn-registrar-mode" onclick="activarModoRegistro()">Registrar-se com a nou jugador</button>
+        <button type="submit" class="btn-primario" id="btn-entrar">Entrar al Vestidor</button>
+        <button type="button" class="btn-secundario" id="btn-registrar-mode" onclick="activarModoRegistro()">Registrar-se com a nou jugador</button>
+        </form>
 
         <p id="mensaje" style="display:none;"></p>
     </div>
@@ -104,9 +110,35 @@
         const urlSupa = 'https://gfpnyxwjllljjxdcadfy.supabase.co';
         const keySupa = 'sb_publishable_F2oufPKZ4W3dkTbLGdGZBw_xDQ6UIxQ';
         
+        // Sessió guardada: per defecte es manté en aquest dispositiu (localStorage) tret que a l'entrada s'hagi desmarcat "Mantenir la sessió"
+        const emmagatzematgeSessio = {
+            getItem(k) { try { return localStorage.getItem(k) ?? sessionStorage.getItem(k); } catch (e) { return null; } },
+            setItem(k, v) {
+                try {
+                    const recorda = localStorage.getItem('vestidor_recorda') !== 'no';
+                    (recorda ? localStorage : sessionStorage).setItem(k, v);
+                    (recorda ? sessionStorage : localStorage).removeItem(k);
+                } catch (e) { try { sessionStorage.setItem(k, v); } catch (e2) {} }
+            },
+            removeItem(k) { try { localStorage.removeItem(k); } catch (e) {} try { sessionStorage.removeItem(k); } catch (e) {} }
+        };
         const clienteSupabase = window.supabase.createClient(urlSupa, keySupa, {
-            auth: { storage: window.sessionStorage }
+            auth: { storage: emmagatzematgeSessio, persistSession: true, autoRefreshToken: true }
         });
+
+        // Si ja hi ha una sessió guardada en aquest dispositiu, entrem directament
+        clienteSupabase.auth.getSession().then(({ data }) => {
+            if (data && data.session) window.location.replace('dashboard.html');
+        });
+
+        function enviarFormulari(e) {
+            e.preventDefault();
+            if (modoRegistroActivo) registrarse(); else iniciarSesion();
+        }
+
+        function guardarPreferenciaSessio() {
+            try { localStorage.setItem('vestidor_recorda', document.getElementById('recorda').checked ? 'si' : 'no'); } catch (e) {}
+        }
 
         let modoRegistroActivo = false;
 
@@ -114,7 +146,7 @@
             modoRegistroActivo = true;
             document.getElementById('seccio-nom-real').style.display = 'block';
             document.getElementById('btn-entrar').textContent = 'Confirmar i Crear Compte';
-            document.getElementById('btn-entrar').setAttribute('onclick', 'registrarse()');
+            document.getElementById('password').setAttribute('autocomplete', 'new-password');
             document.getElementById('btn-registrar-mode').style.display = 'none';
         }
 
@@ -128,6 +160,7 @@
                 msg.style.color = '#ef4444'; msg.textContent = "Introdueix el teu correu i contrasenya."; msg.style.display = 'block'; return;
             }
 
+            guardarPreferenciaSessio();
             const { data, error } = await clienteSupabase.auth.signInWithPassword({ email, password });
 
             if (error) {
@@ -155,6 +188,7 @@
             msg.style.color = '#f59e0b'; msg.textContent = "Creant compte al sistema..."; msg.style.display = 'block';
 
             // 1. Creem l'usuari a l'autenticació
+            guardarPreferenciaSessio();
             const { data, error } = await clienteSupabase.auth.signUp({ email, password });
 
             if (error) {

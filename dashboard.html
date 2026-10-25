@@ -636,7 +636,19 @@
 
             <div id="fisio-gestio" class="card" style="display:none; border:1px solid rgba(239,68,68,0.35);">
                 <h3 style="margin-bottom:0.6rem;">⚙️ Obrir una sessió de fisio</h3>
+                <label style="font-size:0.8rem; color:#94a3b8;">Dia</label>
                 <input type="date" id="fisio-nova-data" class="input-text-mvp">
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:0.8rem; color:#94a3b8;">Comença a les</label>
+                        <input type="time" id="fisio-nova-inici" class="input-text-mvp" value="17:40" step="300" oninput="previsioFisio()">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:0.8rem; color:#94a3b8;">Acaba a les</label>
+                        <input type="time" id="fisio-nova-fi" class="input-text-mvp" value="20:00" step="300" oninput="previsioFisio()">
+                    </div>
+                </div>
+                <p id="fisio-previsio" style="font-size:0.85rem; color:#94a3b8; margin:-0.4rem 0 0.9rem 0;"></p>
                 <button onclick="crearSessioFisio()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.8rem;">Obrir sessió</button>
             </div>
 
@@ -3239,7 +3251,26 @@ async function eliminarResumPartit() {
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') carregarNovetats(); });
 
         // ===== RESERVA D'HORES DE FISIO =====
-        const FISIO_HORES = ['17:40 - 18:00', '18:00 - 18:20', '18:20 - 18:40', '18:40 - 19:00', '19:00 - 19:20', '19:20 - 19:40', '19:40 - 20:00'];
+        const FISIO_MINUTS_FRANJA = 20;
+        function fisioMinuts(hhmm) { const [h, m] = String(hhmm || '').split(':'); return (Number(h) || 0) * 60 + (Number(m) || 0); }
+        function fisioFormat(min) { return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`; }
+        // Franges de 20 minuts d'una sessió: si sobren minuts al final no es compten
+        function fisioHores(se) {
+            const ini = fisioMinuts(se.hora_inici || '17:40'), fi = fisioMinuts(se.hora_fi || '20:00');
+            const n = Math.max(0, Math.floor((fi - ini) / FISIO_MINUTS_FRANJA));
+            return Array.from({ length: n }, (_, i) => `${fisioFormat(ini + i * FISIO_MINUTS_FRANJA)} - ${fisioFormat(ini + (i + 1) * FISIO_MINUTS_FRANJA)}`);
+        }
+        function previsioFisio() {
+            const ini = document.getElementById('fisio-nova-inici').value, fi = document.getElementById('fisio-nova-fi').value;
+            const el = document.getElementById('fisio-previsio');
+            if (!ini || !fi) { el.textContent = ''; return; }
+            const hores = fisioHores({ hora_inici: ini, hora_fi: fi });
+            if (!hores.length) { el.style.color = 'var(--danger)'; el.textContent = 'Cal almenys 20 minuts entre l\'inici i el final.'; return; }
+            const ultim = hores[hores.length - 1].split(' - ')[1];
+            const sobra = fisioMinuts(fi) - fisioMinuts(ini) - hores.length * FISIO_MINUTS_FRANJA;
+            el.style.color = '#94a3b8';
+            el.textContent = `${hores.length} franges de 20 min (${ini} a ${ultim})` + (sobra > 0 ? ` · sobren ${sobra} min al final` : '');
+        }
         const FISIO_GESTORS = ['sergigodayol@gmail.com', 'martiolisan@gmail.com', 'ericsoleponsa@hotmail.es'];
         let dadesFisio = { sessions: [], reserves: [] };
 
@@ -3264,6 +3295,7 @@ async function eliminarResumPartit() {
             document.getElementById('fisio-gestio').style.display = fisioEsGestor() ? 'block' : 'none';
             const nova = document.getElementById('fisio-nova-data');
             if (nova) nova.min = avui;
+            previsioFisio();
 
             const [rS, rR] = await Promise.all([
                 clienteSupabase.from('fisio_sessions').select('*').gte('data', avui).order('data', { ascending: true }),
@@ -3291,7 +3323,7 @@ async function eliminarResumPartit() {
             cont.innerHTML = dadesFisio.sessions.map(se => {
                 const reserves = dadesFisio.reserves.filter(r => r.data === se.data);
                 const lameva = reserves.find(r => String(r.id_jugador).trim().toLowerCase() === meu);
-                const files = FISIO_HORES.map((hora, i) => {
+                const files = fisioHores(se).map((hora, i) => {
                     const slot = i + 1;
                     const r = reserves.find(x => Number(x.slot) === slot);
                     const esMeva = r && String(r.id_jugador).trim().toLowerCase() === meu;
@@ -3322,7 +3354,7 @@ async function eliminarResumPartit() {
 
                 return `<div class="card">
                     <h3 style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:0.6rem;">
-                        <span>${fisioDataBonica(se.data)}</span>
+                        <span>${fisioDataBonica(se.data)}<span style="display:block; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:#94a3b8; letter-spacing:0; text-transform:none; margin-top:2px;">${fisioFormat(fisioMinuts(se.hora_inici || '17:40'))} a ${fisioFormat(fisioMinuts(se.hora_inici || '17:40') + fisioHores(se).length * FISIO_MINUTS_FRANJA)}</span></span>
                         ${se.oberta ? '' : '<span style="font-size:0.7rem; color:var(--danger); border:1px solid rgba(239,68,68,0.4); border-radius:999px; padding:3px 9px;">🔒 TANCADA</span>'}
                     </h3>
                     ${files}
@@ -3350,13 +3382,18 @@ async function eliminarResumPartit() {
         }
         async function crearSessioFisio() {
             const data = document.getElementById('fisio-nova-data').value;
-            if (!data) { fisioMissatge('Tria una data', false); return; }
-            if (await accioFisio('fisio_crear_sessio', { p_data: data }, 'Sessió oberta ✅')) document.getElementById('fisio-nova-data').value = '';
+            const inici = document.getElementById('fisio-nova-inici').value;
+            const fi = document.getElementById('fisio-nova-fi').value;
+            if (!data) { fisioMissatge('Tria el dia', false); return; }
+            if (!inici || !fi) { fisioMissatge('Indica l\'hora d\'inici i la de fi', false); return; }
+            if (fisioHores({ hora_inici: inici, hora_fi: fi }).length < 1) { fisioMissatge('Cal almenys 20 minuts entre l\'inici i el final', false); return; }
+            if (await accioFisio('fisio_crear_sessio', { p_data: data, p_inici: inici, p_fi: fi }, 'Sessió oberta ✅')) document.getElementById('fisio-nova-data').value = '';
         }
 
         async function copiarLlistaFisio(data) {
             const reserves = dadesFisio.reserves.filter(r => r.data === data);
-            const linies = FISIO_HORES.map((h, i) => {
+            const se = dadesFisio.sessions.find(x => x.data === data) || {};
+            const linies = fisioHores(se).map((h, i) => {
                 const r = reserves.find(x => Number(x.slot) === i + 1);
                 return `${i + 1}. ${h}h - ${r ? r.nom : 'lliure'}`;
             });

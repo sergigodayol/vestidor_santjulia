@@ -74,6 +74,8 @@
         }
         .btn-secundario:hover { background-color: rgba(16, 185, 129, 0.1); }
         
+        .btn-enllac { background: none; border: none; color: #9ca3af; text-decoration: underline; cursor: pointer; font-size: 0.85rem; margin-top: 1.1rem; padding: 0.3rem; }
+        .btn-enllac:hover { color: #f9fafb; }
         #mensaje { margin-top: 1.5rem; font-size: 0.9rem; font-weight: bold; text-align: center; }
     </style>
 </head>
@@ -101,12 +103,17 @@
         <!-- BOTONS D'ACCIÓ -->
         <button type="submit" class="btn-primario" id="btn-entrar">Entrar al Vestidor</button>
         <button type="button" class="btn-secundario" id="btn-registrar-mode" onclick="activarModoRegistro()">Registrar-se com a nou jugador</button>
+        <button type="button" class="btn-enllac" id="btn-oblidat" onclick="recuperarContrasenya()">He oblidat la contrasenya</button>
         </form>
 
         <p id="mensaje" style="display:none;"></p>
     </div>
 
     <script>
+        // Un enllaç de recuperació de contrasenya porta "type=recovery" al final: l'enviem a la pàgina on es tria la nova
+        const ES_RECUPERACIO = /type=recovery/.test(window.location.hash);
+        if (ES_RECUPERACIO) window.location.replace('recuperar.html' + window.location.hash);
+
         const urlSupa = 'https://gfpnyxwjllljjxdcadfy.supabase.co';
         const keySupa = 'sb_publishable_F2oufPKZ4W3dkTbLGdGZBw_xDQ6UIxQ';
         
@@ -127,13 +134,34 @@
         });
 
         // Si ja hi ha una sessió guardada en aquest dispositiu, entrem directament
-        clienteSupabase.auth.getSession().then(({ data }) => {
+        if (!ES_RECUPERACIO) clienteSupabase.auth.getSession().then(({ data }) => {
             if (data && data.session) window.location.replace('dashboard.html');
         });
 
         function enviarFormulari(e) {
             e.preventDefault();
             if (modoRegistroActivo) registrarse(); else iniciarSesion();
+        }
+
+        // --- HE OBLIDAT LA CONTRASENYA: envia un correu amb un enllaç per triar-ne una de nova ---
+        async function recuperarContrasenya() {
+            const email = document.getElementById('email').value.trim();
+            const msg = document.getElementById('mensaje');
+            if (!email) {
+                msg.style.color = '#f59e0b'; msg.textContent = "Escriu el teu correu a dalt i torna a prémer \"He oblidat la contrasenya\"."; msg.style.display = 'block'; return;
+            }
+            msg.style.color = '#f59e0b'; msg.textContent = "Enviant el correu..."; msg.style.display = 'block';
+            const redirectTo = new URL('recuperar.html', window.location.href).href;
+            const { error } = await clienteSupabase.auth.resetPasswordForEmail(email, { redirectTo });
+            if (error) {
+                msg.style.color = '#ef4444';
+                msg.textContent = /rate|seconds|limit/i.test(error.message)
+                    ? "Has demanat molts correus seguits. Espera uns minuts i torna-ho a provar."
+                    : "No s'ha pogut enviar el correu: " + error.message;
+            } else {
+                msg.style.color = '#10b981';
+                msg.textContent = "Si aquest correu té compte, t'hem enviat un enllaç per canviar la contrasenya. Mira també el correu brossa (spam).";
+            }
         }
 
         function guardarPreferenciaSessio() {

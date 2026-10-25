@@ -2199,12 +2199,30 @@ async function eliminarResumPartit() {
                 let filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && normalitzarNomRival(fila[idxRival]) === rivalNet);
 
                 if (filaRival) {
-                    const pjs = filaRival[idxPJ] || '0';
-                    const v = filaRival[idxV] || '0';
-                    const e = filaRival[idxE] || '0';
-                    const d = filaRival[idxD] || '0';
-                    const gf = filaRival[idxGF] || '0';
-                    const gc = filaRival[idxGC] || '0';
+                    let pjs = filaRival[idxPJ] || '0';
+                    let v = filaRival[idxV] || '0';
+                    let e = filaRival[idxE] || '0';
+                    let d = filaRival[idxD] || '0';
+                    let gf = filaRival[idxGF] || '0';
+                    let gc = filaRival[idxGC] || '0';
+
+                    // Els totals del full compten els partits SENSE JUGAR com a empats. Recalculem amb la taula de
+                    // partits jugats (columnes RIVAL / RESULTAT / GOLS A FAVOR / GOLS EN CONTRA de la dreta del mateix full).
+                    const idxHRival = headers.lastIndexOf('RIVAL');
+                    const idxHGF = headers.lastIndexOf('GOLS A FAVOR');
+                    const idxHGC = headers.lastIndexOf('GOLS EN CONTRA');
+                    if (idxHRival > -1 && idxHGF > idxGF && idxHGC > idxGC) {
+                        const t = { pj: 0, v: 0, e: 0, d: 0, gf: 0, gc: 0 };
+                        for (let r = 1; r < dadesRivals.length; r++) {
+                            const fila = dadesRivals[r];
+                            if (normalitzarNomRival(fila[idxHRival]) !== rivalNet) continue;
+                            const a = parseInt(fila[idxHGF], 10), b = parseInt(fila[idxHGC], 10);
+                            if (isNaN(a) || isNaN(b)) continue; // partit sense resultat = no jugat
+                            t.pj++; t.gf += a; t.gc += b;
+                            if (a > b) t.v++; else if (a === b) t.e++; else t.d++;
+                        }
+                        pjs = String(t.pj); v = String(t.v); e = String(t.e); d = String(t.d); gf = String(t.gf); gc = String(t.gc);
+                    }
 
                     const contenedorCartel = document.getElementById('txt-partido-detalles').parentElement;
                     const blocAntic = document.getElementById('historial-rival-bloc');

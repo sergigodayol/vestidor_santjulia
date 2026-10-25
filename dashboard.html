@@ -593,6 +593,25 @@
             </div>
         </div>
 
+        <div id="tab-fisio" class="tab-content">
+            <div class="card">
+                <h3><span class="card-icon icon-info">🩺</span> Reserva d'hora de Fisio</h3>
+                <p style="color:#94a3b8; font-size:0.88rem; margin-top:-0.5rem; line-height:1.5;">
+                    Tria la teva hora de fisio a les sessions obertes. Cada franja és d'una sola persona i cada jugador pot tenir una hora per sessió.
+                    Si et vas malament, pots canviar-la o cancel·lar-la.
+                </p>
+            </div>
+
+            <div id="fisio-gestio" class="card" style="display:none; border:1px solid rgba(239,68,68,0.35);">
+                <h3 style="margin-bottom:0.6rem;">⚙️ Obrir una sessió de fisio</h3>
+                <input type="date" id="fisio-nova-data" class="input-text-mvp">
+                <button onclick="crearSessioFisio()" class="btn-cta btn-cta-gold" style="width:100%; padding:0.8rem;">Obrir sessió</button>
+            </div>
+
+            <p id="fisio-msg" style="text-align:center; display:none; font-weight:bold;"></p>
+            <div id="fisio-sessions"><div class="card">Carregant...</div></div>
+        </div>
+
         <div id="tab-gestio" class="tab-content">
             <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.35); background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 45%), rgba(239, 68, 68, 0.04);">
                 <h3 id="admin-gestio-titol"><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span> Panell de Control Secret (Admin)</h3>
@@ -772,7 +791,7 @@
 
 
     <nav class="bottom-nav" id="barra-navegacion-principal">
-        <button class="nav-btn active" onclick="cambiarPestaña('inicio', this)">
+        <button class="nav-btn active" onclick="cambiarPestaña('inicio', this); carregarNovetats();">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Inici
         </button>
         <button class="nav-btn" onclick="cambiarPestaña('quiniela', this)">
@@ -796,6 +815,9 @@
         </button>
         <button class="nav-btn" onclick="cambiarPestaña('multas', this)">
             <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 0.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Multes
+        </button>
+        <button class="nav-btn" onclick="cambiarPestaña('fisio', this); carregarFisio();">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg> Fisio
         </button>
     </nav>
 
@@ -3091,6 +3113,133 @@ async function eliminarResumPartit() {
         }
 
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') carregarNovetats(); });
+
+        // ===== RESERVA D'HORES DE FISIO =====
+        const FISIO_HORES = ['17:40 - 18:00', '18:00 - 18:20', '18:20 - 18:40', '18:40 - 19:00', '19:00 - 19:20', '19:20 - 19:40', '19:40 - 20:00'];
+        const FISIO_GESTORS = ['sergigodayol@gmail.com', 'martiolisan@gmail.com', 'ericsoleponsa@hotmail.es'];
+        let dadesFisio = { sessions: [], reserves: [] };
+
+        function fisioEsGestor() { return FISIO_GESTORS.includes(String(emailUsuario || '').trim().toLowerCase()); }
+        function fisioAvui() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+        function fisioDataBonica(iso) {
+            const t = new Date(iso + 'T12:00:00').toLocaleDateString('ca-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+            return t.charAt(0).toUpperCase() + t.slice(1);
+        }
+        function fisioMissatge(text, ok) {
+            const el = document.getElementById('fisio-msg');
+            el.style.display = text ? 'block' : 'none';
+            el.style.color = ok ? 'var(--success)' : 'var(--danger)';
+            el.textContent = text || '';
+        }
+
+        async function carregarFisio() {
+            const avui = fisioAvui();
+            document.getElementById('fisio-gestio').style.display = fisioEsGestor() ? 'block' : 'none';
+            const nova = document.getElementById('fisio-nova-data');
+            if (nova) nova.min = avui;
+
+            const [rS, rR] = await Promise.all([
+                clienteSupabase.from('fisio_sessions').select('*').gte('data', avui).order('data', { ascending: true }),
+                clienteSupabase.from('fisio_reserves').select('*').gte('data', avui)
+            ]);
+            if (rS.error || rR.error) {
+                console.error(rS.error || rR.error);
+                document.getElementById('fisio-sessions').innerHTML = `<div class="card">No s'ha pogut carregar el fisio (has executat el SQL de fisio?).</div>`;
+                return;
+            }
+            dadesFisio = { sessions: rS.data || [], reserves: rR.data || [] };
+            pintarFisio();
+        }
+
+        function pintarFisio() {
+            const cont = document.getElementById('fisio-sessions');
+            const meu = String(emailUsuario || '').trim().toLowerCase();
+            const gestor = fisioEsGestor();
+
+            if (!dadesFisio.sessions.length) {
+                cont.innerHTML = `<div class="card" style="text-align:center; color:#94a3b8;">Ara mateix no hi ha cap sessió de fisio oberta.</div>`;
+                return;
+            }
+
+            cont.innerHTML = dadesFisio.sessions.map(se => {
+                const reserves = dadesFisio.reserves.filter(r => r.data === se.data);
+                const lameva = reserves.find(r => String(r.id_jugador).trim().toLowerCase() === meu);
+                const files = FISIO_HORES.map((hora, i) => {
+                    const slot = i + 1;
+                    const r = reserves.find(x => Number(x.slot) === slot);
+                    const esMeva = r && String(r.id_jugador).trim().toLowerCase() === meu;
+                    let dreta;
+                    if (esMeva) {
+                        dreta = `<span style="color:var(--success); font-weight:700;">${escHTML(r.nom)} (tu)</span>
+                                 <button onclick="cancelarFisio('${se.data}')" class="btn-cta" style="padding:0.4rem 0.7rem; font-size:0.75rem; background:transparent; border:1px solid var(--border); color:var(--text-muted);">Cancel·lar</button>`;
+                    } else if (r) {
+                        dreta = `<span style="color:var(--text);">${escHTML(r.nom)}</span>` +
+                                (gestor ? ` <button onclick="treureFisio('${se.data}', ${slot})" title="Treure aquesta reserva" class="btn-cta" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:transparent; border:1px solid var(--border); color:var(--danger);">✕</button>` : '');
+                    } else if (se.oberta) {
+                        dreta = `<button onclick="reservarFisio('${se.data}', ${slot})" class="btn-cta btn-cta-success" style="padding:0.45rem 0.9rem; font-size:0.8rem;">${lameva ? 'Canviar aquí' : 'Reservar'}</button>`;
+                    } else {
+                        dreta = `<span style="color:#64748b;">Lliure</span>`;
+                    }
+                    return `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 8px; border-bottom:1px solid rgba(255,255,255,0.06); ${esMeva ? 'background:rgba(34,197,94,0.08); border-radius:8px;' : ''}">
+                                <span style="font-family:'Oswald',sans-serif; letter-spacing:0.5px; white-space:nowrap;">${hora}</span>
+                                <span style="display:flex; align-items:center; gap:8px; text-align:right;">${dreta}</span>
+                            </div>`;
+                }).join('');
+
+                const eines = gestor ? `
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+                        <button onclick="copiarLlistaFisio('${se.data}')" class="btn-cta btn-cta-primary" style="padding:0.5rem 0.8rem; font-size:0.78rem;">Copiar llista</button>
+                        <button onclick="canviarEstatFisio('${se.data}', ${se.oberta ? 'false' : 'true'})" class="btn-cta" style="padding:0.5rem 0.8rem; font-size:0.78rem; background:transparent; border:1px solid var(--border); color:var(--text);">${se.oberta ? 'Tancar reserves' : 'Tornar a obrir'}</button>
+                        <button onclick="esborrarSessioFisio('${se.data}')" class="btn-cta" style="padding:0.5rem 0.8rem; font-size:0.78rem; background:transparent; border:1px solid rgba(239,68,68,0.4); color:var(--danger);">Esborrar sessió</button>
+                    </div>` : '';
+
+                return `<div class="card">
+                    <h3 style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:0.6rem;">
+                        <span>${fisioDataBonica(se.data)}</span>
+                        ${se.oberta ? '' : '<span style="font-size:0.7rem; color:var(--danger); border:1px solid rgba(239,68,68,0.4); border-radius:999px; padding:3px 9px;">🔒 TANCADA</span>'}
+                    </h3>
+                    ${files}
+                    ${eines}
+                </div>`;
+            }).join('');
+        }
+
+        async function accioFisio(nomRpc, parametres, textOk) {
+            fisioMissatge('', true);
+            const { error } = await clienteSupabase.rpc(nomRpc, parametres);
+            if (error) { fisioMissatge(error.message || 'Error desconegut', false); await carregarFisio(); return false; }
+            await carregarFisio();
+            if (textOk) fisioMissatge(textOk, true);
+            return true;
+        }
+
+        function reservarFisio(data, slot) { return accioFisio('fisio_reservar', { p_data: data, p_slot: slot }, 'Hora reservada! ✅'); }
+        function cancelarFisio(data) { if (!confirm('Vols cancel·lar la teva hora?')) return; return accioFisio('fisio_cancelar', { p_data: data }, 'Hora cancel·lada'); }
+        function treureFisio(data, slot) { if (!confirm('Vols treure aquesta reserva?')) return; return accioFisio('fisio_treure', { p_data: data, p_slot: slot }, 'Reserva eliminada'); }
+        function canviarEstatFisio(data, oberta) { return accioFisio('fisio_canviar_estat', { p_data: data, p_oberta: oberta }, oberta ? 'Reserves obertes' : 'Reserves tancades'); }
+        function esborrarSessioFisio(data) {
+            if (!confirm(`Esborrar la sessió del ${fisioDataBonica(data)} amb totes les seves reserves?`)) return;
+            return accioFisio('fisio_esborrar_sessio', { p_data: data }, 'Sessió esborrada');
+        }
+        async function crearSessioFisio() {
+            const data = document.getElementById('fisio-nova-data').value;
+            if (!data) { fisioMissatge('Tria una data', false); return; }
+            if (await accioFisio('fisio_crear_sessio', { p_data: data }, 'Sessió oberta ✅')) document.getElementById('fisio-nova-data').value = '';
+        }
+
+        async function copiarLlistaFisio(data) {
+            const reserves = dadesFisio.reserves.filter(r => r.data === data);
+            const linies = FISIO_HORES.map((h, i) => {
+                const r = reserves.find(x => Number(x.slot) === i + 1);
+                return `${i + 1}. ${h}h - ${r ? r.nom : 'lliure'}`;
+            });
+            const text = `Fisio ${fisioDataBonica(data)}\n` + linies.join('\n');
+            try { await navigator.clipboard.writeText(text); fisioMissatge('Llista copiada ✅', true); }
+            catch (e) { window.prompt('Copia la llista:', text); }
+        }
 
         // L'arrencada
         verificarSesion();

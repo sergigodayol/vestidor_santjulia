@@ -2163,11 +2163,19 @@ async function eliminarResumPartit() {
             }
         }
 
+        // Majúscules, sense accents, sense signes i amb espais simples: "Torelló  B." -> "TORELLO B"
+        function normalitzarNomRival(text) {
+            return String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
+                .replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
         async function obtenerStatsRivalHistorial(partidoTexto) {
             if (!partidoTexto) return;
             
-            let rivalNet = partidoTexto.replace(/CF Sant Julià/gi, "").replace("-", "").trim().toUpperCase();
-            if (!rivalNet || rivalNet === "") return;
+            // "Torello B - Sant Julià" o "Sant Julià - Torello B": ens quedem només amb el rival (amb la seva lletra d'equip)
+            const partRival = partidoTexto.replace(/(cf\s+)?sant\s*juli[àa]/gi, '').replace(/^\s*[-–]\s*|\s*[-–]\s*$/g, '').trim();
+            const rivalNet = normalitzarNomRival(partRival);
+            if (!rivalNet) return;
 
             const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
             const urlRivals = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=RIVALS%20(GLOBALS)`;
@@ -2187,11 +2195,8 @@ async function eliminarResumPartit() {
                 const idxGF = headers.indexOf('GOLS A FAVOR');
                 const idxGC = headers.indexOf('GOLS EN CONTRA');
 
-                let filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && fila[idxRival].trim().toUpperCase() === rivalNet);
-                
-                if (!filaRival) {
-                    filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && (fila[idxRival].trim().toUpperCase().includes(rivalNet) || rivalNet.includes(fila[idxRival].trim().toUpperCase())));
-                }
+                // Només coincidència EXACTA (sense accents ni majúscules): "Torello B" no ha de caure mai a "Torello"
+                let filaRival = dadesRivals.find((fila, idx) => idx > 0 && fila[idxRival] && normalitzarNomRival(fila[idxRival]) === rivalNet);
 
                 if (filaRival) {
                     const pjs = filaRival[idxPJ] || '0';
@@ -2298,9 +2303,15 @@ async function eliminarResumPartit() {
 
                     for(let r=1; r<dades.length; r++) {
                         const row = dades[r];
+
+                        // Quan comença el bloc d'un altre equip (Amateur B, C...) o es repeteix la capçalera, deixem de llegir:
+                        // així només surten els partits de l'equip A
+                        const textFila = row.map(c => String(c || '').toUpperCase()).join(' | ');
+                        if (/AMATEUR\s*[B-Z]\b/.test(textFila) || normalitzarNomRival(row[idxRival]) === 'RIVAL') break;
+
                         if (!row[idxRival]) continue;
                         
-                        if (row[idxRival].trim().toUpperCase() === rivalExacte) {
+                        if (normalitzarNomRival(row[idxRival]) === normalitzarNomRival(rivalExacte)) {
                             let golejadors = golsIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
                             let tg = groguesIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");
                             let tv = vermellesIdx.map(idx => row[idx]).filter(val => val && val.trim() !== "");

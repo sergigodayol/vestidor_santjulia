@@ -18,9 +18,9 @@
 
         :root {
             /* Tema CF Sant Julià — "Marcador de partit": blau marí + daurat */
-            --primary: #2f6fed;
-            --primary-deep: #1c4bb8;
-            --primary-glow: rgba(47, 111, 237, 0.35);
+            --primary: #1f78d1;
+            --primary-deep: #145aa8;
+            --primary-glow: rgba(31, 120, 209, 0.35);
             --bg: #060c18;
             --surface: rgba(13, 27, 48, 0.94);
             --surface-hover: rgba(22, 48, 90, 0.95);
@@ -30,10 +30,11 @@
             --border-strong: rgba(255, 255, 255, 0.18);
             --danger: #ef4444;
             --success: #22c55e;
-            --warning: #e3b23c; /* daurat — trofeus, preus, èmfasi */
-            --gold: #e3b23c;
+            --warning: #f4b400; /* daurat — trofeus, preus, èmfasi */
+            --gold: #f4b400;
             --info: #38bdf8;
             --purple: #8b6cf6;
+            --club-red: #d7263d;
         }
 
         * { box-sizing: border-box; }
@@ -95,8 +96,8 @@
             text-transform: uppercase;
             color: var(--gold);
             padding: 3px 9px;
-            border: 1px solid rgba(227, 178, 60, 0.35);
-            background: rgba(227, 178, 60, 0.08);
+            border: 1px solid rgba(244, 180, 0, 0.35);
+            background: rgba(244, 180, 0, 0.08);
             border-radius: 5px;
         }
         
@@ -137,16 +138,54 @@
         .card-icon svg { width: 17px; height: 17px; }
         .card-icon-sm { width: 25px; height: 25px; border-radius: 7px; }
         .card-icon-sm svg { width: 13px; height: 13px; }
-        .icon-blue { background: rgba(47, 111, 237, 0.14); color: #6c9bff; }
-        .icon-gold { background: rgba(227, 178, 60, 0.14); color: var(--gold); }
+        .icon-blue { background: rgba(31, 120, 209, 0.14); color: #6c9bff; }
+        .icon-gold { background: rgba(244, 180, 0, 0.14); color: var(--gold); }
         .icon-danger { background: rgba(239, 68, 68, 0.14); color: #ff8080; }
         .icon-success { background: rgba(34, 197, 94, 0.14); color: #5fe0a0; }
         .icon-info { background: rgba(56, 189, 248, 0.14); color: #7fd8fb; }
         .icon-purple { background: rgba(139, 108, 246, 0.14); color: #b0a0fc; }
 
-        .card-hero {
-            border-top: 3px solid var(--gold);
-        }
+        .card-hero { position: relative; overflow: hidden; padding-bottom: 1.3rem !important; }
+        .card-hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 7px; background: repeating-linear-gradient(90deg, #f4b400 0 14px, #d7263d 14px 28px); }
+
+        /* --- DADES RÀPIDES --- */
+        .dades-rapides { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; margin-bottom: 1.1rem; }
+        .dada-rapida { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 0.75rem 0.8rem; }
+        .dada-rapida-et { display: block; font-size: 0.68rem; color: var(--text-muted); font-weight: 600; }
+        .dada-rapida-val { display: block; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 1.7rem; line-height: 1.15; margin-top: 2px; }
+
+        /* --- PODI --- */
+        .podi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; align-items: end; margin-top: 0.4rem; }
+        .podi-col { text-align: center; cursor: pointer; border-radius: 12px; padding-top: 4px; }
+        .podi-col:active { background: rgba(255,255,255,0.05); }
+        .podi-nom { font-size: 0.78rem; font-weight: 700; margin-top: 6px; line-height: 1.2; }
+        .podi-pts { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 1.25rem; }
+        .podi-barra { margin-top: 2px; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-weight: 700; background: #1b2e4d; }
+        .podi-col.p1 .podi-barra { height: 84px; background: var(--primary); font-size: 1.7rem; }
+        .podi-col.p1 .podi-pts { color: var(--gold); font-size: 1.6rem; }
+        .podi-col.p2 .podi-barra { height: 56px; font-size: 1.3rem; color: #c0c8d6; }
+        .podi-col.p2 .podi-pts { color: #c0c8d6; }
+        .podi-col.p3 .podi-barra { height: 40px; font-size: 1.2rem; color: #cd8a4f; }
+        .podi-col.p3 .podi-pts { color: #cd8a4f; }
+        .podi-col.p1 .avatar-img { border-color: var(--gold); border-width: 3px; }
+        .ranking-clicable { cursor: pointer; }
+        .ranking-clicable:active { background: rgba(255,255,255,0.05); }
+        .podi-ajuda { text-align: center; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.8rem; }
+
+        /* --- FITXA DE JUGADOR --- */
+        .perfil-fons { position: fixed; inset: 0; z-index: 400; background: rgba(3, 8, 18, 0.78); display: none; align-items: flex-end; justify-content: center; }
+        .perfil-full { position: relative; width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 22px 22px 0 0; padding: 1rem 1rem 2rem; }
+        @media (min-width: 700px) { .perfil-fons { align-items: center; } .perfil-full { border-radius: 22px; } }
+        .perfil-tancar { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 1.1rem; cursor: pointer; z-index: 2; }
+        .perfil-carta { border-radius: 20px; overflow: hidden; background: var(--primary); margin-top: 28px; }
+        .perfil-carta-cos { display: flex; align-items: center; gap: 14px; padding: 18px 16px 16px; }
+        .perfil-carta-cos .avatar-img { border: 3px solid var(--gold); }
+        .perfil-nom { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 1.5rem; line-height: 1.1; text-transform: uppercase; }
+        .perfil-estripes { height: 8px; background: repeating-linear-gradient(90deg, #f4b400 0 14px, #d7263d 14px 28px); }
+        .perfil-etiqueta { display: inline-block; font-size: 0.66rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: var(--gold); color: #14213a; border-radius: 999px; padding: 3px 10px; margin: 8px 6px 0 0; }
+        .perfil-titol { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 1rem; letter-spacing: 0.5px; text-transform: uppercase; margin: 1.1rem 0 0.5rem; }
+        .perfil-graella { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
+        .perfil-bloc { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 0.9rem 1rem; display: flex; justify-content: space-between; align-items: center; margin-top: 0.6rem; }
 
         .tab-content { display: none; opacity: 0; }
         .tab-content.active { 
@@ -202,8 +241,8 @@
             align-items: center; 
             justify-content: center;
             gap: 3px; 
-            flex: 1 0 auto; 
-            min-width: 62px; 
+            flex: 1 1 0; 
+            min-width: 0; 
             padding: 0.4rem 0.1rem; 
             border-radius: 10px;
             transition: all 0.2s ease; 
@@ -211,7 +250,7 @@
         }
         
         nav.bottom-nav::-webkit-scrollbar { display: none; }
-        .nav-btn.active { color: var(--primary); background: rgba(47, 111, 237, 0.14); }
+        .nav-btn.active { color: #fff; background: var(--primary); }
         .nav-btn svg { width: 19px; height: 19px; fill: currentColor; transition: transform 0.2s ease; }
         .nav-btn.active svg { transform: scale(1.08); }
 
@@ -228,7 +267,7 @@
         #lista-admin-partidos .botones-1x2 { flex-wrap: wrap; justify-content: flex-end; }
         .marcador-exacte { display:flex; align-items:center; gap:8px; }
         .input-marcador { width:48px; background: rgba(0,0,0,0.35); border:1px solid var(--border); color:var(--text); padding:0.5rem 0.4rem; border-radius:9px; text-align:center; font-family:'Oswald', sans-serif; font-weight:700; font-size:1rem; }
-        .input-marcador:focus { outline:none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(227,178,60,0.25); }
+        .input-marcador:focus { outline:none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(244,180,0,0.25); }
         .separador-marcador { font-weight:800; color: var(--text-muted); font-family:'Oswald', sans-serif; }
         
         .ranking-item { display: flex; flex-direction: column; padding: 0.95rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
@@ -255,7 +294,7 @@
         .contenedor-rafaga { display: flex; gap: 6px; margin-top: 6px; margin-left: 42px; align-items: center; }
         .circulo-rafaga { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
         .circulo-verd { background: var(--success); box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); }
-        .circulo-grog { background: var(--warning); box-shadow: 0 0 8px rgba(227, 178, 60, 0.6); }
+        .circulo-grog { background: var(--warning); box-shadow: 0 0 8px rgba(244, 180, 0, 0.6); }
         .circulo-vermell { background: var(--danger); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
         
         .bote-total { text-align: center; font-family: 'Oswald', sans-serif; font-size: 2.7rem; font-weight: 700; color: var(--danger); margin-top: 0.4rem; letter-spacing: -0.5px; }
@@ -277,7 +316,7 @@
         .tarifa-item:hover { background: rgba(0,0,0,0.32); }
         .tarifa-concepto { font-size: 0.85rem; font-weight: 500; color: #e2e8f0; line-height: 1.35; }
         .tarifa-concepto em { color: var(--text-muted); font-style: normal; font-weight: 400; }
-        .tarifa-precio { flex-shrink: 0; background: rgba(227, 178, 60, 0.12); color: var(--gold); border: 1px solid rgba(227, 178, 60, 0.32); font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 0.9rem; padding: 5px 12px; border-radius: 7px; white-space: nowrap; }
+        .tarifa-precio { flex-shrink: 0; background: rgba(244, 180, 0, 0.12); color: var(--gold); border: 1px solid rgba(244, 180, 0, 0.32); font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 0.9rem; padding: 5px 12px; border-radius: 7px; white-space: nowrap; }
         .btn-eliminar-multa { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.9rem; cursor: pointer; padding: 4px 10px; margin-left: 10px; border-radius: 6px; transition: all 0.2s; }
         .btn-eliminar-multa:hover { background: var(--danger); color: white; }
 
@@ -294,7 +333,7 @@
         }
         .btn-cta:active { transform: scale(0.98); }
         .btn-cta-primary { background: linear-gradient(135deg, #3b82f6, var(--primary-deep)); color: #fff; box-shadow: 0 10px 24px -8px rgba(47,111,237,0.55); }
-        .btn-cta-gold { background: linear-gradient(135deg, #f0c766, var(--gold)); color: #1a1305; box-shadow: 0 10px 24px -8px rgba(227,178,60,0.45); }
+        .btn-cta-gold { background: linear-gradient(135deg, #f0c766, var(--gold)); color: #1a1305; box-shadow: 0 10px 24px -8px rgba(244,180,0,0.45); }
         .btn-cta-success { background: linear-gradient(135deg, #34d67f, var(--success)); color: #06280f; box-shadow: 0 10px 24px -8px rgba(34,197,94,0.4); }
 
         input.input-jornada { background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 9px; width: 65px; text-align: center; font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-weight: 700; }
@@ -331,7 +370,7 @@
             font-family: 'Oswald', sans-serif; font-size: 0.98rem; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
         .drawer-item svg { width: 24px; height: 24px; fill: currentColor; flex-shrink: 0; color: #64748b; }
         .drawer-item:active { background: rgba(255,255,255,0.06); }
-        .drawer-item.active { color: var(--primary); background: rgba(47, 111, 237, 0.14); border-left-color: var(--primary); }
+        .drawer-item.active { color: var(--primary); background: rgba(31, 120, 209, 0.14); border-left-color: var(--primary); }
         .drawer-item.active svg { color: var(--primary); }
         .drawer-gestio, .drawer-gestio svg { color: var(--danger); }
         .drawer-sortir, .drawer-sortir svg { color: var(--text-muted); }
@@ -386,6 +425,12 @@
                 <p id="txt-partido-detalles" style="margin: 0.9rem 0 0 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
             </div>
 
+            <div id="fila-dades-rapides" class="dades-rapides" style="display:none;">
+                <div class="dada-rapida"><span class="dada-rapida-et">Els teus punts</span><span class="dada-rapida-val" id="dr-punts">-</span></div>
+                <div class="dada-rapida"><span class="dada-rapida-et">Posició quiniela</span><span class="dada-rapida-val" id="dr-pos" style="color:var(--gold);">-</span></div>
+                <div class="dada-rapida"><span class="dada-rapida-et">Les teves multes</span><span class="dada-rapida-val" id="dr-multes" style="color:#ff6b7d;">-</span></div>
+            </div>
+
             <div class="card">
                 <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11"/><path d="M3 21h18"/><path d="M5 14c1-1 2-1 3 0s2 1 3 0 2-1 3 0 2 1 3 0 2-1 3 0"/></svg></span> Properes Pastes</h3>
                 <div id="lista-aniversarios-inicio" style="font-size: 0.95rem;">Carregant el calendari de pastes...</div>
@@ -398,8 +443,8 @@
                 </div>
 
                 <div class="card">
-                    <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7Z"/><path d="M5 19h14"/></svg></span> Top 3 MVPs</h3>
-                    <div id="tabla-ranking-mvp-inicio">Carregant els MVPs de la temporada...</div>
+                    <h3><span class="card-icon icon-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7Z"/><path d="M5 19h14"/></svg></span> Últims MVPs</h3>
+                    <div id="tabla-ranking-mvp-inicio">Carregant els últims MVPs...</div>
                 </div>
 
                 <div class="card">
@@ -896,6 +941,13 @@
         </div>
     </aside>
 
+    <div id="modal-perfil" class="perfil-fons" onclick="if (event.target === this) tancarPerfilJugador()">
+        <div class="perfil-full" role="dialog" aria-modal="true" aria-label="Perfil de jugador">
+            <button class="perfil-tancar" onclick="tancarPerfilJugador()" aria-label="Tancar">✕</button>
+            <div id="perfil-contingut"></div>
+        </div>
+    </div>
+
     <nav class="bottom-nav" id="barra-inferior">
         <button class="nav-btn active" data-tab="inicio" onclick="cambiarPestaña('inicio', this); carregarNovetats();">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Inici
@@ -903,26 +955,14 @@
         <button class="nav-btn" data-tab="quiniela" onclick="cambiarPestaña('quiniela', this)">
             <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Quiniela
         </button>
-        <button class="nav-btn" data-tab="mvp" onclick="cambiarPestaña('mvp', this); cargarRankingMVP(); cargarVotMVPExistente();">
-            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> MVP
-        </button>
-        <button class="nav-btn" data-tab="entrenos" onclick="cambiarPestaña('entrenos', this); cargarRankingEntrenosFull();">
-            <svg viewBox="0 0 24 24"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg> Entrenos
-        </button>
         <button class="nav-btn" data-tab="partits" onclick="cambiarPestaña('partits', this); carregarPartitsResums();">
-            <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="9"/>
-        <polygon points="10 8 16 12 10 16 10 8"/>
-    </svg> Partits
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg> Partits
         </button>
         <button class="nav-btn" data-tab="stats" onclick="cambiarPestaña('stats', this); cargarEstadisticas();">
             <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg> Stats
         </button>
-        <button class="nav-btn" data-tab="multas" onclick="cambiarPestaña('multas', this)">
-            <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 0.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Multes
-        </button>
-        <button class="nav-btn" data-tab="fisio" onclick="cambiarPestaña('fisio', this); carregarFisio();">
-            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg> Fisio
+        <button class="nav-btn" id="nav-mes" onclick="alternarMenu()" aria-label="Més seccions">
+            <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg> Més
         </button>
     </nav>
 
@@ -1082,7 +1122,7 @@
             let avatarHTML = getAvatar(nomAMostrar); // Generem la foto
             
             return `
-            <div class="ranking-item">
+            <div class="ranking-item ranking-clicable" data-nom="${String(nomAMostrar).replace(/"/g, '&quot;')}" onclick="obrirPerfilJugador(this.dataset.nom)">
                 <div class="ranking-fila-principal">
                     <div class="player-info" style="display:flex; align-items:center; gap:10px;">
                         <span class="medalla" style="width:25px;">${medallaIcono}</span> 
@@ -1108,11 +1148,11 @@
 
             let badges = '';
             if (pos.plens > 0) badges += `<span style="background:rgba(34,197,94,0.14); color:var(--success); font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; margin-right:5px; white-space:nowrap;">🎯 ${pos.plens} ple${pos.plens > 1 ? 'ns' : ''}</span>`;
-            if (pos.encerts_p10 > 0) badges += `<span style="background:rgba(227,178,60,0.14); color:var(--gold); font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; white-space:nowrap;">⚡ ${pos.encerts_p10} p10</span>`;
+            if (pos.encerts_p10 > 0) badges += `<span style="background:rgba(244,180,0,0.14); color:var(--gold); font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; white-space:nowrap;">⚡ ${pos.encerts_p10} p10</span>`;
             let mòdulBadges = badges ? `<div style="margin-left:70px; margin-top:6px; display:flex; flex-wrap:wrap;">${badges}</div>` : '';
 
             return `
-            <div class="ranking-item">
+            <div class="ranking-item ranking-clicable" data-nom="${String(nomAMostrar).replace(/"/g, '&quot;')}" onclick="obrirPerfilJugador(this.dataset.nom)">
                 <div class="ranking-fila-principal">
                     <div class="player-info" style="display:flex; align-items:center; gap:10px;">
                         <span class="medalla" style="width:25px;">${medallaIcono}</span> 
@@ -1126,6 +1166,131 @@
             </div>`;
         }
 
+        // ===== PODI, DADES RÀPIDES I FITXA DE JUGADOR =====
+        let rankingQuinielaCache = [];
+
+        function escapaHTML(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        // "Martí Oller" coincideix amb "Martí Oller Brunet": les paraules del nom més curt han d'estar al més llarg
+        function coincideixNom(a, b) {
+            const ta = normalitzarNomRival(a).split(' ').filter(Boolean), tb = normalitzarNomRival(b).split(' ').filter(Boolean);
+            if (!ta.length || !tb.length) return false;
+            const [curt, llarg] = ta.length <= tb.length ? [ta, tb] : [tb, ta];
+            return curt.every(p => llarg.includes(p));
+        }
+
+        function nomCurt(nom) { return String(nom).trim().split(/\s+/).slice(0, 2).join(' '); }
+
+        function podiQuinielaHTML(ranking) {
+            const top = ranking.slice(0, 3);
+            if (!top.length) return '';
+            const corona = '<svg width="26" height="20" viewBox="0 0 24 18" fill="#f4b400" aria-hidden="true" style="display:block; margin:0 auto 4px;"><path d="M2 16 L1 5 L7 10 L12 2 L17 10 L23 5 L22 16 Z"/></svg>';
+            const col = (pos, idx) => {
+                const correu = pos.id_jugador.trim().toLowerCase();
+                const nom = dadesPerfilsMapejades[correu] || pos.id_jugador.split('@')[0];
+                const mida = idx === 0 ? 64 : 50;
+                return `<div class="podi-col p${idx + 1}" data-nom="${escapaHTML(nom)}" onclick="obrirPerfilJugador(this.dataset.nom)">
+                    ${idx === 0 ? corona : ''}${getAvatar(nom, mida)}
+                    <div class="podi-nom">${escapaHTML(nomCurt(nom))}</div>
+                    <div class="podi-pts">${pos.puntos_totales}</div>
+                    <div class="podi-barra">${idx + 1}</div>
+                </div>`;
+            };
+            const ordre = [1, 0, 2].filter(i => top[i]);
+            const lider = top[0];
+            const rafaga = cacheHistoricaRafagues[lider.id_jugador.trim().toLowerCase()] || '';
+            const nomLider = dadesPerfilsMapejades[lider.id_jugador.trim().toLowerCase()] || lider.id_jugador.split('@')[0];
+            const forma = rafaga ? `<div class="contenedor-rafaga" style="margin:0.9rem 0 0 0; justify-content:center;"><span style="font-size:0.72rem; color:#cbd5e1; font-weight:600;">Forma de ${escapaHTML(nomCurt(nomLider))}:</span> ${rafaga}</div>` : '';
+            return `<div class="podi">${ordre.map(i => col(top[i], i)).join('')}</div>${forma}<div class="podi-ajuda">Toca un jugador per veure el seu perfil</div>`;
+        }
+
+        function actualitzarDadesRapides() {
+            const caixa = document.getElementById('fila-dades-rapides');
+            if (!caixa || !emailUsuario) return;
+            const correu = emailUsuario.trim().toLowerCase();
+            const nom = dadesPerfilsMapejades[correu];
+            const idx = rankingQuinielaCache.findIndex(r => r.id_jugador.trim().toLowerCase() === correu);
+            document.getElementById('dr-punts').textContent = idx >= 0 ? rankingQuinielaCache[idx].puntos_totales : '0';
+            document.getElementById('dr-pos').textContent = idx >= 0 ? `${idx + 1}.º` : '-';
+            const meves = nom ? multesCache.filter(m => coincideixNom(m.nom_jugador, nom)) : [];
+            document.getElementById('dr-multes').textContent = `${meves.reduce((t, m) => t + (parseFloat(m.import) || 0), 0).toFixed(0)} €`;
+            caixa.style.display = 'grid';
+        }
+
+        let statsPartitsJugadorsCache = null;
+        async function carregarStatsPartitsJugadors() {
+            if (statsPartitsJugadorsCache) return statsPartitsJugadorsCache;
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const res = await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`);
+            const dades = parsearCSV(await res.text());
+            const h = dades[0].map(x => x.trim().toUpperCase());
+            const iN = h.indexOf('JUGADOR'), iPJ = h.indexOf('PARTITS JUGATS'), iG = h.indexOf('GOLS'), iTG = h.indexOf('TG'), iTV = h.indexOf('TV');
+            const llista = [];
+            for (let i = 1; i < dades.length; i++) {
+                const f = dades[i];
+                if (iN === -1 || !f[iN] || !f[iN].trim()) continue;
+                llista.push({ nom: f[iN].trim(), pj: parseInt(f[iPJ], 10) || 0, gols: parseInt(f[iG], 10) || 0, tg: parseInt(f[iTG], 10) || 0, tv: parseInt(f[iTV], 10) || 0 });
+            }
+            statsPartitsJugadorsCache = llista;
+            return llista;
+        }
+
+        function tancarPerfilJugador() {
+            document.getElementById('modal-perfil').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') tancarPerfilJugador(); });
+
+        async function obrirPerfilJugador(nom) {
+            if (!nom) return;
+            const fons = document.getElementById('modal-perfil'), cont = document.getElementById('perfil-contingut');
+            cont.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:3rem 0;">Carregant el perfil...</p>';
+            fons.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            const correu = Object.keys(dadesPerfilsMapejades).find(k => coincideixNom(dadesPerfilsMapejades[k], nom));
+            let entrenos = [], partits = null;
+            try { const r = await clienteSupabase.from('punts_entreno').select('*'); entrenos = r.data || []; } catch (e) {}
+            try { const llista = await carregarStatsPartitsJugadors(); partits = llista.find(j => coincideixNom(j.nom, nom)) || null; } catch (e) {}
+
+            const idxQ = correu ? rankingQuinielaCache.findIndex(r => r.id_jugador.trim().toLowerCase() === correu) : -1;
+            const filaQ = idxQ >= 0 ? rankingQuinielaCache[idxQ] : null;
+            const entrenosOrd = [...entrenos].sort((a, b) => b.puntos_totales - a.puntos_totales);
+            const idxE = entrenosOrd.findIndex(e => coincideixNom(e.nom_jugador, nom));
+            const filaE = idxE >= 0 ? entrenosOrd[idxE] : null;
+            let mvps = 0;
+            Object.keys(window.palmaresMvpCache || {}).forEach(n => { if (coincideixNom(n, nom)) mvps += window.palmaresMvpCache[n]; });
+            const meves = multesCache.filter(m => coincideixNom(m.nom_jugador, nom));
+            const totalMultes = meves.reduce((t, m) => t + (parseFloat(m.import) || 0), 0);
+
+            const bloc = (et, val, color) => `<div class="dada-rapida"><span class="dada-rapida-et">${et}</span><span class="dada-rapida-val" style="${color ? 'color:' + color + ';' : ''}">${val}</span></div>`;
+            const etiqueta = idxQ === 0 ? '<span class="perfil-etiqueta">Líder de la quiniela</span>' : '';
+            const graella = partits
+                ? bloc('Partits', partits.pj) + bloc('Gols', partits.gols) + bloc('MVPs', mvps, 'var(--gold)') + bloc('Targ. grogues', partits.tg, 'var(--gold)') + bloc('Targ. vermelles', partits.tv, '#ff6b7d') + bloc('Multes', `${totalMultes.toFixed(0)} €`, '#ff6b7d')
+                : bloc('MVPs', mvps, 'var(--gold)') + bloc('Multes', `${totalMultes.toFixed(0)} €`, '#ff6b7d');
+
+            cont.innerHTML = `
+                <div class="perfil-carta">
+                    <div class="perfil-carta-cos">
+                        ${getAvatar(nom, 88)}
+                        <div style="min-width:0;"><div class="perfil-nom">${escapaHTML(nom)}</div>${etiqueta}</div>
+                    </div>
+                    <div class="perfil-estripes"></div>
+                </div>
+                <div class="perfil-titol">Temporada 26-27</div>
+                <div class="perfil-graella">${graella}</div>
+                <div class="perfil-bloc">
+                    <div><div class="perfil-titol" style="margin:0;">Quiniela</div><div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">${filaQ ? `${filaQ.plens || 0} plens · ${filaQ.encerts_p10 || 0} encerts p10` : 'Sense dades encara'}</div></div>
+                    <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:1.5rem; color:var(--gold);">${filaQ ? `${filaQ.puntos_totales} pts · ${idxQ + 1}.º` : '-'}</div>
+                </div>
+                <div class="perfil-bloc">
+                    <div><div class="perfil-titol" style="margin:0;">Entrenos</div><div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Punts d'assistència</div></div>
+                    <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:1.5rem; color:var(--info);">${filaE ? `${filaE.puntos_totales} pts · ${idxE + 1}.º` : '-'}</div>
+                </div>
+                ${meves.length ? `<div class="perfil-titol">Multes</div>` + meves.map(m => `<div class="perfil-bloc" style="margin-top:0.4rem;"><span style="font-size:0.9rem;">${escapaHTML(m.motiu)}</span><strong style="color:#ff6b7d;">${(parseFloat(m.import) || 0).toFixed(0)} €</strong></div>`).join('') : ''}
+            `;
+        }
+
         async function cargarRanking() {
             const { data: ranking, error } = await clienteSupabase.from('classificacio_quiniela').select('*')
                 .order('puntos_totales', { ascending: false })
@@ -1135,16 +1300,12 @@
             const rankingQuinielaPestanaEl = document.getElementById('tabla-ranking-quiniela-pestana');
             if (error || !ranking || ranking.length === 0) { return; }
             
-            let htmlInicio = '';
             let htmlFull = '';
+            ranking.forEach((pos, index) => { htmlFull += generarFilaRankingQuiniela(pos, index); });
+            rankingQuinielaCache = ranking;
             
-            ranking.forEach((pos, index) => { 
-                let fila = generarFilaRankingQuiniela(pos, index); 
-                htmlFull += fila;
-                if(index < 3) htmlInicio += fila;
-            });
-            
-            if(rankingEl) rankingEl.innerHTML = htmlInicio; 
+            if(rankingEl) rankingEl.innerHTML = podiQuinielaHTML(ranking); 
+            actualitzarDadesRapides();
             if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = htmlFull;
         }
 
@@ -2707,6 +2868,7 @@ async function eliminarResumPartit() {
                 guanyadorsPerJornada[jor] = guanyadorsSetmana;
             });
             
+            window.palmaresMvpCache = palmaresTrofeus;
             let llistaPalmares = Object.keys(palmaresTrofeus).map(nom => { return { id_jugador: nom, valor: palmaresTrofeus[nom] }; }).sort((a, b) => b.valor - a.valor);
             if(llistaPalmares.length === 0) { 
                 if(rankingMvpEl) rankingMvpEl.innerHTML = textoNoMvp; 
@@ -2720,7 +2882,13 @@ async function eliminarResumPartit() {
                     if(index < 3) htmlInicio += fila;
                 });
                 if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
-                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlInicio;
+                const ordreUltims = Object.keys(guanyadorsPerJornada).sort((a, b) => (minIdPerJornada[b] || 0) - (minIdPerJornada[a] || 0)).slice(0, 3);
+                let htmlUltims = '';
+                ordreUltims.forEach(jor => {
+                    const noms = guanyadorsPerJornada[jor].map(n => `<span class="ranking-clicable" data-nom="${escapaHTML(n)}" onclick="obrirPerfilJugador(this.dataset.nom)" style="display:inline-flex; align-items:center; gap:8px;">${getAvatar(n, 30)}<strong>${escapaHTML(n)}</strong></span>`).join(' i ');
+                    htmlUltims += `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:0.6rem 0; border-bottom:1px solid var(--border); flex-wrap:wrap;"><span style="display:flex; align-items:center; gap:8px;">🏆 ${noms}</span><span style="color:var(--warning); font-weight:700; font-size:0.78rem; text-transform:uppercase;">${escapaHTML(jor)}</span></div>`;
+                });
+                if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlUltims || htmlInicio;
             }
 
             if (historialMvpEl) {
@@ -2839,7 +3007,7 @@ async function eliminarResumPartit() {
             const item = document.querySelector(`.drawer-item[data-tab="${tabId}"]`);
             if (item) item.classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            const botoBarra = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+            const botoBarra = document.querySelector(`.nav-btn[data-tab="${tabId}"]`) || document.getElementById('nav-mes');
             const barra = document.getElementById('barra-inferior');
             if (botoBarra) {
                 botoBarra.classList.add('active');
@@ -3076,6 +3244,7 @@ async function eliminarResumPartit() {
             if (resumenInicioBoteEl) resumenInicioBoteEl.textContent = text;
 
             renderitzarMultes();
+            actualitzarDadesRapides();
         }
 
         async function cargarEstadisticas() {
@@ -3236,10 +3405,6 @@ async function eliminarResumPartit() {
 
                 if(isMainAdmin || isEntrenador) {
                                         if(!document.getElementById('btn-gestio-admin')) {
-                        document.getElementById('barra-inferior').insertAdjacentHTML('beforeend', `
-                            <button id="btn-gestio-barra" class="nav-btn" data-tab="gestio" style="color: var(--danger);" onclick="cambiarPestaña('gestio', this)">
-                                <svg viewBox="0 0 24 24"> <path d="M19.43 12.94c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12-.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/> </svg> Gestió
-                            </button>`);
                         document.getElementById('barra-navegacion-principal').insertAdjacentHTML('beforeend', `
                             <button id="btn-gestio-admin" class="drawer-item drawer-gestio" data-tab="gestio" onclick="cambiarPestaña('gestio', this)">
                                 <svg viewBox="0 0 24 24">

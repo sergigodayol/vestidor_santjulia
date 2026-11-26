@@ -376,10 +376,14 @@
                 <button id="btn-novetats-vistes" onclick="marcarNovetatsVistes()" class="btn-cta" style="display:none; width:100%; padding:0.65rem; margin-top:0.6rem; background:transparent; border:1px solid var(--border); color:var(--text-muted);">Entesos, amagar els avisos</button>
             </div>
 
-            <div class="card card-hero" style="text-align: center; padding: 1.6rem 1.4rem;">
-                <span style="font-size:0.75rem; color:var(--primary); font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Pròxim Partit Oficial</span>
-                <h2 id="txt-partido-cartel" style="margin: 8px 0; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; color:#fff;">-</h2>
-                <p id="txt-partido-detalles" style="margin: 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
+            <div class="card card-hero" id="card-proxim" style="text-align: center; padding: 1.1rem 1.1rem 0.9rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <span style="font-size:0.72rem; color:var(--primary); font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Pròxim partit</span>
+                    <span id="proxim-jornada" style="display:none; font-size:0.68rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; background:var(--warning); color:#14213a; border-radius:999px; padding:3px 10px;"></span>
+                </div>
+                <div id="proxim-equips" style="display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:6px; margin-top:0.9rem;"></div>
+                <h2 id="txt-partido-cartel" style="display:none;">-</h2>
+                <p id="txt-partido-detalles" style="margin: 0.9rem 0 0 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Carregant horari i camp de joc...</p>
             </div>
 
             <div class="card">
@@ -677,7 +681,7 @@
 
                 <div id="admin-card-cartellera" class="card" style="margin-bottom: 1.2rem;">
                     <p style="font-size: 0.9rem; margin: 0 0 1rem 0; display:flex; align-items:center; gap:9px; font-weight:600;"><span class="card-icon card-icon-sm icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Cartellera: Pròxim Partit</p>
-                    <input type="text" id="admin-input-partido-nombre" class="input-admin-multa" placeholder="Rival (Ex: CF Sant Julià - UD Taradell)">
+                    <input type="text" id="admin-input-partido-nombre" class="input-admin-multa" placeholder="Rival (opcional: surt sol del full de càlcul)">
                     <input type="text" id="admin-input-partido-detalles" class="input-admin-multa" placeholder="Horari i Lloc (Ex: Dissabte 16:00h | Municipal)">
                     <button onclick="actualizarCartelPartido()" class="btn-cta btn-cta-primary" style="width:100%; padding:0.65rem;">Publicar al Panell d'Inici</button>
                 </div>
@@ -2267,20 +2271,101 @@ async function eliminarResumPartit() {
             }
         }
 
-        async function cargarCartelPartido() {
-            const { data } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', 'CARTEL').eq('jornada', 99).maybeSingle();
-            if (data) { 
-                document.getElementById('txt-partido-cartel').textContent = data.p1 || "CF Sant Julià"; 
-                document.getElementById('txt-partido-detalles').textContent = data.p2 || "Consulta l'horari amb el delegat."; 
-                
-                obtenerStatsRivalHistorial(data.p1);
-            }
-        }
-
         // Majúscules, sense accents, sense signes i amb espais simples: "Torelló  B." -> "TORELLO B"
         function normalitzarNomRival(text) {
             return String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
                 .replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        // ===== PRÒXIM PARTIT (rival automàtic des del full + escuts) =====
+        // Els escuts es carreguen de la web de la FCF. Si algun falla o no hi és, es veu un escut amb les inicials.
+        const ESCUTS_RIVALS = {
+            'GURB': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000921795_1645_Gurb_UE_200.png',
+            'CENTELLES': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000604913_centelles_200x200.png',
+            'CANTONIGROS': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000003000_Logo%20U.E.%20Cantonigros%201.png',
+            'MOIA': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000830133_moia_200.png',
+            'CALLDETENES': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000654683_calldetenes_200x200.png',
+            'SANTA EUGENIA': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0001223463_SANTAEUGENIA.png',
+            'SANT VICENC DE TORELLO': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0001025831_UE_Sant_Vicen__escut.png',
+            'RODA DE TER': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000956162_1017_RodadeTerCE_200.png',
+            'PRADENC': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0001229750_PRADENC.jpg',
+            'TONA B': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000739648_uetona_200x200.png',
+            'TORELLO B': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000651415_torello_200x200.png',
+            'TARADELL': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000066096_603645_132227476967985_1915978929_n.png',
+            'LES FRANQUESES': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0000739950_lesfranqueses_200x200.png',
+            'SANT FELIU DE CODINES': 'https://files.fcf.cat/escudos/clubes/escudos/00100_0001030375_1070_200.png'
+        };
+
+        function inicialsRival(nom) {
+            const paraules = normalitzarNomRival(nom).split(' ').filter(p => p && !['DE', 'DEL', 'LA', 'LES', 'EL', 'ELS', 'D'].includes(p));
+            return (paraules.length > 1 ? paraules[0][0] + paraules[1][0] : (paraules[0] || '?').slice(0, 2));
+        }
+
+        function escutRivalHTML(nom, mida) {
+            const url = ESCUTS_RIVALS[normalitzarNomRival(nom)];
+            const ini = inicialsRival(nom).replace(/[^A-Z0-9]/g, '');
+            const escutSVG = `<svg viewBox="0 0 100 120" width="${mida}" height="${mida}" style="position:absolute; inset:0;" aria-hidden="true"><path d="M8 8 H92 V62 C92 92 70 108 50 116 C30 108 8 92 8 62 Z" fill="#0b3d7a" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/><text x="50" y="68" text-anchor="middle" font-family="Oswald,sans-serif" font-weight="700" font-size="34" fill="#ffffff">${ini}</text></svg>`;
+            const img = url ? `<img src="${url}" alt="" referrerpolicy="no-referrer" style="position:absolute; inset:0; width:${mida}px; height:${mida}px; object-fit:contain; display:none;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" onerror="this.remove();">` : '';
+            return `<div style="position:relative; width:${mida}px; height:${mida}px; margin:0 auto;">${escutSVG}${img}</div>`;
+        }
+
+        function escutSantJuliaHTML(mida) {
+            return `<img src="escut.png" alt="CF Sant Julià" style="width:${mida}px; height:${mida}px; object-fit:contain; display:block; margin:0 auto;">`;
+        }
+
+        // Primer partit de la T 26-27 que encara no té resultat
+        async function obtenirProximPartit() {
+            const sheetId = '1CB3J-6sIzuWxUzCqFARUIoYySyj-dlyuSNkuDu5DMbo';
+            const res = await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=T%2026-27`);
+            const dades = parsearCSV(await res.text());
+            if (!dades || dades.length < 2) return null;
+            const h = dades[0].map(x => x.trim().toUpperCase());
+            const iJ = h.indexOf('JORNADA'), iR = h.indexOf('RIVAL'), iRes = h.indexOf('RESULTAT');
+            let iLV = h.indexOf('LOCAL/VISITANT'); if (iLV === -1) iLV = h.indexOf('LOCAL/VISITA');
+            if (iJ === -1 || iR === -1 || iRes === -1) return null;
+            let anterior = 0;
+            for (let i = 1; i < dades.length; i++) {
+                const f = dades[i];
+                const jt = (f[iJ] || '').trim(), rival = (f[iR] || '').trim();
+                if (!jt || !rival) continue;
+                const num = parseInt(jt.replace(/\D/g, ''), 10);
+                if (isNaN(num)) continue;
+                if (num < anterior) break; // comença un altre equip (Amateur B...)
+                anterior = num;
+                if (/\d+\s*-\s*\d+/.test((f[iRes] || '').trim())) continue; // ja jugat
+                return { jornada: jt, rival: rival, esLocal: iLV === -1 ? true : (f[iLV] || '').trim().toUpperCase() !== 'VISITANT' };
+            }
+            return null;
+        }
+
+        async function cargarCartelPartido() {
+            const { data } = await clienteSupabase.from('quinieles').select('*').eq('id_jugador', 'CARTEL').eq('jornada', 99).maybeSingle();
+            const detalls = (data && data.p2) ? data.p2 : "Consulta l'horari amb el delegat.";
+            const equips = document.getElementById('proxim-equips');
+            let proxim = null;
+            try { proxim = await obtenirProximPartit(); } catch (e) { proxim = null; }
+
+            if (proxim) {
+                const nomEstil = 'font-family:\'Oswald\',sans-serif; font-weight:700; font-size:0.95rem; text-transform:uppercase; margin-top:6px; line-height:1.1; color:#fff;';
+                const bloc = (escut, nom) => `<div>${escut}<div style="${nomEstil}">${nom}</div></div>`;
+                const local = bloc(escutSantJuliaHTML(60), 'Sant Julià');
+                const rival = bloc(escutRivalHTML(proxim.rival, 60), proxim.rival);
+                equips.innerHTML = (proxim.esLocal ? local : rival) + `<div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:1.4rem; color:var(--warning);">VS</div>` + (proxim.esLocal ? rival : local);
+                const chip = document.getElementById('proxim-jornada');
+                chip.textContent = proxim.jornada + (proxim.esLocal ? ' · Local' : ' · Visitant');
+                chip.style.display = 'inline-block';
+                document.getElementById('txt-partido-cartel').textContent = proxim.esLocal ? `Sant Julià - ${proxim.rival}` : `${proxim.rival} - Sant Julià`;
+                document.getElementById('txt-partido-detalles').textContent = detalls;
+                obtenerStatsRivalHistorial(proxim.rival);
+            } else if (data && data.p1) {
+                // Sense calendari: es veu el que hagi escrit l'admin a mà
+                equips.style.display = 'block';
+                equips.innerHTML = `<div style="font-size:1.3rem; font-weight:900; color:#fff;">${data.p1.replace(/</g, '&lt;')}</div>`;
+                document.getElementById('txt-partido-detalles').textContent = detalls;
+                obtenerStatsRivalHistorial(data.p1);
+            } else {
+                document.getElementById('txt-partido-detalles').textContent = detalls;
+            }
         }
 
         async function obtenerStatsRivalHistorial(partidoTexto) {
@@ -2539,7 +2624,7 @@ async function eliminarResumPartit() {
 
         async function actualizarCartelPartido() {
             const rival = document.getElementById('admin-input-partido-nombre').value.trim(); const det = document.getElementById('admin-input-partido-detalles').value.trim();
-            if (!rival || !det) return;
+            if (!det) { alert('Escriu l\'horari i el lloc.'); return; }
             const { error } = await clienteSupabase.from('quinieles').upsert({ id_jugador: 'CARTEL', jornada: 99, p1: rival, p2: det }, { onConflict: 'id_jugador,jornada' });
             if(!error) { alert("¡Cartellera publicada!"); location.reload(); }
         }

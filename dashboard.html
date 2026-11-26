@@ -2580,8 +2580,17 @@ async function eliminarResumPartit() {
             const ini = inicialsRival(nom).replace(/[^A-Z0-9]/g, '');
             const escutSVG = `<svg viewBox="0 0 100 120" width="${mida}" height="${mida}" style="position:absolute; inset:0;" aria-hidden="true"><path d="M8 8 H92 V62 C92 92 70 108 50 116 C30 108 8 92 8 62 Z" fill="#0b3d7a" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/><text x="50" y="68" text-anchor="middle" font-family="Oswald,sans-serif" font-weight="700" font-size="34" fill="#ffffff">${ini}</text></svg>`;
             const fitxer = normalitzarNomRival(nom).toLowerCase().replace(/ /g, '_');
-            const img = `<img src="escuts/${fitxer}.webp" data-alt="${url || ''}" alt="" referrerpolicy="no-referrer" style="position:absolute; inset:0; width:${mida}px; height:${mida}px; object-fit:contain; display:none;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" onerror="if (this.dataset.alt) { const a = this.dataset.alt; this.dataset.alt = ''; this.src = a; } else { this.remove(); }">`;
+            // Ordre de cerca: escuts/<rival>.png, .webp, .jpg, .jpeg al repositori; després la FCF; si no, les inicials
+            const cami = [`escuts/${fitxer}.png`, `escuts/${fitxer}.webp`, `escuts/${fitxer}.jpg`, `escuts/${fitxer}.jpeg`].concat(url ? [url] : []);
+            const img = `<img src="${cami[0]}" data-cua="${cami.slice(1).join('|')}" alt="" referrerpolicy="no-referrer" style="position:absolute; inset:0; width:${mida}px; height:${mida}px; object-fit:contain; display:none;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" onerror="escutSeguent(this)">`;
             return `<div style="position:relative; width:${mida}px; height:${mida}px; margin:0 auto;">${escutSVG}${img}</div>`;
+        }
+
+        function escutSeguent(img) {
+            const cua = (img.dataset.cua || '').split('|').filter(Boolean);
+            if (!cua.length) { img.remove(); return; }
+            img.dataset.cua = cua.slice(1).join('|');
+            img.src = cua[0];
         }
 
         function escutSantJuliaHTML(mida) {

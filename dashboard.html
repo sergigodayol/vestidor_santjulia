@@ -3044,9 +3044,24 @@ async function eliminarResumPartit() {
             if(!selectMvp) return;
             if(mvpBloquejat || !etiquetaMvpActiva) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = '🔒 Les votacions de l\'MVP estan tancades ara mateix.'; msgMvp.style.display = 'block'; return; }
             const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
+            // Ningú es pot votar a si mateix
+            if (nomUsuariActual && normalitzarNomRival(seleccionat) === normalitzarNomRival(nomUsuariActual)) {
+                const burles = [
+                    "Votar-te a tu mateix? Autoestima de 10, vergonya de 0. Escull un company.",
+                    "Ni el teu mirall et votaria. Escull un company.",
+                    "L'MVP del teu cor ets tu, però aquí no compta. Una mica de decòrum, si us plau.",
+                    "T'has votat a tu mateix. Això és com aplaudir-te el gol des del banc. Torna-ho a provar amb un altre.",
+                    "Egolatria detectada. El vestidor ho ha vist, i no t'ha deixat passar.",
+                    "Auto-vot? Ni Messi s'ho permetia. Escull un company."
+                ];
+                msgMvp.style.color = 'var(--danger)'; msgMvp.textContent = burles[Math.floor(Math.random() * burles.length)]; msgMvp.style.display = 'block';
+                try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]); } catch (e) {}
+                return;
+            }
             msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
             const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: etiquetaMvpActiva, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
             if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat!`; celebrar(); setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
+            else { msgMvp.style.color = 'var(--danger)'; msgMvp.textContent = (error.message || 'No s\'ha pogut desar el vot.'); msgMvp.style.display = 'block'; }
         }
 
         async function guardarResultadosReales() {

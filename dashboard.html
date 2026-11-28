@@ -188,9 +188,21 @@
         .menu-lateral:not(.obert) { box-shadow: none; }
         /* Targetes de la portada: mateix estil d'icona, mateixa estructura */
         .grid-rankings > .card { display: flex; flex-direction: column; }
+        .card h3 .card-icon { background: rgba(31, 120, 209, 0.16) !important; color: #7fb8f5 !important; }
         .grid-rankings .card-icon { background: rgba(31, 120, 209, 0.16) !important; color: #7fb8f5 !important; }
         .podi-peu { margin-top: auto; padding-top: 0.9rem; text-align: center; }
         .podi-info { font-size: 0.74rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+        .fila-rank { display: flex; align-items: center; gap: 12px; padding: 0.7rem 0.3rem; border-bottom: 1px solid var(--border); border-radius: 10px; }
+        .fila-rank:last-child { border-bottom: none; }
+        .fila-rank-text { min-width: 0; flex: 1; }
+        .fila-rank-valor { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 1.2rem; white-space: nowrap; }
+        .fila-rank-valor small { font-family: 'Inter', sans-serif; font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-left: 4px; }
+        .fila-sub-linia { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+        .pos-xip { width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 0.85rem; background: #1b2e4d; color: var(--text-muted); }
+        .pos-xip.p1 { background: var(--gold); color: #14213a; }
+        .pos-xip.p2 { background: #c0c8d6; color: #14213a; }
+        .pos-xip.p3 { background: #cd8a4f; color: #14213a; }
+        .xip-mini { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
         .fila-mvp { display: flex; align-items: center; gap: 12px; padding: 0.65rem 0.3rem; border-bottom: 1px solid var(--border); border-radius: 10px; }
         .fila-mvp:last-child { border-bottom: none; }
         .fila-mvp-nom { font-weight: 700; font-size: 0.95rem; line-height: 1.2; }
@@ -442,7 +454,7 @@
 
         <div id="tab-inicio" class="tab-content active">
             <div id="card-novetats" class="card" style="display:none; border:1px solid rgba(245,158,11,0.45); background: linear-gradient(160deg, rgba(245,158,11,0.10), rgba(245,158,11,0.02));">
-                <h3 style="margin-bottom:0.8rem;"><span class="card-icon icon-gold">🔔</span> Novetats per a tu</h3>
+                <h3 style="margin-bottom:0.8rem;">Novetats per a tu</h3>
                 <div id="llista-novetats"></div>
                 <button id="btn-novetats-vistes" onclick="marcarNovetatsVistes()" class="btn-cta" style="display:none; width:100%; padding:0.65rem; margin-top:0.6rem; background:transparent; border:1px solid var(--border); color:var(--text-muted);">Entesos, amagar els avisos</button>
             </div>
@@ -496,10 +508,10 @@
 
         <div id="tab-quiniela" class="tab-content">
             <div class="sub-tabs">
-                <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">🎯 Quiniela activa</button>
-                <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking(); cargarEvolucioQuiniela();">📈 Classificació</button>
-                <button class="sub-btn" onclick="cambiarSubTab('companys', this); cargarQuinielasCompanys();">👀 Quinieles del vestidor</button>
-                <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">📂 Històric</button>
+                <button class="sub-btn active" onclick="cambiarSubTab('jornada', this); verificarBoletoExistente();">Quiniela activa</button>
+                <button class="sub-btn" onclick="cambiarSubTab('ranking-intern', this); cargarRanking(); cargarEvolucioQuiniela();">Classificació</button>
+                <button class="sub-btn" onclick="cambiarSubTab('companys', this); cargarQuinielasCompanys();">Quinieles del vestidor</button>
+                <button class="sub-btn" onclick="cambiarSubTab('historial', this); cargarHistorial();">Històric</button>
             </div>
 
             <div id="sub-jornada" class="sub-tab-content">
@@ -552,7 +564,7 @@
             <div id="sub-ranking-intern" class="sub-tab-content" style="display:none;">
                 <div class="card">
                     <h3><span class="card-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Classificació de la Quiniela</h3>
-                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:-0.6rem; margin-bottom:1.2rem;">En cas d'empat a punts, desempata primer qui tingui més plens (🎯) i després qui hagi encertat més cops el resultat exacte (⚡).</p>
+                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:-0.6rem; margin-bottom:1.2rem;">En cas d'empat a punts, desempata primer qui tingui més plens i després qui hagi encertat més cops el resultat exacte.</p>
                     <div id="tabla-ranking-quiniela-pestana"><div class="esquelet"></div><div class="esquelet"></div><div class="esquelet"></div></div>
                 </div>
                 <div class="card">
@@ -640,7 +652,7 @@
 
         <div id="tab-stats" class="tab-content">
             <div class="sub-tabs" style="display: flex;">
-                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)" style="flex-grow: 1;">🏆 Lliga (T 26-27)</button>
+                <button class="sub-btn active" onclick="cambiarSubTabStats('lliga', this)" style="flex-grow: 1;">Lliga (T 26-27)</button>
                 <button class="sub-btn" onclick="cambiarSubTabStats('historic', this)" style="flex-grow: 1;">📂 Globals Històrics</button>
             </div>
 
@@ -1167,61 +1179,38 @@
             return `<img src="fotos/${nomFitxer}" onerror="this.onerror=null; this.src='${fallback}';" class="avatar-img" style="width:${alt}px; height:${alt}px;" alt="${nomJugador}">`;
         }
 
-        function generarFilaRankingHTML(pos, index, unidadText, colorEstilo = '') {
-            let correuNetejat = pos.id_jugador.trim().toLowerCase();
-            let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
-            
-            let medallaIcono = `${index + 1}.º`;
-            if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
-            
-            let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
-            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 70px;"><span style="font-size:0.7rem; color:#cbd5e1; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
-            
-            let avatarHTML = getAvatar(nomAMostrar); // Generem la foto
-            
-            return `
-            <div class="ranking-item ranking-clicable" data-nom="${String(nomAMostrar).replace(/"/g, '&quot;')}" onclick="obrirPerfilJugador(this.dataset.nom)">
-                <div class="ranking-fila-principal">
-                    <div class="player-info" style="display:flex; align-items:center; gap:10px;">
-                        <span class="medalla" style="width:25px;">${medallaIcono}</span> 
-                        ${avatarHTML} 
-                        <span style="font-weight: 700; color: var(--text); font-size: 1rem;">${nomAMostrar}</span>
-                    </div>
-                    <span style="${colorEstilo}"><strong>${pos.valor} ${unidadText}</strong></span>
-                </div>
-                ${mòdulFormatatRafaga}
+        function filesMvpJornadaHTML(jor, guanyadors) {
+            const titolCas = t => String(t).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
+            const parts = String(jor).split(' - ');
+            const xip = parts.length > 1 ? parts[0].trim() : String(jor);
+            const sub = parts.length > 1 ? 'vs ' + titolCas(parts.slice(1).join(' - ').trim()) : '';
+            return guanyadors.map(n => `<div class="fila-mvp ranking-clicable" data-nom="${escapaHTML(n)}" onclick="obrirPerfilJugador(this.dataset.nom)">${getAvatar(n, 44)}<div style="min-width:0;"><div class="fila-mvp-nom">${escapaHTML(n)}</div>${sub ? `<div class="fila-mvp-sub">${escapaHTML(sub)}</div>` : ''}</div><span class="xip-jornada">${escapaHTML(xip)}</span></div>`).join('');
+        }
+
+        function filaRankHTML(f) {
+            return `<div class="fila-rank ranking-clicable" data-nom="${escapaHTML(f.nom)}" onclick="obrirPerfilJugador(this.dataset.nom)">
+                <span class="pos-xip ${f.pos <= 3 ? 'p' + f.pos : ''}">${f.pos}</span>${getAvatar(f.nom, 40)}
+                <div class="fila-rank-text"><div class="fila-mvp-nom">${escapaHTML(f.nom)}${f.tend || ''}</div>${f.sub ? `<div class="fila-mvp-sub fila-sub-linia">${f.sub}</div>` : ''}</div>
+                <span class="fila-rank-valor">${f.valor}<small>${f.unitat || ''}</small></span>
             </div>`;
         }
 
+        function generarFilaRankingHTML(pos, index, unidadText) {
+            const correu = pos.id_jugador.trim().toLowerCase();
+            const nom = dadesPerfilsMapejades[correu] || pos.id_jugador.split('@')[0];
+            const forma = cacheHistoricaRafagues[correu] || '';
+            return filaRankHTML({ nom, valor: pos.valor, unitat: unidadText === '🏆' ? 'MVPs' : unidadText, pos: index + 1, sub: forma ? `<span>Forma</span><span class="contenedor-rafaga" style="margin:0;">${forma}</span>` : '' });
+        }
+
         function generarFilaRankingQuiniela(pos, index) {
-            let correuNetejat = pos.id_jugador.trim().toLowerCase();
-            let nomAMostrar = dadesPerfilsMapejades[correuNetejat] || pos.id_jugador.split('@')[0];
-
-            let medallaIcono = `${index + 1}.º`;
-            if (index === 0) medallaIcono = '👑'; else if (index === 1) medallaIcono = '🥈'; else if (index === 2) medallaIcono = '🥉';
-
-            let avatarHTML = getAvatar(nomAMostrar);
-            let HTMLCercletsForma = cacheHistoricaRafagues[correuNetejat] || '';
-            let mòdulFormatatRafaga = HTMLCercletsForma !== '' ? `<div class="contenedor-rafaga" style="margin-left: 70px;"><span style="font-size:0.7rem; color:#cbd5e1; font-weight:600; text-transform:uppercase; margin-right:3px;">Forma:</span>${HTMLCercletsForma}</div>` : '';
-
-            let badges = '';
-            if (pos.plens > 0) badges += `<span style="background:rgba(34,197,94,0.14); color:var(--success); font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; margin-right:5px; white-space:nowrap;">🎯 ${pos.plens} ple${pos.plens > 1 ? 'ns' : ''}</span>`;
-            if (pos.encerts_p10 > 0) badges += `<span style="background:rgba(244,180,0,0.14); color:var(--gold); font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; white-space:nowrap;">⚡ ${pos.encerts_p10} p10</span>`;
-            let mòdulBadges = badges ? `<div style="margin-left:70px; margin-top:6px; display:flex; flex-wrap:wrap;">${badges}</div>` : '';
-
-            return `
-            <div class="ranking-item ranking-clicable" data-nom="${String(nomAMostrar).replace(/"/g, '&quot;')}" onclick="obrirPerfilJugador(this.dataset.nom)">
-                <div class="ranking-fila-principal">
-                    <div class="player-info" style="display:flex; align-items:center; gap:10px;">
-                        <span class="medalla" style="width:25px;">${medallaIcono}</span> 
-                        ${avatarHTML} 
-                        <span style="font-weight: 700; color: var(--text); font-size: 1rem;">${nomAMostrar}</span>${tendenciaHTML(pos.id_jugador)}
-                    </div>
-                    <span><strong>${pos.puntos_totales} pts</strong></span>
-                </div>
-                ${mòdulFormatatRafaga}
-                ${mòdulBadges}
-            </div>`;
+            const correu = pos.id_jugador.trim().toLowerCase();
+            const nom = dadesPerfilsMapejades[correu] || pos.id_jugador.split('@')[0];
+            const forma = cacheHistoricaRafagues[correu] || '';
+            let sub = '';
+            if (pos.plens > 0) sub += `<span class="xip-mini" style="color:var(--success); border-color:rgba(34,197,94,0.4); background:rgba(34,197,94,0.1);">${pos.plens} ple${pos.plens > 1 ? 'ns' : ''}</span>`;
+            if (pos.encerts_p10 > 0) sub += `<span class="xip-mini" style="color:var(--gold); border-color:rgba(244,180,0,0.4); background:rgba(244,180,0,0.1);">${pos.encerts_p10} p10</span>`;
+            if (forma) sub += `<span>Forma</span><span class="contenedor-rafaga" style="margin:0;">${forma}</span>`;
+            return filaRankHTML({ nom, valor: pos.puntos_totales, unitat: 'pts', pos: index + 1, tend: tendenciaHTML(pos.id_jugador), sub });
         }
 
         // ===== CELEBRACIÓ (confeti + vibració) =====
@@ -1453,7 +1442,7 @@
             let htmlFull = '';
             ranking.forEach((pos, index) => { htmlFull += generarFilaRankingQuiniela(pos, index); });
             if(rankingEl) rankingEl.innerHTML = podiQuinielaHTML(ranking); 
-            if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = podiQuinielaHTML(ranking) + htmlFull;
+            if(rankingQuinielaPestanaEl) rankingQuinielaPestanaEl.innerHTML = htmlFull;
             actualitzarDadesRapides();
             celebrarLiderSiCal(ranking);
         }
@@ -2494,7 +2483,7 @@ async function eliminarResumPartit() {
             if (!data || !data.etiqueta) {
                 etiquetaMvpActiva = '';
                 mvpBloquejat = true;
-                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>⭐ Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap votació d'MVP oberta.</p>`;
+                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha cap votació d'MVP oberta.</p>`;
                 if (txtAdmin) { txtAdmin.textContent = 'Sense votació configurada.'; txtAdmin.style.color = 'var(--warning)'; }
                 return;
             }
@@ -2506,7 +2495,7 @@ async function eliminarResumPartit() {
             if (inputEtiqueta) inputEtiqueta.value = etiquetaMvpActiva;
 
             if (mvpBloquejat) {
-                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>⭐ Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Les votacions per a <strong>${etiquetaMvpActiva}</strong> estan tancades ara mateix.</p>`;
+                if (divVotarMvp) divVotarMvp.innerHTML = `<h3>Votacions MVP</h3><p style="color:#94a3b8; font-size:0.9rem;">Les votacions per a <strong>${etiquetaMvpActiva}</strong> estan tancades ara mateix.</p>`;
             }
 
             if (txtAdmin) {
@@ -2883,7 +2872,7 @@ async function eliminarResumPartit() {
                         }
                     }
 
-                    let iconaLV = isLocal ? '🏠 Casa' : '✈️ Fora';
+                    let iconaLV = isLocal ? 'Casa' : 'Fora';
 
                     htmlHTML += `
                     <div style="background: var(--surface); padding: 14px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;">
@@ -3026,15 +3015,7 @@ async function eliminarResumPartit() {
                 if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
                 const ordreUltims = Object.keys(guanyadorsPerJornada).sort((a, b) => (minIdPerJornada[b] || 0) - (minIdPerJornada[a] || 0)).slice(0, 3);
                 let htmlUltims = '';
-                const titolCas = t => String(t).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
-                ordreUltims.forEach(jor => {
-                    const parts = String(jor).split(' - ');
-                    const xip = parts.length > 1 ? parts[0].trim() : String(jor);
-                    const sub = parts.length > 1 ? 'vs ' + titolCas(parts.slice(1).join(' - ').trim()) : '';
-                    guanyadorsPerJornada[jor].forEach(n => {
-                        htmlUltims += `<div class="fila-mvp ranking-clicable" data-nom="${escapaHTML(n)}" onclick="obrirPerfilJugador(this.dataset.nom)">${getAvatar(n, 44)}<div style="min-width:0;"><div class="fila-mvp-nom">${escapaHTML(n)}</div>${sub ? `<div class="fila-mvp-sub">${escapaHTML(sub)}</div>` : ''}</div><span class="xip-jornada">${escapaHTML(xip)}</span></div>`;
-                    });
-                });
+                ordreUltims.forEach(jor => { htmlUltims += filesMvpJornadaHTML(jor, guanyadorsPerJornada[jor]); });
                 if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlUltims || htmlInicio;
             }
 
@@ -3044,17 +3025,7 @@ async function eliminarResumPartit() {
                     historialMvpEl.innerHTML = textoNoMvp;
                 } else {
                     let htmlHistorial = '';
-                    jornadesOrdenades.forEach(jor => {
-                        let nomsGuanyadors = guanyadorsPerJornada[jor].map(nom => {
-                            let avatarHTML = getAvatar(nom, 26);
-                            return `<span style="display:inline-flex; align-items:center; gap:6px;">${avatarHTML}<strong>${nom}</strong></span>`;
-                        }).join(' i ');
-                        htmlHistorial += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding: 0.75rem 0; border-bottom:1px solid var(--border); flex-wrap:wrap;">
-                                <span style="display:flex; align-items:center; gap:8px; font-size:0.95rem;">🏆 ${nomsGuanyadors}</span>
-                                <span style="color:var(--warning); font-weight:700; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.3px;">${jor}</span>
-                            </div>`;
-                    });
+                    jornadesOrdenades.forEach(jor => { htmlHistorial += filesMvpJornadaHTML(jor, guanyadorsPerJornada[jor]); });
                     historialMvpEl.innerHTML = htmlHistorial;
                 }
             }
@@ -3075,7 +3046,7 @@ async function eliminarResumPartit() {
             const seleccionat = selectMvp.value; if(!seleccionat) { msgMvp.style.color = '#ef4444'; msgMvp.textContent = 'Selecciona un company.'; msgMvp.style.display = 'block'; return; }
             msgMvp.style.color = 'var(--primary)'; msgMvp.textContent = 'Enviant el teu vot...'; msgMvp.style.display = 'block';
             const { error } = await clienteSupabase.from('vots_mvp').upsert({ id_jugador: emailUsuario, jornada: etiquetaMvpActiva, nominat: seleccionat }, { onConflict: 'id_jugador,jornada' });
-            if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat! ⭐`; celebrar(); setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
+            if(!error) { msgMvp.style.color = 'var(--success)'; msgMvp.textContent = `¡Vot enviat!`; celebrar(); setTimeout(() => { cargarRankingMVP(); cargarVotMVPExistente(); }, 1200); }
         }
 
         async function guardarResultadosReales() {
@@ -3690,7 +3661,7 @@ async function eliminarResumPartit() {
                 const llista = document.getElementById('llista-novetats');
                 llista.innerHTML = items.map(it => `
                     <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
-                        <span style="font-size:1.3rem;">${it.icona}</span>
+                        <span style="width:9px; height:9px; border-radius:50%; background:var(--gold); flex:0 0 auto; display:inline-block;"></span>
                         <span style="flex:1; font-size:0.9rem; line-height:1.35;">${it.html ? it.text : escHTML(it.text)}</span>
                         <button onclick="anarAPestanya('${it.tab}')" class="btn-cta btn-cta-primary" style="padding:0.45rem 0.8rem; font-size:0.78rem; white-space:nowrap;">${it.boto}</button>
                     </div>`).join('');

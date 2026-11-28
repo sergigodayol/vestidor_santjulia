@@ -1432,7 +1432,7 @@
                     <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:1.5rem; color:var(--gold);">${filaQ ? `${filaQ.puntos_totales} pts · ${idxQ + 1}.º` : '-'}</div>
                 </div>
                 <div class="perfil-bloc">
-                    <div><div class="perfil-titol" style="margin:0;">Entrenos</div><div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Punts d'assistència</div></div>
+                    <div><div class="perfil-titol" style="margin:0;">Entrenos</div></div>
                     <div style="font-family:'Oswald',sans-serif; font-weight:700; font-size:1.5rem; color:var(--info);">${filaE ? `${filaE.puntos_totales} pts · ${idxE + 1}.º` : '-'}</div>
                 </div>
                 ${meves.length ? `<div class="perfil-titol">Multes</div>` + meves.map(m => `<div class="perfil-bloc" style="margin-top:0.4rem;"><span style="font-size:0.9rem;">${escapaHTML(m.motiu)}</span><strong style="color:#ff6b7d;">${(parseFloat(m.import) || 0).toFixed(0)} €</strong></div>`).join('') : ''}
@@ -1465,7 +1465,7 @@
                 if(rankingEl) rankingEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha punts d\'entreno registrats.</p>'; 
                 return; 
             }
-            if(rankingEl) rankingEl.innerHTML = podiHTML(ranking.map(pos => ({ nom: pos.nom_jugador, valor: pos.puntos_totales })), 'Punts d\'assistència als entrenaments');
+            if(rankingEl) rankingEl.innerHTML = podiHTML(ranking.map(pos => ({ nom: pos.nom_jugador, valor: pos.puntos_totales })), '');
         }
 
         async function cargarRankingEntrenosFull() {

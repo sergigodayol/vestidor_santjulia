@@ -186,9 +186,23 @@
         .partit-gols { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); text-align: center; line-height: 1.5; }
 
         .menu-lateral:not(.obert) { box-shadow: none; }
+        /* Targetes de la portada: mateix estil d'icona, mateixa estructura */
+        .grid-rankings > .card { display: flex; flex-direction: column; }
+        .grid-rankings .card-icon { background: rgba(31, 120, 209, 0.16) !important; color: #7fb8f5 !important; }
+        .podi-peu { margin-top: auto; padding-top: 0.9rem; text-align: center; }
+        .podi-info { font-size: 0.74rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+        .fila-mvp { display: flex; align-items: center; gap: 12px; padding: 0.65rem 0.3rem; border-bottom: 1px solid var(--border); border-radius: 10px; }
+        .fila-mvp:last-child { border-bottom: none; }
+        .fila-mvp-nom { font-weight: 700; font-size: 0.95rem; line-height: 1.2; }
+        .fila-mvp-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 1px; }
+        .xip-jornada { margin-left: auto; background: rgba(244, 180, 0, 0.14); color: var(--gold); border: 1px solid rgba(244, 180, 0, 0.35); font-weight: 800; font-size: 0.72rem; letter-spacing: 0.5px; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+        .dada-linia { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 0.55rem 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+        .dada-linia:last-child { border-bottom: none; }
+        .dada-linia span:first-child { color: var(--text-muted); }
+        .dada-linia span:last-child { font-weight: 700; text-align: right; }
         .ranking-clicable { cursor: pointer; }
         .ranking-clicable:active { background: rgba(255,255,255,0.05); }
-        .podi-ajuda { text-align: center; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.8rem; }
+        .podi-ajuda { text-align: center; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.6rem; }
 
         /* --- FITXA DE JUGADOR --- */
         .perfil-fons { position: fixed; inset: 0; z-index: 400; background: rgba(3, 8, 18, 0.78); display: none; align-items: flex-end; justify-content: center; }
@@ -472,9 +486,10 @@
                     <div id="tabla-ranking-entrenos-inicio"><div class="esquelet"></div><div class="esquelet"></div><div class="esquelet"></div></div>
                 </div>
 
-                <div class="card" style="text-align: center;">
-                    <h3 style="justify-content: center;"><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M17.5 5.5a7 7 0 1 0 0 13"/></svg></span> Total multes</h3>
-                    <div class="bote-total" id="resumen-multas" style="color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
+                <div class="card">
+                    <h3><span class="card-icon icon-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M17.5 5.5a7 7 0 1 0 0 13"/></svg></span> Total multes</h3>
+                    <div class="bote-total" id="resumen-multas" style="text-align: left; margin: 0.2rem 0 0.6rem 0; color: var(--danger); text-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">0.00 €</div>
+                    <div id="resumen-multas-detall" style="margin-top: 0.4rem;"></div>
                 </div>
             </div>
         </div>
@@ -1298,27 +1313,31 @@
 
         function nomCurt(nom) { return String(nom).trim().split(/\s+/).slice(0, 2).join(' '); }
 
-        function podiQuinielaHTML(ranking) {
-            const top = ranking.slice(0, 3);
+        // Podi comú (quiniela i entrenos): items = [{ nom, valor, tend }] ja ordenats; peu = HTML d'informació extra
+        function podiHTML(items, infoHTML) {
+            const top = items.slice(0, 3);
             if (!top.length) return '';
             const corona = '<svg width="26" height="20" viewBox="0 0 24 18" fill="#f4b400" aria-hidden="true" style="display:block; margin:0 auto 4px;"><path d="M2 16 L1 5 L7 10 L12 2 L17 10 L23 5 L22 16 Z"/></svg>';
-            const col = (pos, idx) => {
-                const correu = pos.id_jugador.trim().toLowerCase();
-                const nom = dadesPerfilsMapejades[correu] || pos.id_jugador.split('@')[0];
-                const mida = idx === 0 ? 64 : 50;
-                return `<div class="podi-col p${idx + 1}" data-nom="${escapaHTML(nom)}" onclick="obrirPerfilJugador(this.dataset.nom)">
-                    ${idx === 0 ? corona : ''}${getAvatar(nom, mida)}
-                    <div class="podi-nom">${escapaHTML(nomCurt(nom))}${tendenciaHTML(pos.id_jugador)}</div>
-                    <div class="podi-pts">${pos.puntos_totales}</div>
+            const col = (it, idx) => `<div class="podi-col p${idx + 1}" data-nom="${escapaHTML(it.nom)}" onclick="obrirPerfilJugador(this.dataset.nom)">
+                    ${idx === 0 ? corona : ''}${getAvatar(it.nom, idx === 0 ? 64 : 50)}
+                    <div class="podi-nom">${escapaHTML(nomCurt(it.nom))}${it.tend || ''}</div>
+                    <div class="podi-pts">${it.valor}</div>
                     <div class="podi-barra">${idx + 1}</div>
                 </div>`;
-            };
             const ordre = [1, 0, 2].filter(i => top[i]);
-            const lider = top[0];
-            const rafaga = cacheHistoricaRafagues[lider.id_jugador.trim().toLowerCase()] || '';
-            const nomLider = dadesPerfilsMapejades[lider.id_jugador.trim().toLowerCase()] || lider.id_jugador.split('@')[0];
-            const forma = rafaga ? `<div class="contenedor-rafaga" style="margin:0.9rem 0 0 0; justify-content:center;"><span style="font-size:0.72rem; color:#cbd5e1; font-weight:600;">Forma de ${escapaHTML(nomCurt(nomLider))}:</span> ${rafaga}</div>` : '';
-            return `<div class="podi">${ordre.map(i => col(top[i], i)).join('')}</div>${forma}<div class="podi-ajuda">Toca un jugador per veure el seu perfil</div>`;
+            return `<div class="podi">${ordre.map(i => col(top[i], i)).join('')}</div>
+                <div class="podi-peu">${infoHTML ? `<div class="podi-info">${infoHTML}</div>` : ''}<div class="podi-ajuda">Toca un jugador per veure el seu perfil</div></div>`;
+        }
+
+        function podiQuinielaHTML(ranking) {
+            const items = ranking.slice(0, 3).map(pos => {
+                const correu = pos.id_jugador.trim().toLowerCase();
+                return { nom: dadesPerfilsMapejades[correu] || pos.id_jugador.split('@')[0], valor: pos.puntos_totales, tend: tendenciaHTML(pos.id_jugador) };
+            });
+            if (!items.length) return '';
+            const rafaga = cacheHistoricaRafagues[ranking[0].id_jugador.trim().toLowerCase()] || '';
+            const info = rafaga ? `<span>Forma de ${escapaHTML(nomCurt(items[0].nom))}:</span><span class="contenedor-rafaga" style="margin:0;">${rafaga}</span>` : 'Punts de la quiniela';
+            return podiHTML(items, info);
         }
 
         // Si ets el líder de la quiniela, el confeti salta una vegada al dia
@@ -1446,8 +1465,7 @@
                 if(rankingEl) rankingEl.innerHTML = '<p style="color:#94a3b8; font-size:0.9rem;">Encara no hi ha punts d\'entreno registrats.</p>'; 
                 return; 
             }
-            let html = ''; ranking.forEach((pos, index) => { html += generarFilaRankingHTML({ id_jugador: pos.nom_jugador, valor: pos.puntos_totales }, index, 'pts', 'color:var(--info)'); });
-            if(rankingEl) rankingEl.innerHTML = html;
+            if(rankingEl) rankingEl.innerHTML = podiHTML(ranking.map(pos => ({ nom: pos.nom_jugador, valor: pos.puntos_totales })), 'Punts d\'assistència als entrenaments');
         }
 
         async function cargarRankingEntrenosFull() {
@@ -3008,9 +3026,14 @@ async function eliminarResumPartit() {
                 if(rankingMvpEl) rankingMvpEl.innerHTML = htmlFull; 
                 const ordreUltims = Object.keys(guanyadorsPerJornada).sort((a, b) => (minIdPerJornada[b] || 0) - (minIdPerJornada[a] || 0)).slice(0, 3);
                 let htmlUltims = '';
+                const titolCas = t => String(t).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
                 ordreUltims.forEach(jor => {
-                    const noms = guanyadorsPerJornada[jor].map(n => `<span class="ranking-clicable" data-nom="${escapaHTML(n)}" onclick="obrirPerfilJugador(this.dataset.nom)" style="display:inline-flex; align-items:center; gap:8px;">${getAvatar(n, 30)}<strong>${escapaHTML(n)}</strong></span>`).join(' i ');
-                    htmlUltims += `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:0.6rem 0; border-bottom:1px solid var(--border); flex-wrap:wrap;"><span style="display:flex; align-items:center; gap:8px;">🏆 ${noms}</span><span style="color:var(--warning); font-weight:700; font-size:0.78rem; text-transform:uppercase;">${escapaHTML(jor)}</span></div>`;
+                    const parts = String(jor).split(' - ');
+                    const xip = parts.length > 1 ? parts[0].trim() : String(jor);
+                    const sub = parts.length > 1 ? 'vs ' + titolCas(parts.slice(1).join(' - ').trim()) : '';
+                    guanyadorsPerJornada[jor].forEach(n => {
+                        htmlUltims += `<div class="fila-mvp ranking-clicable" data-nom="${escapaHTML(n)}" onclick="obrirPerfilJugador(this.dataset.nom)">${getAvatar(n, 44)}<div style="min-width:0;"><div class="fila-mvp-nom">${escapaHTML(n)}</div>${sub ? `<div class="fila-mvp-sub">${escapaHTML(sub)}</div>` : ''}</div><span class="xip-jornada">${escapaHTML(xip)}</span></div>`;
+                    });
                 });
                 if(rankingMvpInicioEl) rankingMvpInicioEl.innerHTML = htmlUltims || htmlInicio;
             }
@@ -3367,6 +3390,18 @@ async function eliminarResumPartit() {
             const text = `${suma.toFixed(2)} €`;
             if (boteEl) boteEl.textContent = text;
             if (resumenInicioBoteEl) resumenInicioBoteEl.textContent = text;
+
+            const detall = document.getElementById('resumen-multas-detall');
+            if (detall) {
+                if (!multesCache.length) { detall.innerHTML = '<div class="dada-linia"><span>Sancions</span><span>Cap de moment</span></div>'; }
+                else {
+                    const perJugador = {};
+                    multesCache.forEach(m => { perJugador[m.nom_jugador] = (perJugador[m.nom_jugador] || 0) + (parseFloat(m.import) || 0); });
+                    const [nomTop, impTop] = Object.entries(perJugador).sort((a, b) => b[1] - a[1])[0];
+                    detall.innerHTML = `<div class="dada-linia"><span>Sancions</span><span>${multesCache.length}</span></div>
+                        <div class="dada-linia"><span>Més multat</span><span>${escapaHTML(nomCurt(nomTop))} · ${impTop.toFixed(0)} €</span></div>`;
+                }
+            }
 
             renderitzarMultes();
             actualitzarDadesRapides();
